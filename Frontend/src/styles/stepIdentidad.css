@@ -1,0 +1,119 @@
+.identity-loading {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.identity-card {
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.identity-card.validated {
+  border-color: var(--color-success-soft);
+  background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-success-bg) 100%);
+}
+
+.identity-instruction {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: center;
+}
+
+.identity-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.identity-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  cursor: pointer;
+  background: var(--color-surface);
+  font-size: 17px;
+  font-weight: 600;
+  transition: var(--transition-fast);
+}
+
+.identity-option.selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.identity-option input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+}
+
+.identity-attempts {
+  margin: 16px 0 8px;
+  text-align: center;
+  font-size: 18px;
+  color: var(--color-text-muted);
+}
+
+.identity-error {
+  margin: 8px 0;
+  text-align: center;
+  color: var(--color-error);
+  font-weight: 700;
+}
+
+.identity-success {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin: 14px 0 0;
+  color: var(--color-success);
+  font-weight: 700;
+}
+
+.identity-confirm-button {
+  width: 100%;
+  margin-top: 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.identity-confirm-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.identity-manual-card {
+  border: 1px solid var(--color-warning-soft);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  background: var(--color-warning-bg);
+  text-align: center;
+  color: var(--color-warning);
+  box-shadow: var(--shadow-md);
+}
+
+.identity-manual-card h2 {
+  margin: 10px 0;
+  font-size: 22px;
+}
+
+.identity-manual-card p {
+  margin: 8px 0;
+  font-size: 16px;
+}

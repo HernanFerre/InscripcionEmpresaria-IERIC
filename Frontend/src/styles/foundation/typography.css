@@ -1,0 +1,79 @@
+/** @format */
+
+html {
+  /* =========================================================
+       FONT FAMILY
+    ========================================================= */
+
+  --font-family-base: "Inter", sans-serif;
+
+  /* =========================================================
+       FONT WEIGHTS
+    ========================================================= */
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* =========================================================
+       FONT SIZES
+    ========================================================= */
+
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+
+  /* =========================================================
+       SEMANTIC TYPOGRAPHY
+    ========================================================= */
+
+  --font-title-size: var(--font-size-xl);
+  --font-title-weight: var(--font-weight-semibold);
+
+  --font-subtitle-size: var(--font-size-lg);
+  --font-subtitle-weight: var(--font-weight-medium);
+
+  --font-body-size: var(--font-size-sm);
+  --font-body-weight: var(--font-weight-regular);
+
+  --font-label-size: 0.8125rem;
+  --font-label-weight: var(--font-weight-medium);
+
+  --font-caption-size: var(--font-size-xs);
+  --font-caption-weight: var(--font-weight-regular);
+
+  --font-button-size: var(--font-size-sm);
+  --font-button-weight: var(--font-weight-semibold);
+
+  /* =========================================================
+       LEGACY MAPPING
+    ========================================================= */
+
+  --font-header-h1-family: var(--font-family-base);
+  --font-header-h1-size: var(--font-title-size);
+  --font-header-h1-weight: var(--font-title-weight);
+
+  --font-header-h1-menos-family: var(--font-family-base);
+  --font-header-h1-menos-size: var(--font-subtitle-size);
+  --font-header-h1-menos-weight: var(--font-subtitle-weight);
+
+  --font-header-h2-family: var(--font-family-base);
+  --font-header-h2-size: var(--font-body-size);
+  --font-header-h2-weight: var(--font-weight-semibold);
+
+  --font-bajada-family: var(--font-family-base);
+  --font-bajada-size: var(--font-body-size);
+  --font-bajada-weight: var(--font-body-weight);
+
+  --font-label-family: var(--font-family-base);
+  --font-label-size: var(--font-label-size);
+  --font-label-weight: var(--font-label-weight);
+
+  --font-error-family: var(--font-family-base);
+  --font-error-size: var(--font-caption-size);
+  --font-error-weight: var(--font-caption-weight);
+}

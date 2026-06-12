@@ -1,0 +1,90 @@
+/** @format */
+
+button {
+  font-family: inherit;
+}
+
+button[raised] {
+  min-height: 42px;
+  padding: 0 18px;
+  border: none;
+  border-radius: var(--control-radius);
+  background-color: var(--primario);
+  color: var(--on-primario);
+  font-size: var(--font-bajada-size);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.1s ease;
+  box-shadow: 0 6px 14px rgba(0, 109, 204, 0.2);
+}
+
+button[raised]:hover:not([disabled]) {
+  background-color: var(--primario10);
+  box-shadow: 0 8px 18px rgba(0, 109, 204, 0.26);
+}
+
+button[raised]:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 109, 204, 0.16);
+}
+
+button[raised]:active:not([disabled]) {
+  transform: translateY(1px);
+}
+
+button[raised][disabled] {
+  background-color: var(--light-separator);
+  color: var(--on-formulario-disabled);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+button[link] {
+  border: none;
+  background: transparent;
+  color: var(--primario);
+  font-size: var(--font-bajada-size);
+  font-weight: 600;
+  padding: 0.35rem 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+button[link]:hover:not([disabled]),
+button[link]:focus:not([disabled]) {
+  text-decoration: underline;
+  outline: none;
+}
+
+button[link][disabled] {
+  color: var(--on-formulario-disabled);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+button[flat] {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--primario);
+  border-radius: var(--control-radius);
+  background: transparent;
+  color: var(--primario);
+  font-size: var(--font-bajada-size);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button[flat]:hover:not([disabled]),
+button[flat]:focus:not([disabled]) {
+  background: rgba(0, 109, 204, 0.08);
+  outline: none;
+}
+
+button[flat][disabled] {
+  border-color: var(--light-separator);
+  color: var(--on-formulario-disabled);
+  cursor: not-allowed;
+}

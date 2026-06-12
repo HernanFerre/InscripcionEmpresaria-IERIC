@@ -1,0 +1,109 @@
+/** @format */
+
+html {
+  /* =========================================================
+       BRAND / PRIMARY
+    ========================================================= */
+
+  --color-primary: #0c74e4;
+  --color-primary-hover: #005cb8;
+  --color-primary-soft: #e3f2fd;
+  --color-on-primary: #ffffff;
+
+  /* =========================================================
+       SECONDARY
+    ========================================================= */
+
+  --color-secondary: #d8e0ec;
+  --color-secondary-hover: #c7d3e4;
+  --color-on-secondary: #414753;
+
+  /* =========================================================
+       SURFACES / BACKGROUNDS
+    ========================================================= */
+
+  --color-background: #f5f7fa;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f8fafc;
+
+  /* =========================================================
+       TEXT
+    ========================================================= */
+
+  --color-text: #414753;
+  --color-text-muted: #6f7b8a;
+  --color-text-disabled: #9aa6b2;
+
+  /* =========================================================
+       BORDERS
+    ========================================================= */
+
+  --color-border: #e6e8f1;
+  --color-border-strong: #d8e0ec;
+
+  /* =========================================================
+       STATES
+    ========================================================= */
+
+  --color-success: #4caf50;
+  --color-success-bg: #e8f5e9;
+
+  --color-warning: #fb8c00;
+  --color-warning-bg: #fff3e0;
+
+  --color-error: #f44336;
+  --color-error-bg: #fdecec;
+
+  --color-info: #2196f3;
+  --color-info-bg: #e3f2fd;
+
+  /* =========================================================
+       OVERLAYS
+    ========================================================= */
+
+  --color-overlay: rgba(0, 0, 0, 0.32);
+
+  /* =========================================================
+       LEGACY MAPPING
+       (compatibilidad temporal)
+    ========================================================= */
+
+  --primario: var(--color-primary);
+  --primario10: var(--color-primary);
+  --primario-10: var(--color-primary-hover);
+
+  --on-primario: var(--color-on-primary);
+  --on-primario-bajada: rgba(255, 255, 255, 0.75);
+
+  --secundario: var(--color-secondary);
+  --secundario10: var(--color-secondary-hover);
+  --secundario-10: var(--color-secondary-hover);
+
+  --on-secundario: var(--color-on-secondary);
+  --on-secundario-bajada: var(--color-text-muted);
+
+  --terciario: var(--color-background);
+  --terciario10: var(--color-surface);
+  --terciario-10: var(--color-surface-alt);
+
+  --on-terciario: var(--color-text);
+  --on-terciario-bajada: var(--color-text-muted);
+
+  --ok: var(--color-success);
+  --error: var(--color-error);
+
+  --aplicacion: var(--color-background);
+  --on-aplicacion: var(--color-text);
+  --on-aplicacion-disabled: var(--color-text-disabled);
+  --on-aplicacion-separador: var(--color-border);
+  --on-aplicacion-bajada: var(--color-text-muted);
+
+  --formulario: var(--color-surface);
+  --on-formulario: var(--color-text);
+  --on-formulario-disabled: var(--color-text-disabled);
+  --on-formulario-separador: var(--color-border);
+  --on-formulario-bajada: var(--color-text-muted);
+
+  --light-separator: var(--color-border);
+  --modal-backdrop: var(--color-overlay);
+}

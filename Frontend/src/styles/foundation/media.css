@@ -1,0 +1,13 @@
+/** @format */
+
+@media only screen and (max-width: 600px) {
+  html {
+    font-size: 15px;
+  }
+}
+
+@media only screen and (min-width: 601px) {
+  html {
+    font-size: 16px;
+  }
+}

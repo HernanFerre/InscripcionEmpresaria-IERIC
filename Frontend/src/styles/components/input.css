@@ -1,0 +1,101 @@
+/** @format */
+
+.input input::-webkit-outer-spin-button,
+.input input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.input input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.input {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.input label[for] {
+  color: var(--on-formulario);
+  font-size: var(--font-label-size);
+  font-weight: var(--font-label-weight);
+}
+
+.input input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  background-color: var(--formulario);
+  border: 1px solid var(--on-formulario-separador);
+  color: var(--on-formulario);
+  font-size: var(--font-bajada-size);
+  font-weight: var(--font-bajada-weight);
+  outline: none;
+  border-radius: var(--control-radius);
+  font-family: inherit;
+}
+
+.input input:focus {
+  background-color: var(--formulario);
+  border-color: var(--primario10);
+  box-shadow: 0 0 0 2px rgba(12, 116, 228, 0.12);
+}
+
+.input input::placeholder {
+  color: var(--on-formulario-bajada);
+  opacity: 1;
+}
+
+.input input:focus::placeholder {
+  color: transparent;
+}
+
+.input label[subtext],
+.input label[error] {
+  font-size: var(--font-error-size);
+  font-weight: var(--font-error-weight);
+  color: var(--on-formulario-bajada);
+  line-height: 1.35;
+  margin-top: -0.1rem;
+}
+
+.input[error] input {
+  border-color: var(--error);
+}
+
+.input[error] label {
+  color: var(--error);
+}
+
+.input[error] label[subtext] {
+  display: none;
+}
+
+.input:not([error]) label[error] {
+  display: none;
+}
+
+.input[disabled] input {
+  color: var(--on-formulario-disabled);
+  border-color: var(--on-formulario-disabled);
+  cursor: not-allowed;
+}
+
+.input[disabled] label {
+  color: var(--on-formulario-disabled);
+}
+
+.input label[oculto] {
+  display: none;
+}
+
+.input input:-webkit-autofill,
+.input input:-webkit-autofill:hover,
+.input input:-webkit-autofill:focus,
+.input input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--formulario) inset;
+  -webkit-text-fill-color: var(--on-formulario);
+  caret-color: var(--on-formulario);
+}

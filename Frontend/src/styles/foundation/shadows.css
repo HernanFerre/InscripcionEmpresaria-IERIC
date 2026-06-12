@@ -1,0 +1,39 @@
+/** @format */
+
+html {
+  --shadow-none-box: none;
+  --shadow-none-z: 0;
+
+  --shadow-elevation-2-box: 0 2px 6px rgba(30, 55, 90, 0.08);
+  --shadow-elevation-2-z: 200;
+
+  --shadow-elevation-3-box: 0 4px 10px rgba(30, 55, 90, 0.1);
+  --shadow-elevation-3-z: 300;
+
+  --shadow-elevation-4-box: 0 6px 16px rgba(30, 55, 90, 0.12);
+  --shadow-elevation-4-z: 400;
+
+  --shadow-elevation-6-box: 0 10px 24px rgba(30, 55, 90, 0.14);
+  --shadow-elevation-6-z: 600;
+
+  --shadow-elevation-8-box: 0 14px 32px rgba(30, 55, 90, 0.16);
+  --shadow-elevation-8-z: 800;
+
+  --shadow-elevation-12-box: 0 18px 42px rgba(30, 55, 90, 0.18);
+  --shadow-elevation-12-z: 1200;
+
+  --shadow-elevation-16-box: 0 24px 54px rgba(30, 55, 90, 0.2);
+  --shadow-elevation-16-z: 1600;
+
+  --shadow-elevation-24-box: 0 32px 72px rgba(30, 55, 90, 0.24);
+  --shadow-elevation-24-z: 2400;
+
+  --control-radius: 4px;
+
+  --nivel-1: 100;
+  --nivel-2: 200;
+  --nivel-3: 300;
+  --nivel-4: 400;
+  --nivel-5: 500;
+  --nivel-maximo: 600;
+}

@@ -1,0 +1,30 @@
+/** @format */
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.check input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #0c74e4;
+  cursor: pointer;
+}
+
+.check label {
+  color: #414753;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.check label:last-child {
+  display: none;
+}
