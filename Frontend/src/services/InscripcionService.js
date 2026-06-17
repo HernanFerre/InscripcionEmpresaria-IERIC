@@ -1,3 +1,5 @@
+import { ESCENARIO_INFORMACION_DUMMY, empresasDummy } from "../mocks/inscripcionMocks";
+
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function validarCuit(cuit) {
@@ -8,10 +10,10 @@ export async function validarCuit(cuit) {
   if (soloNumeros.startsWith("300000")) {
     return {
       ok: true,
-      estadoSolicitud: "REGISTRADA",
+      estadoSolicitud: empresasDummy.REGISTRADA.estadoSolicitud,
       empresa: {
         cuit,
-        razonSocial: "CONSTRUCTORA REGISTRADA S.A.",
+        razonSocial: empresasDummy.REGISTRADA.razonSocial,
         estado: "CUIT válido",
       },
     };
@@ -20,10 +22,10 @@ export async function validarCuit(cuit) {
   if (soloNumeros.startsWith("301111")) {
     return {
       ok: true,
-      estadoSolicitud: "HABILITADA",
+      estadoSolicitud: empresasDummy.HABILITADA.estadoSolicitud,
       empresa: {
         cuit,
-        razonSocial: "EMPRESA HABILITADA S.R.L.",
+        razonSocial: empresasDummy.HABILITADA.razonSocial,
         estado: "CUIT válido",
       },
     };
@@ -32,10 +34,10 @@ export async function validarCuit(cuit) {
   if (soloNumeros.startsWith("302222")) {
     return {
       ok: true,
-      estadoSolicitud: "BLOQUEADA",
+      estadoSolicitud: empresasDummy.BLOQUEADA.estadoSolicitud,
       empresa: {
         cuit,
-        razonSocial: "EMPRESA BLOQUEADA S.A.",
+        razonSocial: empresasDummy.BLOQUEADA.razonSocial,
         estado: "CUIT válido",
       },
     };
@@ -66,12 +68,6 @@ export async function validarCodigoTelefono(codigo) {
     ok: codigo === "123456",
   };
 }
-
-const ESCENARIO_INFORMACION_DUMMY = "UNICO_EMPLEADO";
-// Opciones posibles:
-// "MULTIPLES_EMPLEADOS"
-// "UNICO_EMPLEADO"
-// "VALIDACION_MANUAL"
 
 export async function obtenerDesafioInformacion() {
   await delay(700);
