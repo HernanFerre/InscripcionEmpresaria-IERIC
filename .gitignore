@@ -281,3 +281,22 @@ pub/
 # Ignores all extra inf.yaml and app.yaml that are copied by prepare-devspaces.ps1
 src/**/app.yaml
 src/**/inf.yaml
+
+# ==========================================
+# Frontend (React + Vite)
+# ==========================================
+
+Frontend/node_modules/
+Frontend/dist/
+Frontend/.vite/
+
+Frontend/.env
+Frontend/.env.local
+Frontend/.env.development.local
+Frontend/.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

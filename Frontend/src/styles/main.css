@@ -1,5 +1,6 @@
 @import "./foundation/foundation.css";
 
+@import "./base/reset.css";
 @import "./base/grid-layout.css";
 
 @import "./components/button.css";
@@ -10,15 +11,3 @@
 @import "./stepCuit.css";
 @import "./stepContacto.css";
 @import "./stepIdentidad.css";
-
-html,
-body,
-#root {
-  width: 100%;
-  min-height: 100%;
-  margin: 0;
-}
-
-#root {
-  min-height: 100vh;
-}
