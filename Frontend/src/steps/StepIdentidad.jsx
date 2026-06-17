@@ -7,10 +7,12 @@ import { obtenerDesafioInformacion, validarDesafioInformacion } from "../service
 export default function StepIdentidad({ onNext }) {
   const [desafio, setDesafio] = useState(null);
   const [seleccionadas, setSeleccionadas] = useState([]);
-  const [intentos, setIntentos] = useState(2);
+  const [intentos, setIntentos] = useState(3);
+  const [intentosTotales, setIntentosTotales] = useState(3);
   const [cargando, setCargando] = useState(true);
   const [validando, setValidando] = useState(false);
   const [informacionValidada, setInformacionValidada] = useState(false);
+  const [limiteExcedido, setLimiteExcedido] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -20,7 +22,8 @@ export default function StepIdentidad({ onNext }) {
       .then((data) => {
         if (!cancelado) {
           setDesafio(data);
-          setIntentos(data.intentosRestantes ?? 2);
+          setIntentos(data.intentosRestantes ?? 3);
+          setIntentosTotales(data.intentosTotales ?? 3);
         }
       })
       .finally(() => {
@@ -34,23 +37,16 @@ export default function StepIdentidad({ onNext }) {
     };
   }, []);
 
-  const esSeleccionUnica = desafio?.escenario === "UNICO_EMPLEADO";
-
   const toggleOpcion = (id) => {
     setError("");
 
-    if (informacionValidada) return;
-
-    if (esSeleccionUnica) {
-      setSeleccionadas([id]);
-      return;
-    }
+    if (informacionValidada || limiteExcedido) return;
 
     setSeleccionadas((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
   };
 
   const confirmarInformacion = async () => {
-    if (!seleccionadas.length || !desafio) return;
+    if (!seleccionadas.length || !desafio || limiteExcedido) return;
 
     setValidando(true);
 
@@ -65,108 +61,124 @@ export default function StepIdentidad({ onNext }) {
     }
 
     const nuevosIntentos = intentos - 1;
+
     setIntentos(nuevosIntentos);
     setSeleccionadas([]);
 
     if (nuevosIntentos <= 0) {
-      setDesafio({
-        escenario: "VALIDACION_MANUAL",
-        mensaje:
-          "No fue posible validar automáticamente la información ingresada. Deberá continuar el trámite mediante soporte o representación de IERIC.",
-      });
+      setLimiteExcedido(true);
+      setError("");
       return;
     }
 
-    setError("La selección no coincide con los registros disponibles.");
+    setError(`Respuesta incorrecta. Le quedan ${nuevosIntentos} intentos para completar la validación.`);
   };
 
   if (cargando) {
     return (
       <>
-        <h1>INFORMACIÓN</h1>
+        <h1>INFORMACIÓN DE LA EMPRESA</h1>
         <p className="status-muted identity-loading">Consultando base de datos IERIC...</p>
       </>
     );
   }
 
-  if (desafio?.escenario === "VALIDACION_MANUAL") {
+  if (limiteExcedido) {
     return (
       <>
-        <h1>INFORMACIÓN</h1>
+        <h1>No fue posible validar la información</h1>
 
-        <section className="identity-manual-card">
-          <AlertTriangle size={34} />
+        <section className="identity-limit-card">
+          <p className="identity-limit-intro">
+            El sistema de seguridad institucional ha detectado múltiples inconsistencias durante el proceso de verificación.
+          </p>
 
-          <h2>Información pendiente de revisión</h2>
+          <div className="identity-warning-message">
+            <AlertTriangle size={22} />
+            <div>
+              <strong>Límite de intentos excedido</strong>
+              <span>
+                Ha alcanzado el límite máximo de intentos permitidos para esta validación. Para continuar con el proceso deberá comunicarse
+                con un representante del IERIC.
+              </span>
+            </div>
+          </div>
 
-          <p>{desafio.mensaje || "No contamos con información suficiente para validar automáticamente la información."}</p>
+          <div className="identity-limit-actions">
+            <button type="button" className="next-step-button">
+              Contactar a IERIC
+            </button>
 
-          <p>Para continuar, comuníquese con soporte o con una representación de IERIC.</p>
-
-          <strong>Teléfono de contacto: 0800-000-IERIC</strong>
+            <button type="button" className="identity-secondary-button">
+              Volver al Inicio
+            </button>
+          </div>
         </section>
       </>
     );
   }
 
   return (
-    <div className="step-content">
-      <>
-        <h1>{desafio.titulo}</h1>
+    <>
+      <h1>{desafio.titulo}</h1>
 
-        <section className={`identity-card ${informacionValidada ? "validated" : ""}`}>
-          <p className="identity-instruction">{desafio.consigna}</p>
+      <section className={`identity-card ${informacionValidada ? "validated" : ""}`}>
+        <p className="identity-instruction">{desafio.consigna}</p>
 
-          <div className="identity-options">
-            {desafio.opciones.map((opcion) => {
-              const checked = seleccionadas.includes(opcion.id);
+        <div className="identity-options">
+          {desafio.opciones.map((opcion) => {
+            const checked = seleccionadas.includes(opcion.id);
 
-              return (
-                <label key={opcion.id} className={`identity-option ${checked ? "selected" : ""}`}>
-                  <input
-                    type={esSeleccionUnica ? "radio" : "checkbox"}
-                    name="identity-option"
-                    checked={checked}
-                    disabled={informacionValidada}
-                    onChange={() => toggleOpcion(opcion.id)}
-                  />
+            return (
+              <label key={opcion.id} className={`identity-option ${checked ? "selected" : ""}`}>
+                <input
+                  type="checkbox"
+                  name="identity-option"
+                  checked={checked}
+                  disabled={informacionValidada}
+                  onChange={() => toggleOpcion(opcion.id)}
+                />
 
-                  <span>{opcion.label}</span>
-                </label>
-              );
-            })}
-          </div>
+                <span>{opcion.label}</span>
+              </label>
+            );
+          })}
+        </div>
 
-          {!informacionValidada && (
-            <p className="identity-attempts">
-              Le quedan <strong>{intentos}</strong> intentos
-            </p>
-          )}
+        {!informacionValidada && !error && (
+          <p className="identity-attempts">
+            Tiene <strong>{intentosTotales}</strong> intentos
+          </p>
+        )}
 
-          {error && <p className="identity-error">{error}</p>}
-
-          {informacionValidada && (
-            <p className="identity-success">
-              <CheckCircle size={20} />
-              Información validada correctamente
-            </p>
-          )}
-
-          {!informacionValidada && (
-            <button className="identity-confirm-button" onClick={confirmarInformacion} disabled={!seleccionadas.length || validando}>
-              {validando ? "Validando..." : "Confirmar información"}
-            </button>
-          )}
-        </section>
-
-        {informacionValidada && (
-          <div className="next-step-container">
-            <button className="next-step-button" onClick={onNext}>
-              Finalizar
-            </button>
+        {!informacionValidada && error && (
+          <div className="identity-error-message">
+            <AlertTriangle size={18} />
+            <span>{error}</span>
           </div>
         )}
-      </>
-    </div>
+
+        {informacionValidada && (
+          <div className="identity-success-message">
+            <CheckCircle size={20} />
+            <span>Información de la empresa validada correctamente</span>
+          </div>
+        )}
+
+        {!informacionValidada && (
+          <button className="identity-confirm-button" onClick={confirmarInformacion} disabled={!seleccionadas.length || validando}>
+            {validando ? "Validando..." : "Confirmar información"}
+          </button>
+        )}
+      </section>
+
+      {informacionValidada && (
+        <div className="next-step-container">
+          <button className="next-step-button" onClick={onNext}>
+            Finalizar
+          </button>
+        </div>
+      )}
+    </>
   );
 }

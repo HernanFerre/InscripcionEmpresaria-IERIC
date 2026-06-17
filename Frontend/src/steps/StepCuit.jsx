@@ -1,65 +1,34 @@
 import { useState } from "react";
-import { CheckCircle, Info } from "lucide-react";
+import { AlertTriangle, CheckCircle, Info } from "lucide-react";
 import "../styles/stepCuit.css";
+import { validarCuit } from "../services/inscripcionService.js";
 import { formatCuit } from "../utils/formatters.js";
 
 export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNext }) {
   const [cuit, setCuit] = useState(initialCuit);
   const [empresa, setEmpresa] = useState(initialEmpresa);
+  const [estadoSolicitud, setEstadoSolicitud] = useState(initialEmpresa?.estadoSolicitud || "");
   const [validado, setValidado] = useState(Boolean(initialEmpresa));
   const [cargando, setCargando] = useState(false);
-
-  const validarCuitDummy = (cuitFormateado) => {
-    const soloNumeros = cuitFormateado.replace(/\D/g, "");
-
-    if (soloNumeros.startsWith("300000")) {
-      return {
-        ok: true,
-        registrada: true,
-        empresa: {
-          razonSocial: "CONSTRUCTORA REGISTRADA S.A.",
-          estado: "CUIT válido",
-        },
-      };
-    }
-
-    if (soloNumeros.startsWith("30111")) {
-      return {
-        ok: true,
-        registrada: false,
-        empresa: {
-          razonSocial: "EMPRESA NUEVA S.R.L.",
-          estado: "CUIT válido",
-        },
-      };
-    }
-
-    return {
-      ok: false,
-      registrada: null,
-      empresa: null,
-    };
-  };
 
   const handleValidar = async () => {
     setCargando(true);
 
-    setTimeout(() => {
-      const resultado = validarCuitDummy(cuit);
+    try {
+      const resultado = await validarCuit(cuit);
 
       if (resultado.ok) {
-        setEmpresa({
-          ...resultado.empresa,
-          registrada: resultado.registrada,
-        });
+        setEmpresa(resultado.empresa);
+        setEstadoSolicitud(resultado.estadoSolicitud);
         setValidado(true);
       } else {
         setEmpresa(null);
+        setEstadoSolicitud(resultado.estadoSolicitud || "NO_ENCONTRADA");
         setValidado(false);
       }
-
+    } finally {
       setCargando(false);
-    }, 600);
+    }
   };
 
   const handleCuitChange = (event) => {
@@ -68,96 +37,110 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
     setCuit(formatted);
     setValidado(false);
     setEmpresa(null);
+    setEstadoSolicitud("");
   };
 
   const handleNext = () => {
     onNext({
       cuit,
-      empresa,
+      empresa: {
+        ...empresa,
+        estadoSolicitud,
+      },
     });
   };
 
-  const empresaRegistrada = validado && empresa?.registrada === true;
-  const empresaNoRegistrada = validado && empresa?.registrada === false;
+  const esRegistrada = estadoSolicitud === "REGISTRADA";
+  const esHabilitada = estadoSolicitud === "HABILITADA";
+  const esBloqueada = estadoSolicitud === "BLOQUEADA";
 
   return (
-    <div className="step-content">
-      <>
-        <h1>SOLICITUD DE INSCRIPCIÓN EMPRESARIA</h1>
+    <>
+      <h1>SOLICITUD DE INSCRIPCIÓN EMPRESARIA</h1>
 
-        <div className="cuit-row">
-          <div className="input-wrapper">
-            <label htmlFor="cuit">CUIT de la Empresa</label>
+      <div className="cuit-row">
+        <div className="input-wrapper">
+          <label htmlFor="cuit">CUIT de la Empresa</label>
 
-            <div className={`input-with-check ${validado ? "success" : ""}`}>
-              <input
-                id="cuit"
-                value={cuit}
-                onChange={handleCuitChange}
-                placeholder="Ingrese su CUIT"
-                inputMode="numeric"
-                autoComplete="off"
-              />
+          <div className={`input-with-check ${validado ? "success" : ""}`}>
+            <input
+              id="cuit"
+              value={cuit}
+              onChange={handleCuitChange}
+              placeholder="Ingrese su CUIT"
+              inputMode="numeric"
+              autoComplete="off"
+            />
 
-              {validado && <CheckCircle size={22} />}
-            </div>
-
-            <p className={validado ? "status-ok" : "status-muted"}>{validado ? "CUIT verificado con éxito" : "Pendiente de validación"}</p>
+            {validado && <CheckCircle size={22} />}
           </div>
 
-          <button onClick={handleValidar} disabled={cargando || cuit.replace(/\D/g, "").length < 5}>
-            {cargando ? "Validando..." : "Validar CUIT"}
-          </button>
+          <p className={validado ? "status-ok" : "status-muted"}>{validado ? "CUIT verificado con éxito" : "Pendiente de validación"}</p>
         </div>
 
-        {validado && (
-          <>
-            <div className="readonly-group">
-              <label>Razón Social</label>
-              <div className="readonly-box">{empresa?.razonSocial || ""}</div>
-            </div>
+        <button onClick={handleValidar} disabled={cargando || cuit.replace(/\D/g, "").length < 5}>
+          {cargando ? "Validando..." : "Validar CUIT"}
+        </button>
+      </div>
 
-            <div className="readonly-group">
-              <label>Validación IERIC</label>
-              <div className="readonly-box">{empresa?.estado || ""}</div>
-            </div>
+      {validado && (
+        <>
+          <div className="readonly-group">
+            <label>Razón Social</label>
+            <div className="readonly-box">{empresa?.razonSocial || ""}</div>
+          </div>
 
-            {empresaRegistrada && (
-              <div className="cuit-result-card warning">
-                <Info size={20} />
-                <div>
-                  <strong>La empresa ya se encuentra registrada.</strong>
-                  <span>sera dirigido al portal del Empleador.</span>
-                </div>
+          {esRegistrada && (
+            <div className="cuit-result-card warning">
+              <Info size={20} />
+              <div>
+                <strong>La empresa ya se encuentra registrada.</strong>
+                <span>Sera redirigido al portal del empleador.</span>
               </div>
+            </div>
+          )}
+
+          {esHabilitada && (
+            <div className="cuit-result-card success">
+              <CheckCircle size={20} />
+              <div>
+                <strong>La empresa se encuentra en condiciones de iniciar la inscripción.</strong>
+                <span>Puede continuar con el proceso.</span>
+              </div>
+            </div>
+          )}
+
+          {esBloqueada && (
+            <div className="cuit-result-card error">
+              <AlertTriangle size={20} />
+              <div>
+                <strong>No es posible completar la solicitud, debe registrar al menos un trabajador para continuar.</strong>
+                <span>Comuniquese con un representante del IERIC al 0800-111-IERIC.</span>
+              </div>
+            </div>
+          )}
+
+          <div className={`next-step-container ${esHabilitada ? "" : "align-left"}`}>
+            {esRegistrada && (
+              <button className="next-step-button" type="button">
+                Continuar
+              </button>
             )}
 
-            {empresaNoRegistrada && (
-              <div className="cuit-result-card success">
-                <CheckCircle size={20} />
-                <div>
-                  <strong>La empresa se encuentra en condiciones de continuar con el proceso de inscripción.</strong>
-                  {/* <span>Puede continuar.</span> */}
-                </div>
-              </div>
+            {esHabilitada && (
+              <button className="next-step-button" onClick={handleNext} type="button">
+                Continuar
+              </button>
             )}
 
-            <div className={`next-step-container ${empresaRegistrada ? "align-left" : ""}`}>
-              {empresaRegistrada && (
-                <button className="next-step-button" type="button">
-                  Continuar
-                </button>
-              )}
-
-              {empresaNoRegistrada && (
-                <button className="next-step-button" onClick={handleNext} type="button">
-                  Continuar
-                </button>
-              )}
-            </div>
-          </>
-        )}
-      </>
-    </div>
+            {esBloqueada && (
+              <button className="next-step-button" type="button">
+                Continuar
+              </button>
+            )}
+          </div>
+        </>
+      )}
+    </>
   );
 }

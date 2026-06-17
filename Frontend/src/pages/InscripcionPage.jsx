@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { User, Bell } from "lucide-react";
 
+import Topbar from "../components/layout/Topbar.jsx";
+import Footer from "../components/layout/Footer.jsx";
 import StepIndicator from "../components/wizard/StepIndicator.jsx";
 
 import StepCuit from "../steps/StepCuit.jsx";
@@ -29,6 +30,7 @@ export default function InscripcionPage() {
       cuit,
       empresa,
     }));
+
     setCurrentStep(2);
   };
 
@@ -48,29 +50,7 @@ export default function InscripcionPage() {
 
   return (
     <div className="app-shell">
-      <header className="topbar">
-        <div className="topbar-left">
-          <strong className="brand">IERIC</strong>
-          <span className="divider"></span>
-          <span className="portal-title">Portal de inscripción empresarial</span>
-        </div>
-
-        <div className="topbar-right">
-          <div className="user-icon">
-            <User size={30} />
-          </div>
-
-          <div className="user-info">
-            <span>Usuario logueado</span>
-            <strong>Admin IERIC</strong>
-          </div>
-
-          <div className="bell-wrapper">
-            <Bell size={28} />
-            <span className="notification-dot"></span>
-          </div>
-        </div>
-      </header>
+      <Topbar />
 
       <main className="main-area">
         <section className="content-grid">
@@ -85,13 +65,8 @@ export default function InscripcionPage() {
           </div>
         </section>
       </main>
-      <footer className="app-footer">
-        <div>
-          <strong>IERIC</strong>
-          <span>Instituto de Estadística y Registro de la Industria de la Construcción</span>
-          <span>© IERIC - Todos los derechos reservados.</span>
-        </div>
-      </footer>
+
+      <Footer />
     </div>
   );
 }

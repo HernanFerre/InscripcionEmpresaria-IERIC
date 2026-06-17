@@ -8,32 +8,42 @@ export async function validarCuit(cuit) {
   if (soloNumeros.startsWith("300000")) {
     return {
       ok: true,
-      registrada: true,
+      estadoSolicitud: "REGISTRADA",
       empresa: {
         cuit,
         razonSocial: "CONSTRUCTORA REGISTRADA S.A.",
         estado: "CUIT válido",
-        registrada: true,
       },
     };
   }
 
-  if (soloNumeros.startsWith("30111")) {
+  if (soloNumeros.startsWith("301111")) {
     return {
       ok: true,
-      registrada: false,
+      estadoSolicitud: "HABILITADA",
       empresa: {
         cuit,
-        razonSocial: "EMPRESA NUEVA S.R.L.",
+        razonSocial: "EMPRESA HABILITADA S.R.L.",
         estado: "CUIT válido",
-        registrada: false,
+      },
+    };
+  }
+
+  if (soloNumeros.startsWith("302222")) {
+    return {
+      ok: true,
+      estadoSolicitud: "BLOQUEADA",
+      empresa: {
+        cuit,
+        razonSocial: "EMPRESA BLOQUEADA S.A.",
+        estado: "CUIT válido",
       },
     };
   }
 
   return {
     ok: false,
-    registrada: null,
+    estadoSolicitud: "NO_ENCONTRADA",
     empresa: null,
     mensaje: "No se encontró información para el CUIT ingresado.",
   };
@@ -66,25 +76,20 @@ const ESCENARIO_INFORMACION_DUMMY = "UNICO_EMPLEADO";
 export async function obtenerDesafioInformacion() {
   await delay(700);
 
-  if (ESCENARIO_INFORMACION_DUMMY === "VALIDACION_MANUAL") {
-    return {
-      escenario: "VALIDACION_MANUAL",
-      intentosRestantes: 0,
-      mensaje: "No contamos con información suficiente para validar automáticamente la información de la empresa.",
-    };
-  }
-
   if (ESCENARIO_INFORMACION_DUMMY === "UNICO_EMPLEADO") {
     return {
       escenario: "UNICO_EMPLEADO",
       titulo: "INFORMACIÓN DE LA EMPRESA",
       consigna: "Seleccione el CUIL que reconoce como vinculado a la empresa.",
-      intentosRestantes: 2,
+      intentosTotales: 3,
+      intentosRestantes: 3,
       opciones: [
         { id: "a", label: "20-xxxxx458-3" },
         { id: "b", label: "27-xxxxx921-5" },
         { id: "c", label: "23-xxxxx774-1" },
+        { id: "d", label: "24-xxxxx662-8" },
         { id: "ninguna", label: "Ninguna de las anteriores" },
+        { id: "todas", label: "Todas las anteriores" },
       ],
       respuestasCorrectas: ["a"],
     };
@@ -94,12 +99,14 @@ export async function obtenerDesafioInformacion() {
     escenario: "MULTIPLES_EMPLEADOS",
     titulo: "INFORMACIÓN DE LA EMPRESA",
     consigna: "Seleccione los CUIL que reconoce como vinculados a la empresa.",
-    intentosRestantes: 2,
+    intentosTotales: 3,
+    intentosRestantes: 3,
     opciones: [
       { id: "a", label: "20-xxxxx458-3" },
       { id: "b", label: "27-xxxxx921-5" },
       { id: "c", label: "23-xxxxx774-1" },
       { id: "d", label: "24-xxxxx662-8" },
+      { id: "ninguna", label: "Ninguna de las anteriores" },
       { id: "todas", label: "Todas las anteriores" },
     ],
     respuestasCorrectas: ["a", "c"],

@@ -149,6 +149,12 @@
   border: 1px solid rgba(76, 175, 80, 0.18);
 }
 
+.cuit-result-card.error {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border: 1px solid rgba(244, 67, 54, 0.18);
+}
+
 @media (max-width: 700px) {
   .cuit-row {
     grid-template-columns: 1fr;

@@ -54,7 +54,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: var(--color-bg-soft);
+  background: var(--color-surface-alt);
   border-right: 1px solid var(--color-border);
   color: var(--color-text-muted);
 }
@@ -133,10 +133,79 @@
   color: var(--color-text);
 }
 
+.telefono-info-message,
+.telefono-success-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--color-success-bg);
+  border: 1px solid rgba(76, 175, 80, 0.18);
+  color: var(--color-success);
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: var(--font-weight-medium);
+}
+
+.telefono-success-message svg {
+  flex-shrink: 0;
+}
+
+.telefono-info-message {
+  background: var(--color-info-bg);
+  border: 1px solid rgba(33, 150, 243, 0.18);
+  color: var(--color-info);
+}
+
+.telefono-success-message {
+  background: var(--color-success-bg);
+  border: 1px solid rgba(76, 175, 80, 0.18);
+  color: var(--color-success);
+}
+
 .contact-helper {
   margin: 12px 0 0;
   font-size: 13px;
   color: var(--color-text-muted);
+}
+
+.telefono-attempts {
+  margin-top: 10px;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.telefono-error-message {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: #fdeaea;
+  border: 1px solid #f2c4c4;
+  color: #c62828;
+  font-size: 14px;
+}
+
+.telefono-error-blocked {
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  background: #fff3e0;
+  border: 1px solid #ffcc80;
+  color: #e65100;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.telefono-error-blocked span {
+  display: block;
+  margin-top: 6px;
+}
+
+.telefono-error-blocked span:first-child {
+  margin-top: 0;
 }
 
 @media (max-width: 700px) {
