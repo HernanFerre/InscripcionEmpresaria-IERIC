@@ -1,6 +1,5 @@
 import { ESCENARIO_INFORMACION_DUMMY, empresasDummy, opcionesInformacionDummy } from "../mocks/inscripcionMocks";
-
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+import { delay } from "../utils/delay";
 
 export async function validarCuit(cuit) {
   await delay(700);
