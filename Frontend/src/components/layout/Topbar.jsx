@@ -6,7 +6,7 @@ export default function Topbar() {
       <div className="topbar-left">
         <strong className="brand">IERIC</strong>
         <span className="divider"></span>
-        <span className="portal-title">Portal de inscripción empresarial</span>
+        <span className="portal-title">Portal de inscripción empresaria</span>
       </div>
 
       <div className="topbar-right">
