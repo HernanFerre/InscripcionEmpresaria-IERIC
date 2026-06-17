@@ -1,4 +1,4 @@
-import { ESCENARIO_INFORMACION_DUMMY, empresasDummy } from "../mocks/inscripcionMocks";
+import { ESCENARIO_INFORMACION_DUMMY, empresasDummy, opcionesInformacionDummy } from "../mocks/inscripcionMocks";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -79,14 +79,7 @@ export async function obtenerDesafioInformacion() {
       consigna: "Seleccione el CUIL que reconoce como vinculado a la empresa.",
       intentosTotales: 3,
       intentosRestantes: 3,
-      opciones: [
-        { id: "a", label: "20-xxxxx458-3" },
-        { id: "b", label: "27-xxxxx921-5" },
-        { id: "c", label: "23-xxxxx774-1" },
-        { id: "d", label: "24-xxxxx662-8" },
-        { id: "ninguna", label: "Ninguna de las anteriores" },
-        { id: "todas", label: "Todas las anteriores" },
-      ],
+      opciones: opcionesInformacionDummy,
       respuestasCorrectas: ["a"],
     };
   }
@@ -97,14 +90,7 @@ export async function obtenerDesafioInformacion() {
     consigna: "Seleccione los CUIL que reconoce como vinculados a la empresa.",
     intentosTotales: 3,
     intentosRestantes: 3,
-    opciones: [
-      { id: "a", label: "20-xxxxx458-3" },
-      { id: "b", label: "27-xxxxx921-5" },
-      { id: "c", label: "23-xxxxx774-1" },
-      { id: "d", label: "24-xxxxx662-8" },
-      { id: "ninguna", label: "Ninguna de las anteriores" },
-      { id: "todas", label: "Todas las anteriores" },
-    ],
+    opciones: opcionesInformacionDummy,
     respuestasCorrectas: ["a", "c"],
   };
 }
