@@ -15,8 +15,8 @@ export default function Topbar() {
         </div>
 
         <div className="user-info">
-          <span>Hernan</span>
-          <strong>Admin IERIC</strong>
+          <span>Rodrigo Seguin</span>
+          <strong>Admin Crack del IERIC</strong>
         </div>
 
         <div className="bell-wrapper">
