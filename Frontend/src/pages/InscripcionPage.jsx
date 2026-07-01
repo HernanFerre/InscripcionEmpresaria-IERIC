@@ -8,10 +8,15 @@ import StepCuit from "../steps/StepCuit.jsx";
 import StepContacto from "../steps/StepContacto.jsx";
 import StepIdentidad from "../steps/StepIdentidad.jsx";
 
+import AuthIframe from "../auth/AuthIframe.jsx";
+
 import "../styles/inscripcion.css";
 
 export default function InscripcionPage() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [mostrarLogin, setMostrarLogin] = useState(false);
+  const [nuevoUsuario, setNuevoUsuario] = useState(false);
+  const [usuario, setUsuario] = useState(null);
 
   const [formData, setFormData] = useState({
     cuit: "",
@@ -48,9 +53,42 @@ export default function InscripcionPage() {
     setCurrentStep(3);
   };
 
+  const abrirLogin = () => {
+    setNuevoUsuario(false);
+    setMostrarLogin(true);
+  };
+
+  const cambiarUsuario = () => {
+    setUsuario(null);
+    localStorage.removeItem("token");
+
+    setNuevoUsuario(true);
+    setMostrarLogin(true);
+  };
+
+  const handleLoginSuccess = (token, profile) => {
+    setUsuario({
+      token,
+      profile,
+    });
+
+    setMostrarLogin(false);
+  };
+
   return (
     <div className="app-shell">
-      <Topbar />
+      <Topbar usuario={usuario} onAbrirLogin={abrirLogin} onCambiarUsuario={cambiarUsuario} />
+
+      <AuthIframe
+        authenticationUrl="http://127.0.0.1:5501/Frontend/src"
+        visible={mostrarLogin}
+        nuevoUsuario={nuevoUsuario}
+        onClose={() => setMostrarLogin(false)}
+        onLoginSuccess={handleLoginSuccess}
+        onLoginExpired={() => {
+          alert("Su permiso ha expirado. Debe iniciar sesión nuevamente.");
+        }}
+      />
 
       <main className="main-area">
         <section className="content-grid">

@@ -1,6 +1,13 @@
 import { User, Bell } from "lucide-react";
 
-export default function Topbar() {
+export default function Topbar({ usuario, onAbrirLogin, onCambiarUsuario }) {
+  const nombreUsuario =
+    usuario?.profile?.nombreUsuario ||
+    usuario?.profile?.name ||
+    usuario?.profile?.unique_name ||
+    usuario?.profile?.email ||
+    "Usuario logueado";
+
   return (
     <header className="topbar">
       <div className="topbar-left">
@@ -14,10 +21,19 @@ export default function Topbar() {
           <User size={30} />
         </div>
 
-        <div className="user-info">
-          <span>Hernan</span>
-          <strong>Admin IERIC</strong>
-        </div>
+        {usuario ? (
+          <>
+            <span className="topbar-user-name">{nombreUsuario}</span>
+
+            <button type="button" onClick={onCambiarUsuario}>
+              Ingresar con otro usuario
+            </button>
+          </>
+        ) : (
+          <button type="button" onClick={onAbrirLogin}>
+            Acceso Usuarios / Crear Cuenta
+          </button>
+        )}
 
         <div className="bell-wrapper">
           <Bell size={28} />
