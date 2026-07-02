@@ -17,7 +17,11 @@ export default function AuthIframe({ authenticationUrl, visible, nuevoUsuario = 
       try {
         const data = event.data;
 
-        const token = data?.token || data;
+        if (data?.source !== "ieric-authentication") {
+          return;
+        }
+
+        const token = data?.token;
 
         if (!token) {
           return;

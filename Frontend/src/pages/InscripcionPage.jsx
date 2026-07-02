@@ -8,15 +8,12 @@ import StepCuit from "../steps/StepCuit.jsx";
 import StepContacto from "../steps/StepContacto.jsx";
 import StepIdentidad from "../steps/StepIdentidad.jsx";
 
-import AuthIframe from "../auth/AuthIframe.jsx";
+import IericAuth from "../auth/IericAuth.jsx";
 
 import "../styles/inscripcion.css";
 
 export default function InscripcionPage() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [mostrarLogin, setMostrarLogin] = useState(false);
-  const [nuevoUsuario, setNuevoUsuario] = useState(false);
-  const [usuario, setUsuario] = useState(null);
 
   const [formData, setFormData] = useState({
     cuit: "",
@@ -53,58 +50,41 @@ export default function InscripcionPage() {
     setCurrentStep(3);
   };
 
-  const abrirLogin = () => {
-    setNuevoUsuario(false);
-    setMostrarLogin(true);
+  const handleAuthenticated = (token) => {
+    console.log("Token autenticación:", token);
+
+    // A partir de acá, esta aplicación decide qué hacer con el token.
+    // Por ejemplo:
+    // - guardarlo en sessionStorage/localStorage
+    // - decodificarlo localmente si necesita mostrar datos
+    // - enviarlo al backend propio de inscripción empresaria
+    // - consultar permisos propios del sistema
   };
-
-  const cambiarUsuario = () => {
-    setUsuario(null);
-    localStorage.removeItem("token");
-
-    setNuevoUsuario(true);
-    setMostrarLogin(true);
-  };
-
-  const handleLoginSuccess = (token, profile) => {
-    setUsuario({
-      token,
-      profile,
-    });
-
-    setMostrarLogin(false);
-  };
-
   return (
-    <div className="app-shell">
-      <Topbar usuario={usuario} onAbrirLogin={abrirLogin} onCambiarUsuario={cambiarUsuario} />
+    <IericAuth onAuthenticated={handleAuthenticated}>
+      {({ usuario, abrirLogin, cambiarUsuario }) => (
+        <div className="app-shell">
+          <Topbar usuario={usuario} onAbrirLogin={abrirLogin} onCambiarUsuario={cambiarUsuario} />
 
-      <AuthIframe
-        authenticationUrl="http://127.0.0.1:5501/Frontend/src"
-        visible={mostrarLogin}
-        nuevoUsuario={nuevoUsuario}
-        onClose={() => setMostrarLogin(false)}
-        onLoginSuccess={handleLoginSuccess}
-        onLoginExpired={() => {
-          alert("Su permiso ha expirado. Debe iniciar sesión nuevamente.");
-        }}
-      />
+          <main className="main-area">
+            <section className="content-grid">
+              <div className="wizard-card">
+                <StepIndicator currentStep={currentStep} />
 
-      <main className="main-area">
-        <section className="content-grid">
-          <div className="wizard-card">
-            <StepIndicator currentStep={currentStep} />
+                {currentStep === 1 && (
+                  <StepCuit initialCuit={formData.cuit} initialEmpresa={formData.empresa} onNext={handleCuitCompletado} />
+                )}
 
-            {currentStep === 1 && <StepCuit initialCuit={formData.cuit} initialEmpresa={formData.empresa} onNext={handleCuitCompletado} />}
+                {currentStep === 2 && <StepContacto initialContacto={formData.contacto} onNext={handleContactoCompletado} />}
 
-            {currentStep === 2 && <StepContacto initialContacto={formData.contacto} onNext={handleContactoCompletado} />}
+                {currentStep === 3 && <StepIdentidad onNext={() => {}} />}
+              </div>
+            </section>
+          </main>
 
-            {currentStep === 3 && <StepIdentidad onNext={() => {}} />}
-          </div>
-        </section>
-      </main>
-
-      <Footer />
-    </div>
+          <Footer />
+        </div>
+      )}
+    </IericAuth>
   );
 }

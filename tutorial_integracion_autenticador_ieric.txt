@@ -1,0 +1,356 @@
+TUTORIAL DE INTEGRACION - AUTENTICADOR IERIC EN APLICACIONES REACT
+=================================================================
+
+Objetivo
+--------
+Este documento explica como integrar el autenticador general IERIC en una aplicacion React cliente.
+
+La idea del esquema es plug and play:
+
+1. La aplicacion cliente abre el autenticador dentro de un iframe.
+2. El autenticador valida las credenciales contra su backend.
+3. El autenticador devuelve un TOKEN JWT a la aplicacion cliente mediante postMessage.
+4. La aplicacion cliente recibe solamente el token.
+5. Cada aplicacion decide que hacer con ese token: guardarlo, decodificarlo, mandarlo a su backend propio, consultar permisos propios, mostrar usuario, etc.
+
+Importante:
+El autenticador NO debe enviar informacion decodificada del usuario.
+El contrato entre autenticador y aplicacion cliente debe ser: devolver el token.
+
+
+ESTRUCTURA DE ARCHIVOS A COPIAR
+-------------------------------
+En la aplicacion React cliente, crear esta carpeta:
+
+src/auth/
+
+Y copiar dentro estos archivos:
+
+src/auth/AuthIframe.jsx
+src/auth/IericAuth.jsx
+src/auth/authenticationClient.js
+
+Descripcion de cada archivo:
+
+1. AuthIframe.jsx
+   - Crea el iframe del autenticador.
+   - Escucha el mensaje postMessage enviado por el autenticador.
+   - Valida el origen del mensaje.
+   - Extrae el token.
+   - Cierra el iframe cuando el login fue exitoso.
+
+2. IericAuth.jsx
+   - Es el componente plug and play que usa la aplicacion cliente.
+   - Expone funciones como abrirLogin y cambiarUsuario.
+   - Entrega el token a la aplicacion mediante onAuthenticated(token).
+   - Puede decodificar internamente el token si la aplicacion necesita mostrar el nombre del usuario, pero hacia afuera el contrato sigue siendo solo token.
+
+3. authenticationClient.js
+   - Contiene funciones auxiliares.
+   - Por ejemplo: parseJwt(token) para decodificar el JWT cuando una aplicacion lo necesita.
+   - Tambien puede contener validaciones como isTokenExpired(profile).
+
+
+VARIABLE DE ENTORNO
+-------------------
+En la raiz del proyecto React cliente, al mismo nivel que package.json, crear o editar el archivo:
+
+.env.development
+
+Agregar:
+
+VITE_AUTHENTICATION_URL=http://127.0.0.1:5501/Frontend/src
+
+Importante:
+No incluir el nombre del archivo HTML en esta variable.
+
+Correcto:
+VITE_AUTHENTICATION_URL=http://127.0.0.1:5501/Frontend/src
+
+Incorrecto:
+VITE_AUTHENTICATION_URL=http://127.0.0.1:5501/Frontend/src/LoginExternoRegistrado.html
+
+El componente AuthIframe ya se encarga de agregar:
+
+/LoginExternoRegistrado.html?publica=true
+
+Para produccion, la variable deberia apuntar al dominio real del autenticador, por ejemplo:
+
+VITE_AUTHENTICATION_URL=https://autenticacion.ieric.org.ar
+
+Despues de modificar variables .env, siempre reiniciar Vite:
+
+npm run dev
+
+No alcanza con refrescar el navegador.
+
+
+USO BASICO EN UNA PANTALLA REACT
+--------------------------------
+En la pantalla donde se quiera usar el autenticador, importar el componente:
+
+import IericAuth from "../auth/IericAuth.jsx";
+
+Ejemplo de uso:
+
+<IericAuth
+  onAuthenticated={(token) => {
+    console.log("Token recibido:", token);
+
+    // La aplicacion cliente decide que hacer:
+    // - guardar el token
+    // - decodificarlo
+    // - enviarlo al backend propio
+    // - consultar permisos propios
+  }}
+>
+  {({ usuario, abrirLogin, cambiarUsuario, estaLogueado }) => (
+    <div>
+      {estaLogueado ? (
+        <>
+          <span>Usuario logueado</span>
+          <button type="button" onClick={cambiarUsuario}>
+            Ingresar con otro usuario
+          </button>
+        </>
+      ) : (
+        <button type="button" onClick={abrirLogin}>
+          Acceso Usuarios / Crear Cuenta
+        </button>
+      )}
+    </div>
+  )}
+</IericAuth>
+
+
+EJEMPLO APLICADO A UN TOPBAR
+----------------------------
+Si la aplicacion ya tiene un componente Topbar, se recomienda que Topbar no conozca la logica del iframe.
+Solo deberia recibir props:
+
+<Topbar
+  usuario={usuario}
+  onAbrirLogin={abrirLogin}
+  onCambiarUsuario={cambiarUsuario}
+/>
+
+Ejemplo de Topbar:
+
+export default function Topbar({ usuario, onAbrirLogin, onCambiarUsuario }) {
+  const nombreUsuario =
+    usuario?.profile?.nombreUsuario ||
+    usuario?.profile?.name ||
+    usuario?.profile?.unique_name ||
+    usuario?.profile?.email ||
+    "Usuario logueado";
+
+  return (
+    <header className="topbar">
+      {usuario ? (
+        <>
+          <span>{nombreUsuario}</span>
+          <button type="button" onClick={onCambiarUsuario}>
+            Ingresar con otro usuario
+          </button>
+        </>
+      ) : (
+        <button type="button" onClick={onAbrirLogin}>
+          Acceso Usuarios / Crear Cuenta
+        </button>
+      )}
+    </header>
+  );
+}
+
+
+CSS NECESARIO PARA EL IFRAME
+----------------------------
+Agregar estos estilos en el CSS principal de la aplicacion cliente, por ejemplo:
+
+src/styles/main.css
+src/styles/inscripcion.css
+src/styles/global.css
+
+Segun la estructura de cada proyecto.
+
+.auth-iframe-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #ffffff;
+}
+
+.auth-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+Esto hace que el autenticador se muestre por encima de toda la aplicacion cliente.
+
+
+REQUISITO DEL AUTENTICADOR EXTERNO
+----------------------------------
+El HTML/JS del autenticador debe enviar el token al padre usando postMessage.
+
+Cuando el autenticador esta dentro de un iframe, debe usar:
+
+window.parent.postMessage(
+  { source: "ieric-authentication", token: data },
+  document.referrer || "*"
+);
+
+No usar window.opener para este caso.
+
+window.opener sirve para ventanas abiertas con window.open.
+window.parent sirve para iframe.
+
+Tambien se recomienda que el autenticador envie el mismo mensaje si ya tiene token guardado y no necesita pedir login nuevamente.
+
+
+CONTRATO ENTRE AUTENTICADOR Y APLICACION CLIENTE
+------------------------------------------------
+El mensaje enviado por el autenticador debe tener esta forma:
+
+{
+  source: "ospecon-authentication",
+  token: "JWT_AQUI"
+}
+
+La aplicacion cliente debe recibir solamente el token a traves de:
+
+onAuthenticated(token)
+
+No se recomienda que el autenticador envie datos decodificados como nombre, email, roles, permisos, etc.
+
+El token es la credencial de identidad.
+Cada aplicacion cliente decide despues:
+
+- si lo decodifica localmente para mostrar el usuario;
+- si lo manda a su backend;
+- si consulta permisos internos;
+- si guarda el token en sessionStorage o localStorage;
+- si habilita o bloquea funcionalidades.
+
+
+CONSIDERACIONES DE SEGURIDAD
+----------------------------
+1. Validar origen del mensaje
+   AuthIframe debe validar que event.origin coincida con el origen esperado del autenticador.
+
+2. No confiar en permisos dentro del frontend
+   El frontend puede mostrar u ocultar botones, pero los permisos reales deben validarse en el backend de cada aplicacion.
+
+3. El token identifica al usuario
+   El token sirve para demostrar que el usuario fue autenticado por el servicio central.
+
+4. Los permisos son responsabilidad de cada sistema
+   Ejemplo:
+   - Inscripcion empresaria puede dar permisos propios.
+   - Portal de pagos puede dar otros permisos.
+   - Ventanilla puede tener otros roles.
+
+5. No hardcodear URLs
+   La URL del autenticador debe ir por variable de entorno.
+
+6. Reiniciar Vite al cambiar .env
+   Si se modifica VITE_AUTHENTICATION_URL, hay que reiniciar npm run dev.
+
+
+ERRORES COMUNES
+---------------
+
+1. Error: Cannot GET /Frontend/src/LoginExternoRegistrado.html/LoginExternoRegistrado.html
+
+Causa:
+La variable VITE_AUTHENTICATION_URL tiene incluido el archivo HTML y AuthIframe lo vuelve a agregar.
+
+Solucion:
+Dejar la variable sin LoginExternoRegistrado.html.
+
+
+2. El iframe abre pero no vuelve a la aplicacion
+
+Causa probable:
+El autenticador esta usando window.opener.postMessage en vez de window.parent.postMessage.
+
+Solucion:
+Usar window.parent.postMessage.
+
+
+3. Cambie el .env pero sigue tomando la URL vieja
+
+Causa:
+Vite no recarga variables de entorno con refresh del navegador.
+
+Solucion:
+Frenar y levantar de nuevo:
+
+npm run dev
+
+
+4. El mensaje llega pero React lo ignora
+
+Causa probable:
+event.origin no coincide con el origen esperado.
+
+Solucion:
+Revisar que VITE_AUTHENTICATION_URL apunte exactamente al dominio/puerto donde corre el autenticador.
+
+
+5. Hay dos iframes
+
+Causa:
+Quedo un iframe viejo en index.html, por ejemplo:
+
+<iframe id="iframeLogin" name="iframeLogin"></iframe>
+
+Solucion:
+Eliminar ese iframe del index.html y dejar que React lo maneje con AuthIframe.jsx.
+
+
+RESUMEN DE IMPLEMENTACION EN OTRA APP
+-------------------------------------
+Para integrar el autenticador IERIC en otra aplicacion React:
+
+1. Copiar la carpeta src/auth con:
+   - AuthIframe.jsx
+   - IericAuth.jsx
+   - authenticationClient.js
+
+2. Agregar variable de entorno:
+   VITE_AUTHENTICATION_URL=http://127.0.0.1:5501/Frontend/src
+
+3. Agregar CSS:
+   - .auth-iframe-overlay
+   - .auth-iframe
+
+4. Usar IericAuth en la pantalla donde se necesite login:
+
+   <IericAuth onAuthenticated={(token) => { ... }}>
+     {({ abrirLogin, cambiarUsuario, usuario, estaLogueado }) => (...)}
+   </IericAuth>
+
+5. La aplicacion recibe solo el token.
+
+6. La aplicacion decide como usar ese token.
+
+7. No hace falta tocar main.jsx.
+
+8. No hace falta envolver toda la aplicacion con un provider global, salvo que el proyecto lo quiera por arquitectura propia.
+
+
+ESTADO ACTUAL DEL MODELO
+------------------------
+La integracion ya fue probada en el proyecto de Inscripcion Empresaria:
+
+- El boton abre el iframe.
+- El login autentica.
+- El autenticador manda el token.
+- La aplicacion recibe solo el token.
+- El iframe se cierra.
+- La aplicacion puede mostrar el usuario logueado si decodifica el token localmente.
+- El boton "Ingresar con otro usuario" fuerza un nuevo login.
+
+Este modelo queda como base para replicar en otras aplicaciones React.
