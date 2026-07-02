@@ -22,7 +22,7 @@ button[raised] {
 }
 
 button[raised]:hover:not([disabled]) {
-  background-color: var(--primario10);
+  background-color: var(--primario-10);
   box-shadow: 0 8px 18px rgba(0, 109, 204, 0.26);
 }
 

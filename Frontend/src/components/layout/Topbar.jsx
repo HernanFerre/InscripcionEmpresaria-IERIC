@@ -25,12 +25,12 @@ export default function Topbar({ usuario, onAbrirLogin, onCambiarUsuario }) {
           <>
             <span className="topbar-user-name">{nombreUsuario}</span>
 
-            <button type="button" onClick={onCambiarUsuario}>
+            <button className="topbar-auth-button" type="button" raised="" onClick={onCambiarUsuario}>
               Ingresar con otro usuario
             </button>
           </>
         ) : (
-          <button type="button" onClick={onAbrirLogin}>
+          <button className="topbar-auth-button" type="button" raised="" onClick={onAbrirLogin}>
             Acceso Usuarios / Crear Cuenta
           </button>
         )}

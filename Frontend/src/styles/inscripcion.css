@@ -231,6 +231,12 @@
   right: auto;
 }
 
+.topbar-auth-button {
+  min-height: 36px;
+  height: 36px;
+  white-space: nowrap;
+}
+
 .auth-iframe-overlay {
   position: fixed;
   inset: 0;
