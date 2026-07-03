@@ -1,7 +1,15 @@
 import { useEffect } from "react";
 import { isTokenExpired, parseJwt } from "./authenticationClient";
 
-export default function AuthIframe({ authenticationUrl, visible, nuevoUsuario = false, onClose, onLoginSuccess, onLoginExpired }) {
+export default function AuthIframe({
+  authenticationUrl,
+  visible,
+  nuevoUsuario = false,
+  silent = false,
+  onClose,
+  onLoginSuccess,
+  onLoginExpired,
+}) {
   const iframeSrc = `${authenticationUrl}/LoginExternoRegistrado.html?publica=true${nuevoUsuario ? "&nuevo=true" : ""}`;
 
   useEffect(() => {
@@ -49,6 +57,23 @@ export default function AuthIframe({ authenticationUrl, visible, nuevoUsuario = 
   }, [visible, authenticationUrl, onClose, onLoginSuccess, onLoginExpired]);
 
   if (!visible) return null;
+
+  if (silent) {
+    return (
+      <iframe
+        title="Verificación silenciosa de autenticación"
+        src={iframeSrc}
+        style={{
+          position: "absolute",
+          width: 0,
+          height: 0,
+          border: 0,
+          opacity: 0,
+          pointerEvents: "none",
+        }}
+      />
+    );
+  }
 
   return (
     <div className="auth-iframe-overlay">
