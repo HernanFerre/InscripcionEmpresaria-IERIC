@@ -6,8 +6,11 @@ import { parseJwt } from "./authenticationClient.js";
 export default function IericAuth({ children, onAuthenticated }) {
   const [token, setToken] = useState(null);
   const [profile, setProfile] = useState(null);
+
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [nuevoUsuario, setNuevoUsuario] = useState(false);
+
+  const [verificandoSesion, setVerificandoSesion] = useState(true);
 
   const authenticationUrl = import.meta.env.VITE_AUTHENTICATION_URL;
 
@@ -21,12 +24,17 @@ export default function IericAuth({ children, onAuthenticated }) {
     setProfile(null);
     localStorage.removeItem("token");
 
+    setVerificandoSesion(false);
     setNuevoUsuario(true);
     setMostrarLogin(true);
   };
 
   const cerrarLogin = () => {
     setMostrarLogin(false);
+  };
+
+  const cerrarVerificacionSilenciosa = () => {
+    setVerificandoSesion(false);
   };
 
   const handleLoginSuccess = (tokenRecibido) => {
@@ -41,9 +49,8 @@ export default function IericAuth({ children, onAuthenticated }) {
     }
 
     setMostrarLogin(false);
+    setVerificandoSesion(false);
 
-    // Contrato público plug and play:
-    // hacia la aplicación cliente solo entregamos el token.
     onAuthenticated?.(tokenRecibido);
   };
 
@@ -64,6 +71,18 @@ export default function IericAuth({ children, onAuthenticated }) {
         abrirLogin,
         cambiarUsuario,
       })}
+
+      <AuthIframe
+        authenticationUrl={authenticationUrl}
+        visible={verificandoSesion && !token}
+        nuevoUsuario={false}
+        silent
+        onClose={cerrarVerificacionSilenciosa}
+        onLoginSuccess={handleLoginSuccess}
+        onLoginExpired={() => {
+          cerrarVerificacionSilenciosa();
+        }}
+      />
 
       <AuthIframe
         authenticationUrl={authenticationUrl}
