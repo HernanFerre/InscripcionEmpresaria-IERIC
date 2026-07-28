@@ -55,9 +55,11 @@ namespace IERIC.SumariosIERIC.Application.Commands
                 throw new NotFoundException();
             }
 
+            quiz.MarcarComoExpirado();
+
             if (quiz.EstaExpirado)
             {
-                await _quizRepository.EliminarAsync(quiz.Id);
+                await _quizRepository.GuardarAsync(quiz);
 
                 throw new SumariosDomainException(
                     "El quiz ha expirado"
@@ -71,7 +73,11 @@ namespace IERIC.SumariosIERIC.Application.Commands
 
             if (respuestaCorrecta)
             {
-                await _quizRepository.EliminarAsync(quiz.Id);
+                await _quizRepository.GuardarValidacionAsync(
+                    quiz,
+                    command.OpcionesSeleccionadas,
+                    true
+                );
 
                 return new ValidarQuizResponse
                 {
@@ -87,7 +93,11 @@ namespace IERIC.SumariosIERIC.Application.Commands
 
             if (quiz.LimiteExcedido)
             {
-                await _quizRepository.EliminarAsync(quiz.Id);
+                await _quizRepository.GuardarValidacionAsync(
+                    quiz,
+                    command.OpcionesSeleccionadas,
+                    false
+                );
 
                 return new ValidarQuizResponse
                 {
@@ -102,7 +112,11 @@ namespace IERIC.SumariosIERIC.Application.Commands
 
             _generadorQuiz.GenerarNuevoDesafio(quiz);
 
-            await _quizRepository.GuardarAsync(quiz);
+            await _quizRepository.GuardarValidacionAsync(
+                quiz,
+                command.OpcionesSeleccionadas,
+                false
+            );
 
             return new ValidarQuizResponse
             {

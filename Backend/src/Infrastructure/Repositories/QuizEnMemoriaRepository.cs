@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using IERIC.SumariosIERIC.Domain.Entities;
 
@@ -37,14 +38,18 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
             return Task.FromResult(quiz);
         }
 
-        public Task EliminarAsync(Guid quizId)
+        public Task GuardarValidacionAsync(
+            Quiz quiz,
+            IEnumerable<string> opcionesSeleccionadas,
+            bool respuestaCorrecta
+        )
         {
-            _quizzes.TryRemove(
-                quizId,
-                out _
-            );
+            if (quiz == null)
+            {
+                throw new ArgumentNullException(nameof(quiz));
+            }
 
-            return Task.CompletedTask;
+            return GuardarAsync(quiz);
         }
     }
 }

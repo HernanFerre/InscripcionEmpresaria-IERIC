@@ -138,16 +138,13 @@ namespace IERIC.SumariosIERIC.Application
                 });
 
             services.AddAutoMapper(typeof(Startup));
-            services.AddMediatR(Assembly.GetExecutingAssembly());            
+            services.AddMediatR(Assembly.GetExecutingAssembly());
             services.AddSingleton<
                 IAleatoriedadQuiz,
                 AleatoriedadCriptograficaQuiz
             >();
 
-            services.AddSingleton<
-                IQuizRepository,
-                QuizEnMemoriaRepository
-            >();
+            services.AddScoped<IQuizRepository, QuizSqlRepository>();
 
             services.AddTransient<
                 IGeneradorQuiz,

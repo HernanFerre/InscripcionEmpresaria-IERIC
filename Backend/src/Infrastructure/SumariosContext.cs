@@ -15,6 +15,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
+using IERIC.SumariosIERIC.Infrastructure.Persistence.Quiz;
 
 namespace IERIC.SumariosIERIC.Infrastructure
 {
@@ -23,6 +24,16 @@ namespace IERIC.SumariosIERIC.Infrastructure
         public const string DEFAULT_SCHEMA = "dbo";
 
         public DbSet<Empresa> Empresas { get; set; }
+
+        public DbSet<QuizSesionEntity> QuizSesiones { get; set; }
+
+        public DbSet<QuizCuilVinculadoEntity> QuizCuilesVinculados { get; set; }
+
+        public DbSet<QuizDesafioEntity> QuizDesafios { get; set; }
+
+        public DbSet<QuizOpcionEntity> QuizOpciones { get; set; }
+
+        public DbSet<QuizRespuestaEntity> QuizRespuestas { get; set; }
 
 
         private readonly IMediator _mediator;
@@ -51,7 +62,7 @@ namespace IERIC.SumariosIERIC.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration(new EmpresaEntityTypeConfiguration());
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(SumariosContext).Assembly);
 
             Expression<Func<Entity, bool>> filterExpr = bm => bm.Activo;
             foreach (var mutableEntityType in modelBuilder.Model.GetEntityTypes())
@@ -177,30 +188,34 @@ namespace IERIC.SumariosIERIC.Infrastructure
         public SumariosContext CreateDbContext(string[] args)
         {
             string env = args.Length == 0 ? "" : args[0];
+
             if (env != "Prod" && env != "Dev" && env != "Test")
             {
-                throw new Exception("Indique el entorno (\"Prod\" para produción o \"Dev\" para Desarrollo, ejemplo: dotnet ef database update -s ../application -- \"Prod\")");
-            }
-            if (env == "Prod")
-            {
-                var optionsBuilder = new DbContextOptionsBuilder<SumariosContext>()
-                .UseSqlServer("Server=10.1.10.211,1470;Initial Catalog=Materiales;user id=sa;password=oSpEcONSQL3578951; TrustServerCertificate=True");
-                return new SumariosContext(optionsBuilder.Options, new NoMediator());
-            }
-            if (env == "Dev")
-            {
-                var optionsBuilder = new DbContextOptionsBuilder<SumariosContext>()
-                .UseSqlServer("Server=localhost,1460;Initial Catalog=Sumarios;user id=sa;password=oSpEcONSQL3578951; TrustServerCertificate=True");
-                return new SumariosContext(optionsBuilder.Options, new NoMediator());
+                throw new Exception(
+                    "Indique el entorno: \"Prod\", \"Dev\" o \"Test\"."
+                );
             }
 
-            if (env == "Test")
+            string connectionString = Environment.GetEnvironmentVariable(
+                "ConnectionStrings__DefaultConnection"
+            );
+
+            if (string.IsNullOrWhiteSpace(connectionString))
             {
-                var optionsBuilder = new DbContextOptionsBuilder<SumariosContext>()
-                .UseSqlServer("Server=10.1.10.212,1470;Initial Catalog=Sumarios;user id=sa;password=oSpEcONSQL3578951; TrustServerCertificate=True");
-                return new SumariosContext(optionsBuilder.Options, new NoMediator());
+                throw new InvalidOperationException(
+                    "No se encontró la variable de entorno " +
+                    "\"ConnectionStrings__DefaultConnection\"."
+                );
             }
-            return null;
+
+            var optionsBuilder = new DbContextOptionsBuilder<SumariosContext>();
+
+            optionsBuilder.UseSqlServer(connectionString);
+
+            return new SumariosContext(
+                optionsBuilder.Options,
+                new NoMediator()
+            );
         }
 
         class NoMediator : IMediator

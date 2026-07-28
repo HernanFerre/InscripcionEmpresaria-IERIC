@@ -19,6 +19,8 @@ namespace IERIC.SumariosIERIC.Domain.Entities
 
         public EscenarioQuiz Escenario { get; private set; }
 
+        public EstadoQuiz Estado { get; private set; }
+
         public int IntentosTotales { get; private set; }
 
         public int IntentosRestantes { get; private set; }
@@ -34,9 +36,11 @@ namespace IERIC.SumariosIERIC.Domain.Entities
             _opciones.AsReadOnly();
 
         public bool LimiteExcedido =>
+            Estado == EstadoQuiz.Bloqueado ||
             IntentosRestantes <= 0;
 
         public bool EstaExpirado =>
+            Estado == EstadoQuiz.Expirado ||
             DateTime.UtcNow >= FechaExpiracionUtc;
 
         private Quiz()
@@ -82,6 +86,7 @@ namespace IERIC.SumariosIERIC.Domain.Entities
             FechaAlta = DateTime.UtcNow;
 
             CuitEmpresa = cuitEmpresa;
+            Estado = EstadoQuiz.Activo;
             IntentosTotales = intentosTotales;
             IntentosRestantes = intentosTotales;
             Validado = false;
@@ -91,12 +96,75 @@ namespace IERIC.SumariosIERIC.Domain.Entities
 
             CambiarDesafio(escenario, opciones);
         }
+        public static Quiz Restaurar(
+            Guid id,
+            Cuit cuitEmpresa,
+            IEnumerable<Cuil> cuilesVinculados,
+            EscenarioQuiz escenario,
+            IEnumerable<OpcionQuiz> opciones,
+            EstadoQuiz estado,
+            int intentosTotales,
+            int intentosRestantes,
+            DateTime fechaCreacionUtc,
+            DateTime fechaExpiracionUtc
+        )
+        {
+            if (id == Guid.Empty)
+            {
+                throw new SumariosDomainException(
+                    "El identificador del quiz no puede estar vacío"
+                );
+            }
 
+            if (
+                intentosRestantes < 0 ||
+                intentosRestantes > intentosTotales
+            )
+            {
+                throw new SumariosDomainException(
+                    "La cantidad de intentos restantes no es válida"
+                );
+            }
+
+            if (!Enum.IsDefined(typeof(EstadoQuiz), estado))
+            {
+                throw new SumariosDomainException(
+                    "El estado almacenado del quiz no es válido"
+                );
+            }
+
+            Quiz quiz = new Quiz(
+                cuitEmpresa,
+                cuilesVinculados,
+                escenario,
+                opciones,
+                intentosTotales
+            );
+
+            quiz.Id = id;
+            quiz.Estado = estado;
+            quiz.IntentosRestantes = intentosRestantes;
+            quiz.Validado = estado == EstadoQuiz.Validado;
+
+            quiz.FechaAlta = DateTime.SpecifyKind(
+                fechaCreacionUtc,
+                DateTimeKind.Utc
+            );
+
+            quiz.FechaExpiracionUtc = DateTime.SpecifyKind(
+                fechaExpiracionUtc,
+                DateTimeKind.Utc
+            );
+
+            return quiz;
+        }
         public bool ValidarRespuesta(
             IEnumerable<string> opcionesSeleccionadas
         )
         {
-            if (EstaExpirado)
+            MarcarComoExpirado();
+
+            if (Estado == EstadoQuiz.Expirado)
             {
                 throw new SumariosDomainException(
                     "El quiz ha expirado"
@@ -105,12 +173,14 @@ namespace IERIC.SumariosIERIC.Domain.Entities
 
             if (LimiteExcedido)
             {
+                Estado = EstadoQuiz.Bloqueado;
+
                 throw new SumariosDomainException(
                     "El quiz no tiene intentos disponibles"
                 );
             }
 
-            if (Validado)
+            if (Estado == EstadoQuiz.Validado)
             {
                 return true;
             }
@@ -140,10 +210,17 @@ namespace IERIC.SumariosIERIC.Domain.Entities
             if (respuestaCorrecta)
             {
                 Validado = true;
+                Estado = EstadoQuiz.Validado;
+
                 return true;
             }
 
             IntentosRestantes--;
+
+            if (IntentosRestantes <= 0)
+            {
+                Estado = EstadoQuiz.Bloqueado;
+            }
 
             return false;
         }
@@ -153,17 +230,24 @@ namespace IERIC.SumariosIERIC.Domain.Entities
             IEnumerable<OpcionQuiz> opciones
         )
         {
-            if (Validado)
+            if (Estado == EstadoQuiz.Validado)
             {
                 throw new SumariosDomainException(
                     "No se puede modificar un quiz validado"
                 );
             }
 
-            if (LimiteExcedido)
+            if (Estado == EstadoQuiz.Bloqueado)
             {
                 throw new SumariosDomainException(
                     "No se puede modificar un quiz sin intentos"
+                );
+            }
+
+            if (Estado == EstadoQuiz.Expirado)
+            {
+                throw new SumariosDomainException(
+                    "No se puede modificar un quiz expirado"
                 );
             }
 
@@ -201,6 +285,17 @@ namespace IERIC.SumariosIERIC.Domain.Entities
 
             _opciones.Clear();
             _opciones.AddRange(nuevasOpciones);
+        }
+
+        public void MarcarComoExpirado()
+        {
+            if (
+                Estado == EstadoQuiz.Activo &&
+                DateTime.UtcNow >= FechaExpiracionUtc
+            )
+            {
+                Estado = EstadoQuiz.Expirado;
+            }
         }
 
         private void ValidarEscenario(

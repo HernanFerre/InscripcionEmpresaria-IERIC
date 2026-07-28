@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace IERIC.SumariosIERIC.Domain.Entities
@@ -9,6 +10,10 @@ namespace IERIC.SumariosIERIC.Domain.Entities
 
         Task<Quiz> ObtenerPorIdAsync(Guid quizId);
 
-        Task EliminarAsync(Guid quizId);
+        Task GuardarValidacionAsync(
+            Quiz quiz,
+            IEnumerable<string> opcionesSeleccionadas,
+            bool respuestaCorrecta
+        );
     }
 }
