@@ -78,15 +78,56 @@ namespace IERIC.SumariosIERIC.Application
             return Ok(quiz);
         }
 
-        [Route("Validar/{cuit}/{cuil}")]
-        [HttpGet]
-        public async Task<ActionResult> ValidarAsync(double cuit, double cuil)
+        [Route("Validar")]
+        [HttpPost]
+        public async Task<ActionResult<ValidarQuizResponse>>
+            ValidarAsync(
+                [FromBody] ValidarQuizRequest request
+            )
         {
+            if (request == null)
+            {
+                return BadRequest(
+                    new
+                    {
+                        mensaje = "La solicitud no puede estar vacía."
+                    }
+                );
+            }
 
-            // recibo la respuesta del quiz y la valido con la info de la emrpesa almacenada.
+            if (request.QuizId == Guid.Empty)
+            {
+                return BadRequest(
+                    new
+                    {
+                        mensaje = "Debe informar el identificador del quiz."
+                    }
+                );
+            }
 
-            return Ok("este es el quiz");
+            if (
+                request.OpcionesSeleccionadas == null ||
+                request.OpcionesSeleccionadas.Count == 0
+            )
+            {
+                return BadRequest(
+                    new
+                    {
+                        mensaje = "Debe seleccionar al menos una opción."
+                    }
+                );
+            }
 
+            ValidarQuizCommand command =
+                new ValidarQuizCommand(
+                    request.QuizId,
+                    request.OpcionesSeleccionadas
+                );
+
+            ValidarQuizResponse resultado =
+                await _mediator.Send(command);
+
+            return Ok(resultado);
         }
 
 
