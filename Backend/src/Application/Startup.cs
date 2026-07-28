@@ -46,7 +46,8 @@ using System.Security.Principal;
 using Newtonsoft.Json.Serialization;
 using Microsoft.Extensions.Options;
 using Minio;
-
+using IERIC.SumariosIERIC.Domain.Services;
+using IERIC.SumariosIERIC.Infrastructure.Services;
 
 namespace IERIC.SumariosIERIC.Application
 {
@@ -137,7 +138,21 @@ namespace IERIC.SumariosIERIC.Application
                 });
 
             services.AddAutoMapper(typeof(Startup));
-            services.AddMediatR(Assembly.GetExecutingAssembly());
+            services.AddMediatR(Assembly.GetExecutingAssembly());            
+            services.AddSingleton<
+                IAleatoriedadQuiz,
+                AleatoriedadCriptograficaQuiz
+            >();
+
+            services.AddSingleton<
+                IQuizRepository,
+                QuizEnMemoriaRepository
+            >();
+
+            services.AddTransient<
+                IGeneradorQuiz,
+                GeneradorQuiz
+            >();
             services.AddHttpClient();
             services.AddOdataSwaggerSupport();
 
