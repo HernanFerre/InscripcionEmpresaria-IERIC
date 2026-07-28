@@ -53,6 +53,7 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
   const esRegistrada = estadoSolicitud === "REGISTRADA";
   const esHabilitada = estadoSolicitud === "HABILITADA";
   const esBloqueada = estadoSolicitud === "BLOQUEADA";
+  const tieneRazonSocial = Boolean(empresa?.razonSocial?.trim());
 
   return (
     <>
@@ -85,10 +86,12 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
 
       {validado && (
         <>
-          <div className="readonly-group">
-            <label>Razón Social</label>
-            <div className="readonly-box">{empresa?.razonSocial || ""}</div>
-          </div>
+          {tieneRazonSocial && (
+            <div className="readonly-group">
+              <label>Razón Social</label>
+              <div className="readonly-box">{empresa.razonSocial}</div>
+            </div>
+          )}
 
           {esRegistrada && (
             <div className="cuit-result-card warning">

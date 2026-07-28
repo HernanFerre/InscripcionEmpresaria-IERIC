@@ -10,6 +10,8 @@ import StepIdentidad from "../steps/StepIdentidad.jsx";
 
 import IericAuth from "../auth/IericAuth.jsx";
 
+import { MOSTRAR_VALIDACION_TELEFONO } from "../config/featureFlags.js";
+
 import "../styles/inscripcion.css";
 
 export default function InscripcionPage() {
@@ -60,6 +62,7 @@ export default function InscripcionPage() {
     // - enviarlo al backend propio de inscripción empresaria
     // - consultar permisos propios del sistema
   };
+
   return (
     <IericAuth onAuthenticated={handleAuthenticated}>
       {({ usuario, abrirLogin, cambiarUsuario }) => (
@@ -69,15 +72,19 @@ export default function InscripcionPage() {
           <main className="main-area">
             <section className="content-grid">
               <div className="wizard-card">
-                <StepIndicator currentStep={currentStep} />
+                <StepIndicator currentStep={currentStep} mostrarTelefono={MOSTRAR_VALIDACION_TELEFONO} />
 
                 {currentStep === 1 && (
                   <StepCuit initialCuit={formData.cuit} initialEmpresa={formData.empresa} onNext={handleCuitCompletado} />
                 )}
 
-                {currentStep === 2 && <StepContacto initialContacto={formData.contacto} onNext={handleContactoCompletado} />}
+                {currentStep === 2 && MOSTRAR_VALIDACION_TELEFONO && (
+                  <StepContacto initialContacto={formData.contacto} onNext={handleContactoCompletado} />
+                )}
 
-                {currentStep === 3 && <StepIdentidad onNext={() => {}} />}
+                {currentStep === 2 && !MOSTRAR_VALIDACION_TELEFONO && <StepIdentidad onNext={() => {}} />}
+
+                {currentStep === 3 && MOSTRAR_VALIDACION_TELEFONO && <StepIdentidad onNext={() => {}} />}
               </div>
             </section>
           </main>

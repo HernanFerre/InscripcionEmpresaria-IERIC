@@ -109,20 +109,37 @@
 
 .steps {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  margin-bottom: 28px;
   position: relative;
+  margin: 0 auto 28px;
+}
+
+.steps-three {
+  width: 100%;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.steps-two {
+  width: min(560px, 100%);
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .steps::before {
   content: "";
   position: absolute;
   top: 23px;
-  left: 16.5%;
-  right: 16.5%;
   height: 2px;
   background: var(--color-secondary);
   z-index: 0;
+}
+
+.steps-three::before {
+  left: 16.5%;
+  right: 16.5%;
+}
+
+.steps-two::before {
+  left: 25%;
+  right: 25%;
 }
 
 .step-item {

@@ -15,7 +15,7 @@ export const empresasDummy = {
     estadoSolicitud: "REGISTRADA",
   },
   HABILITADA: {
-    razonSocial: "EMPRESA HABILITADA S.R.L.",
+    razonSocial: " ",
     estadoSolicitud: "HABILITADA",
   },
   BLOQUEADA: {

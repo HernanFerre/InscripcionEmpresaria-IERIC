@@ -1,12 +1,19 @@
-const steps = [
-  { number: 1, label: "Empresa" },
-  { number: 2, label: "Teléfono" },
-  { number: 3, label: "Información" },
-];
+export default function StepIndicator({ currentStep = 1, mostrarTelefono = true }) {
+  const steps = mostrarTelefono
+    ? [
+        { number: 1, label: "Empresa" },
+        { number: 2, label: "Teléfono" },
+        { number: 3, label: "Información" },
+      ]
+    : [
+        { number: 1, label: "Empresa" },
+        { number: 2, label: "Información" },
+      ];
 
-export default function StepIndicator({ currentStep = 1 }) {
+  const stepsClassName = mostrarTelefono ? "steps steps-three" : "steps steps-two";
+
   return (
-    <div className="steps">
+    <div className={stepsClassName}>
       {steps.map((step) => {
         const isActive = step.number === currentStep;
         const isCompleted = step.number < currentStep;
