@@ -1,84 +1,110 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AlertTriangle, CheckCircle } from "lucide-react";
+
 import "../styles/stepIdentidad.css";
 
-import { obtenerDesafioInformacion, validarDesafioInformacion } from "../services/inscripcionService.js";
+import { validarQuiz } from "../services/inscripcionService.js";
 
-export default function StepIdentidad({ onNext }) {
-  const [desafio, setDesafio] = useState(null);
+export default function StepIdentidad({ initialQuiz, onNext }) {
+  const [desafio, setDesafio] = useState(initialQuiz);
+
   const [seleccionadas, setSeleccionadas] = useState([]);
-  const [intentos, setIntentos] = useState(3);
-  const [intentosTotales, setIntentosTotales] = useState(3);
-  const [cargando, setCargando] = useState(true);
+
+  const [intentos, setIntentos] = useState(initialQuiz?.intentosRestantes ?? 3);
+
+  const [intentosTotales, setIntentosTotales] = useState(initialQuiz?.intentosTotales ?? 3);
+
   const [validando, setValidando] = useState(false);
+
   const [informacionValidada, setInformacionValidada] = useState(false);
+
   const [limiteExcedido, setLimiteExcedido] = useState(false);
+
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    let cancelado = false;
-
-    obtenerDesafioInformacion()
-      .then((data) => {
-        if (!cancelado) {
-          setDesafio(data);
-          setIntentos(data.intentosRestantes ?? 3);
-          setIntentosTotales(data.intentosTotales ?? 3);
-        }
-      })
-      .finally(() => {
-        if (!cancelado) {
-          setCargando(false);
-        }
-      });
-
-    return () => {
-      cancelado = true;
-    };
-  }, []);
 
   const toggleOpcion = (id) => {
     setError("");
 
-    if (informacionValidada || limiteExcedido) return;
+    if (informacionValidada || limiteExcedido || validando) {
+      return;
+    }
 
-    setSeleccionadas((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
+    const esOpcionExclusiva = id === "ninguna" || id === "todas";
+
+    setSeleccionadas((prev) => {
+      if (esOpcionExclusiva) {
+        return prev.includes(id) ? [] : [id];
+      }
+
+      const seleccionSinExclusivas = prev.filter((opcionId) => opcionId !== "ninguna" && opcionId !== "todas");
+
+      if (seleccionSinExclusivas.includes(id)) {
+        return seleccionSinExclusivas.filter((opcionId) => opcionId !== id);
+      }
+
+      return [...seleccionSinExclusivas, id];
+    });
   };
 
   const confirmarInformacion = async () => {
-    if (!seleccionadas.length || !desafio || limiteExcedido) return;
+    if (!seleccionadas.length || !desafio || limiteExcedido || validando) {
+      return;
+    }
 
     setValidando(true);
+    setError("");
 
-    const esCorrecto = await validarDesafioInformacion(seleccionadas, desafio.respuestasCorrectas);
+    try {
+      const resultado = await validarQuiz(desafio.quizId, seleccionadas);
 
-    setValidando(false);
+      setIntentos(resultado.intentosRestantes);
 
-    if (esCorrecto) {
-      setInformacionValidada(true);
-      setError("");
-      return;
+      if (resultado.ok) {
+        setInformacionValidada(true);
+        setSeleccionadas([]);
+        return;
+      }
+
+      if (resultado.limiteExcedido) {
+        setLimiteExcedido(true);
+        setSeleccionadas([]);
+        return;
+      }
+
+      if (resultado.nuevoQuiz) {
+        setDesafio(resultado.nuevoQuiz);
+
+        setIntentos(resultado.nuevoQuiz.intentosRestantes);
+
+        setIntentosTotales(resultado.nuevoQuiz.intentosTotales);
+
+        setSeleccionadas([]);
+
+        setError(`${resultado.mensaje} Le quedan ` + `${resultado.intentosRestantes} intentos.`);
+
+        return;
+      }
+
+      setError(resultado.mensaje || "No fue posible validar la información.");
+    } catch (errorValidacion) {
+      setError(errorValidacion.message || "No fue posible comunicarse con el servidor.");
+    } finally {
+      setValidando(false);
     }
-
-    const nuevosIntentos = intentos - 1;
-
-    setIntentos(nuevosIntentos);
-    setSeleccionadas([]);
-
-    if (nuevosIntentos <= 0) {
-      setLimiteExcedido(true);
-      setError("");
-      return;
-    }
-
-    setError(`Respuesta incorrecta. Le quedan ${nuevosIntentos} intentos para completar la validación.`);
   };
 
-  if (cargando) {
+  if (!desafio) {
     return (
       <>
         <h1>INFORMACIÓN DE LA EMPRESA</h1>
-        <p className="status-muted identity-loading">Consultando base de datos IERIC...</p>
+
+        <section className="identity-card">
+          <div className="identity-error-message">
+            <AlertTriangle size={18} />
+
+            <span>No fue posible generar la validación de información.</span>
+          </div>
+        </section>
       </>
     );
   }
@@ -95,8 +121,10 @@ export default function StepIdentidad({ onNext }) {
 
           <div className="identity-warning-message">
             <AlertTriangle size={22} />
+
             <div>
               <strong>Límite de intentos excedido</strong>
+
               <span>
                 Ha alcanzado el límite máximo de intentos permitidos para esta validación. Para continuar con el proceso deberá comunicarse
                 con un representante del IERIC.
@@ -135,7 +163,7 @@ export default function StepIdentidad({ onNext }) {
                   type="checkbox"
                   name="identity-option"
                   checked={checked}
-                  disabled={informacionValidada}
+                  disabled={informacionValidada || validando}
                   onChange={() => toggleOpcion(opcion.id)}
                 />
 
@@ -147,7 +175,7 @@ export default function StepIdentidad({ onNext }) {
 
         {!informacionValidada && !error && (
           <p className="identity-attempts">
-            Tiene <strong>{intentosTotales}</strong> intentos
+            Tiene <strong>{intentos}</strong> de <strong>{intentosTotales}</strong> intentos disponibles
           </p>
         )}
 
@@ -161,6 +189,7 @@ export default function StepIdentidad({ onNext }) {
         {informacionValidada && (
           <div className="identity-success-message">
             <CheckCircle size={20} />
+
             <span>Información de la empresa validada correctamente</span>
           </div>
         )}

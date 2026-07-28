@@ -1,19 +1,24 @@
 import { useState } from "react";
 import { AlertTriangle, CheckCircle, Info } from "lucide-react";
+
 import "../styles/stepCuit.css";
 
-import { obtenerCuilesPorCuit, validarCuit } from "../services/inscripcionService.js";
+import { crearQuiz, obtenerCuilesPorCuit, validarCuit } from "../services/inscripcionService.js";
 
 import { formatCuit } from "../utils/formatters.js";
 
 export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNext }) {
   const [cuit, setCuit] = useState(initialCuit);
   const [empresa, setEmpresa] = useState(initialEmpresa);
+
   const [estadoSolicitud, setEstadoSolicitud] = useState(initialEmpresa?.estadoSolicitud || "");
+
   const [validado, setValidado] = useState(Boolean(initialEmpresa));
+
   const [cargando, setCargando] = useState(false);
 
   const [consultandoCuiles, setConsultandoCuiles] = useState(false);
+
   const [errorConsultaCuiles, setErrorConsultaCuiles] = useState("");
 
   const handleValidar = async () => {
@@ -52,30 +57,35 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
     setErrorConsultaCuiles("");
 
     try {
-      const resultado = await obtenerCuilesPorCuit(cuit);
+      const resultadoCuiles = await obtenerCuilesPorCuit(cuit);
 
-      if (!resultado.ok) {
-        setErrorConsultaCuiles(resultado.mensaje || "No fue posible obtener la información de la empresa.");
+      if (!resultadoCuiles.ok) {
+        setErrorConsultaCuiles(resultadoCuiles.mensaje || "No fue posible obtener la información de la empresa.");
         return;
       }
 
+      const quiz = await crearQuiz(resultadoCuiles.cuit, resultadoCuiles.cuiles);
+
       onNext({
-        cuit: resultado.cuit,
+        cuit: resultadoCuiles.cuit,
         empresa: {
           ...empresa,
           estadoSolicitud,
         },
-        cuiles: resultado.cuiles,
+        cuiles: resultadoCuiles.cuiles,
+        quiz,
       });
-    } catch {
-      setErrorConsultaCuiles("No fue posible consultar los CUIL relacionados con la empresa.");
+    } catch (error) {
+      setErrorConsultaCuiles(error.message || "No fue posible preparar la validación de información.");
     } finally {
       setConsultandoCuiles(false);
     }
   };
 
   const esRegistrada = estadoSolicitud === "REGISTRADA";
+
   const esHabilitada = estadoSolicitud === "HABILITADA";
+
   const esBloqueada = estadoSolicitud === "BLOQUEADA";
 
   const tieneRazonSocial = Boolean(empresa?.razonSocial?.trim());
@@ -114,6 +124,7 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
           {tieneRazonSocial && (
             <div className="readonly-group">
               <label>Razón Social</label>
+
               <div className="readonly-box">{empresa.razonSocial}</div>
             </div>
           )}
@@ -121,9 +132,11 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
           {esRegistrada && (
             <div className="cuit-result-card warning">
               <Info size={20} />
+
               <div>
                 <strong>La empresa ya se encuentra registrada.</strong>
-                <span>Sera redirigido al portal del empleador.</span>
+
+                <span>Será redirigido al portal del empleador.</span>
               </div>
             </div>
           )}
@@ -131,8 +144,10 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
           {esHabilitada && (
             <div className="cuit-result-card success">
               <CheckCircle size={20} />
+
               <div>
                 <strong>La empresa se encuentra en condiciones de iniciar la inscripción.</strong>
+
                 <span>Puede continuar con el proceso.</span>
               </div>
             </div>
@@ -141,9 +156,11 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
           {esBloqueada && (
             <div className="cuit-result-card error">
               <AlertTriangle size={20} />
+
               <div>
                 <strong>No es posible completar la solicitud, debe registrar al menos un trabajador para continuar.</strong>
-                <span>Comuniquese con un representante del IERIC al 0800-111-IERIC.</span>
+
+                <span>Comuníquese con un representante del IERIC al 0800-111-IERIC.</span>
               </div>
             </div>
           )}
@@ -151,6 +168,7 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
           {errorConsultaCuiles && (
             <div className="cuit-result-card error">
               <AlertTriangle size={20} />
+
               <div>
                 <strong>No fue posible continuar.</strong>
                 <span>{errorConsultaCuiles}</span>
@@ -167,7 +185,7 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
 
             {esHabilitada && (
               <button className="next-step-button" onClick={handleNext} type="button" disabled={consultandoCuiles}>
-                {consultandoCuiles ? "Consultando..." : "Continuar"}
+                {consultandoCuiles ? "Preparando..." : "Continuar"}
               </button>
             )}
 

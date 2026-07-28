@@ -21,6 +21,7 @@ export default function InscripcionPage() {
     cuit: "",
     empresa: null,
     cuiles: [],
+    quiz: null,
     contacto: {
       email: "",
       telefono: "",
@@ -29,12 +30,13 @@ export default function InscripcionPage() {
     },
   });
 
-  const handleCuitCompletado = ({ cuit, empresa, cuiles = [] }) => {
+  const handleCuitCompletado = ({ cuit, empresa, cuiles = [], quiz = null }) => {
     setFormData((prev) => ({
       ...prev,
       cuit,
       empresa,
       cuiles,
+      quiz,
     }));
 
     setCurrentStep(2);
@@ -84,9 +86,13 @@ export default function InscripcionPage() {
                   <StepContacto initialContacto={formData.contacto} onNext={handleContactoCompletado} />
                 )}
 
-                {currentStep === 2 && !MOSTRAR_VALIDACION_TELEFONO && <StepIdentidad onNext={() => {}} />}
+                {currentStep === 2 && !MOSTRAR_VALIDACION_TELEFONO && (
+                  <StepIdentidad cuit={formData.cuit} cuiles={formData.cuiles} initialQuiz={formData.quiz} onNext={() => {}} />
+                )}
 
-                {currentStep === 3 && MOSTRAR_VALIDACION_TELEFONO && <StepIdentidad onNext={() => {}} />}
+                {currentStep === 3 && MOSTRAR_VALIDACION_TELEFONO && (
+                  <StepIdentidad cuit={formData.cuit} cuiles={formData.cuiles} initialQuiz={formData.quiz} onNext={() => {}} />
+                )}
               </div>
             </section>
           </main>

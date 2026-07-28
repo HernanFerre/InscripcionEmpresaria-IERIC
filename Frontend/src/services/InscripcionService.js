@@ -1,6 +1,24 @@
 import { ESCENARIO_INFORMACION_DUMMY, empresasDummy, opcionesInformacionDummy } from "../mocks/inscripcionMocks";
 import { delay } from "../utils/delay";
 
+const INSCRIPCION_API_URL = (import.meta.env.VITE_INSCRIPCION_API_URL || "").replace(/\/+$/, "");
+
+async function procesarRespuestaApi(response) {
+  let data;
+
+  try {
+    data = await response.json();
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok) {
+    throw new Error(data?.mensaje || data?.message || `La solicitud devolvió el estado ${response.status}.`);
+  }
+
+  return data;
+}
+
 export async function validarCuit(cuit) {
   await delay(700);
 
@@ -133,4 +151,48 @@ export async function obtenerCuilesPorCuit(cuit) {
       "27000000022",
     ],
   };
+}
+
+export async function crearQuiz(cuit, cuiles) {
+  if (!INSCRIPCION_API_URL) {
+    throw new Error("No se configuró VITE_INSCRIPCION_API_URL.");
+  }
+
+  const cuitNormalizado = String(cuit ?? "").replace(/\D/g, "");
+
+  const cuilesNormalizados = (cuiles ?? []).map((cuil) => String(cuil).replace(/\D/g, ""));
+
+  const response = await fetch(`${INSCRIPCION_API_URL}/v1/Quiz/Crear`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      cuit: cuitNormalizado,
+      cuiles: cuilesNormalizados,
+    }),
+  });
+
+  return procesarRespuestaApi(response);
+}
+
+export async function validarQuiz(quizId, opcionesSeleccionadas) {
+  if (!INSCRIPCION_API_URL) {
+    throw new Error("No se configuró VITE_INSCRIPCION_API_URL.");
+  }
+
+  const response = await fetch(`${INSCRIPCION_API_URL}/v1/Quiz/Validar`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      quizId,
+      opcionesSeleccionadas,
+    }),
+  });
+
+  return procesarRespuestaApi(response);
 }
