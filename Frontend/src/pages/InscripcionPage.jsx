@@ -20,6 +20,7 @@ export default function InscripcionPage() {
   const [formData, setFormData] = useState({
     cuit: "",
     empresa: null,
+    cuiles: [],
     contacto: {
       email: "",
       telefono: "",
@@ -28,11 +29,12 @@ export default function InscripcionPage() {
     },
   });
 
-  const handleCuitCompletado = ({ cuit, empresa }) => {
+  const handleCuitCompletado = ({ cuit, empresa, cuiles = [] }) => {
     setFormData((prev) => ({
       ...prev,
       cuit,
       empresa,
+      cuiles,
     }));
 
     setCurrentStep(2);

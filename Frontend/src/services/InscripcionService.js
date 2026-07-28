@@ -102,3 +102,35 @@ export async function validarDesafioInformacion(seleccionadas, respuestasCorrect
 
   return seleccionOrdenada === correctaOrdenada;
 }
+
+export async function obtenerCuilesPorCuit(cuit) {
+  await delay(700);
+
+  const cuitNormalizado = String(cuit ?? "").replace(/\D/g, "");
+
+  if (cuitNormalizado.length !== 11) {
+    return {
+      ok: false,
+      cuit: cuitNormalizado,
+      cuiles: [],
+      mensaje: "El CUIT debe contener 11 números.",
+    };
+  }
+
+  return {
+    ok: true,
+    cuit: cuitNormalizado,
+    cuiles: [
+      "20000000001",
+      "27000000006",
+      "23000000000",
+      "24000000007",
+      "20000000019",
+      "27000000014",
+      "23000000019",
+      "24000000015",
+      "20000000028",
+      "27000000022",
+    ],
+  };
+}

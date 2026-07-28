@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { AlertTriangle, CheckCircle, Info } from "lucide-react";
 import "../styles/stepCuit.css";
-import { validarCuit } from "../services/inscripcionService.js";
+
+import { obtenerCuilesPorCuit, validarCuit } from "../services/inscripcionService.js";
+
 import { formatCuit } from "../utils/formatters.js";
 
 export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNext }) {
@@ -11,8 +13,12 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
   const [validado, setValidado] = useState(Boolean(initialEmpresa));
   const [cargando, setCargando] = useState(false);
 
+  const [consultandoCuiles, setConsultandoCuiles] = useState(false);
+  const [errorConsultaCuiles, setErrorConsultaCuiles] = useState("");
+
   const handleValidar = async () => {
     setCargando(true);
+    setErrorConsultaCuiles("");
 
     try {
       const resultado = await validarCuit(cuit);
@@ -38,21 +44,40 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
     setValidado(false);
     setEmpresa(null);
     setEstadoSolicitud("");
+    setErrorConsultaCuiles("");
   };
 
-  const handleNext = () => {
-    onNext({
-      cuit,
-      empresa: {
-        ...empresa,
-        estadoSolicitud,
-      },
-    });
+  const handleNext = async () => {
+    setConsultandoCuiles(true);
+    setErrorConsultaCuiles("");
+
+    try {
+      const resultado = await obtenerCuilesPorCuit(cuit);
+
+      if (!resultado.ok) {
+        setErrorConsultaCuiles(resultado.mensaje || "No fue posible obtener la información de la empresa.");
+        return;
+      }
+
+      onNext({
+        cuit: resultado.cuit,
+        empresa: {
+          ...empresa,
+          estadoSolicitud,
+        },
+        cuiles: resultado.cuiles,
+      });
+    } catch {
+      setErrorConsultaCuiles("No fue posible consultar los CUIL relacionados con la empresa.");
+    } finally {
+      setConsultandoCuiles(false);
+    }
   };
 
   const esRegistrada = estadoSolicitud === "REGISTRADA";
   const esHabilitada = estadoSolicitud === "HABILITADA";
   const esBloqueada = estadoSolicitud === "BLOQUEADA";
+
   const tieneRazonSocial = Boolean(empresa?.razonSocial?.trim());
 
   return (
@@ -123,6 +148,16 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
             </div>
           )}
 
+          {errorConsultaCuiles && (
+            <div className="cuit-result-card error">
+              <AlertTriangle size={20} />
+              <div>
+                <strong>No fue posible continuar.</strong>
+                <span>{errorConsultaCuiles}</span>
+              </div>
+            </div>
+          )}
+
           <div className={`next-step-container ${esHabilitada ? "" : "align-left"}`}>
             {esRegistrada && (
               <button className="next-step-button" type="button">
@@ -131,8 +166,8 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
             )}
 
             {esHabilitada && (
-              <button className="next-step-button" onClick={handleNext} type="button">
-                Continuar
+              <button className="next-step-button" onClick={handleNext} type="button" disabled={consultandoCuiles}>
+                {consultandoCuiles ? "Consultando..." : "Continuar"}
               </button>
             )}
 
