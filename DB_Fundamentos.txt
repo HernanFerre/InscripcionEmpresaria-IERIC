@@ -1,0 +1,208 @@
+RESUMEN DE TABLAS - QUIZ DE INSCRIPCIÓN EMPRESARIAL
+
+La base muestra 7 tablas, pero solamente 5 fueron creadas específicamente para el quiz.
+
+1. __EFMigrationsHistory
+Tabla técnica de Entity Framework. Guarda qué cambios de estructura ya fueron aplicados a la base de datos.
+
+2. Empresa
+Tabla que ya formaba parte del proyecto. No interviene directamente en el funcionamiento actual del quiz.
+
+3. QuizSesion
+Guarda la cabecera de cada validación: CUIT de la empresa, estado, intentos disponibles y fechas de creación, vencimiento y finalización.
+
+4. QuizCuilVinculado
+Guarda los CUILes reales obtenidos del servicio externo para esa sesión. Permite generar y validar distintos desafíos usando siempre la misma información.
+
+5. QuizDesafio
+Guarda cada versión del quiz presentada al usuario. Si una respuesta es incorrecta, se conserva el desafío anterior y se crea uno nuevo.
+
+6. QuizOpcion
+Guarda las cuatro opciones concretas de cada desafío, su orden y si corresponden o no a un CUIL realmente vinculado.
+
+7. QuizRespuesta
+Guarda las opciones seleccionadas por el usuario, si la respuesta fue correcta y la fecha de la respuesta.
+
+DESCRIPCIÓN DE TABLAS - QUIZ DE INSCRIPCIÓN EMPRESARIAL
+Base de datos: LE-IERIC
+
+La base muestra siete tablas. Cinco pertenecen específicamente al funcionamiento
+del quiz. Las otras dos son una tabla previa del proyecto y una tabla técnica de
+Entity Framework.
+
+
+1. __EFMigrationsHistory
+
+Qué representa:
+Es una tabla técnica que Entity Framework crea y administra automáticamente.
+
+Columnas principales:
+- MigrationId: identifica cada migración aplicada.
+- ProductVersion: registra la versión de Entity Framework que la generó.
+
+Por qué existe:
+Permite saber qué cambios de estructura ya se ejecutaron en cada ambiente. De
+esta forma, Entity Framework no vuelve a crear tablas o columnas que ya existen
+y puede aplicar únicamente las migraciones pendientes.
+
+
+2. Empresa
+
+Qué representa:
+Es una tabla que ya existía en la estructura original del proyecto. No fue
+creada específicamente para el quiz ni participa directamente en su
+funcionamiento actual.
+
+Columnas principales:
+- Id: identificador interno de la empresa.
+- RazonSocial: nombre o razón social.
+- Cuit: CUIT registrado.
+- EsCooperativa: indica si se trata de una cooperativa.
+- EstadoActivo: estado propio de la empresa.
+- LegacyId: identificador procedente de un sistema anterior.
+- Activo: indica si el registro está activo.
+- FechaAlta y UsuarioAlta: auditoría de creación.
+- FechaUpdate y UsuarioUpdate: auditoría de la última modificación.
+
+Por qué existe:
+Forma parte del modelo general heredado de la aplicación. Aparece en la
+migración porque el DbContext también la administra, aunque el flujo actual del
+quiz consulta el estado de la empresa y sus CUILes mediante servicios externos.
+
+
+3. QuizSesion
+
+Qué representa:
+Es la cabecera o registro principal de cada proceso de validación. Una sesión
+agrupa el CUIT, los CUILes obtenidos, los desafíos generados y las respuestas.
+
+Columnas principales:
+- Id: identificador único de la sesión y valor que el frontend recibe como
+  quizId.
+- CuitEmpresa: CUIT de la empresa que se está validando.
+- Estado: situación de la sesión, por ejemplo activa, validada, bloqueada o
+  expirada.
+- IntentosTotales: cantidad máxima de intentos permitidos.
+- IntentosRestantes: cantidad de intentos que todavía puede utilizar el usuario.
+- FechaCreacionUtc: momento en que comenzó la sesión.
+- FechaExpiracionUtc: momento a partir del cual el quiz deja de ser válido.
+- FechaFinalizacionUtc: momento en que la sesión terminó correctamente o quedó
+  cerrada; puede estar vacía mientras sigue activa.
+
+Por qué existe:
+Centraliza las reglas generales del proceso. Permite controlar intentos,
+vencimiento y estado sin repetir estos datos en cada pregunta. También funciona
+como raíz para relacionar todas las demás tablas del quiz.
+
+
+4. QuizCuilVinculado
+
+Qué representa:
+Guarda una copia de los CUILes reales que el servicio externo devolvió para el
+CUIT de la sesión.
+
+Columnas principales:
+- QuizId: identifica la sesión a la que pertenece el CUIL.
+- Cuil: número de CUIL vinculado a la empresa.
+
+La clave está compuesta por QuizId y Cuil, por lo que el mismo CUIL no puede
+repetirse dentro de una misma sesión.
+
+Por qué existe:
+Conserva una fotografía de la información usada al crear el quiz. Así, si el
+usuario responde incorrectamente, se puede generar un nuevo desafío usando los
+mismos datos confiables sin volver a consultar la API y sin que la información
+cambie a mitad del proceso.
+
+
+5. QuizDesafio
+
+Qué representa:
+Guarda cada versión concreta del quiz que se le muestra al usuario. Una misma
+sesión puede tener varios desafíos, uno por cada intento.
+
+Columnas principales:
+- Id: identificador único del desafío.
+- QuizId: sesión a la que pertenece.
+- Numero: orden del desafío dentro de la sesión: 1, 2, 3, etc.
+- Escenario: regla utilizada para generar la respuesta correcta; puede ser una
+  correcta, dos correctas, todas correctas o ninguna correcta.
+- EsActual: indica cuál es el desafío vigente que el usuario debe responder.
+- FechaCreacionUtc: fecha y hora en que se generó.
+
+Por qué existe:
+Cuando una respuesta es incorrecta, el sistema no sobrescribe la pregunta
+anterior. La conserva y genera una nueva combinación aleatoria. Esto permite
+rotar las opciones y mantener el historial completo de lo que vio el usuario en
+cada intento.
+
+
+6. QuizOpcion
+
+Qué representa:
+Guarda las cuatro opciones concretas de CUIL que se muestran dentro de cada
+desafío.
+
+Columnas principales:
+- QuizDesafioId: desafío al que pertenece la opción.
+- Id: identificador visible de la opción, por ejemplo a, b, c o d.
+- Cuil: número de CUIL utilizado para construir la opción enmascarada.
+- EsVinculado: indica si el CUIL pertenece realmente a la empresa.
+- Orden: posición en la que la opción se presenta al usuario.
+
+La clave está compuesta por QuizDesafioId e Id. También se controla que no se
+repita el mismo orden dentro de un desafío.
+
+Por qué existe:
+Permite reconstruir exactamente qué cuatro opciones se mostraron y validar la
+respuesta exclusivamente en el backend. Las alternativas “Ninguna de las
+anteriores” y “Todas las anteriores” se resuelven según el escenario y la
+cantidad de opciones vinculadas; no necesitan guardar un CUIL propio.
+
+
+7. QuizRespuesta
+
+Qué representa:
+Registra cada intento realizado por el usuario sobre un desafío.
+
+Columnas principales:
+- Id: identificador único de la respuesta.
+- QuizDesafioId: desafío que fue respondido.
+- OpcionesSeleccionadas: opciones elegidas por el usuario, guardadas como una
+  lista serializada.
+- EsCorrecta: indica si la selección coincidió con la respuesta esperada.
+- FechaRespuestaUtc: fecha y hora del intento.
+
+Por qué existe:
+Da trazabilidad al proceso. Permite conocer qué seleccionó el usuario, sobre qué
+versión del quiz respondió, si acertó y cuándo lo hizo. Es útil para auditoría,
+diagnóstico y seguimiento de intentos.
+
+
+RELACIONES PRINCIPALES
+
+- Una QuizSesion puede tener muchos registros en QuizCuilVinculado.
+- Una QuizSesion puede generar varios QuizDesafio.
+- Cada QuizDesafio contiene cuatro QuizOpcion.
+- Cada QuizDesafio puede tener registros en QuizRespuesta.
+
+
+¿POR QUÉ EL DISEÑO ESTÁ SEPARADO EN VARIAS TABLAS?
+
+- Para separar el proceso general de validación de cada pregunta concreta.
+- Para generar un desafío nuevo sin borrar ni modificar los anteriores.
+- Para controlar intentos, vencimiento y estado en un solo lugar.
+- Para conservar los CUILes reales recibidos de la API durante toda la sesión.
+- Para validar las respuestas del lado del servidor y evitar que el frontend
+  conozca o manipule cuáles son las opciones correctas.
+- Para disponer de un historial auditable de desafíos, opciones y respuestas.
+- Para mantener integridad entre los datos y facilitar futuras consultas,
+  reportes o tareas de soporte.
+
+
+NOTA SOBRE LOS DATOS
+
+La base guarda CUIT y CUIL completos para poder generar, regenerar y auditar el
+quiz. Por tratarse de información sensible, se debe acordar una política de
+retención: cuánto tiempo se conservarán las sesiones validadas, bloqueadas o
+vencidas y cuándo se eliminarán o anonimizarán esos datos.

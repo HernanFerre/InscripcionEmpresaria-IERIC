@@ -39,7 +39,7 @@ namespace IERIC.SumariosIERIC.Infrastructure.Services
             }
 
             string url =
-                $"empresas/consulta-estado/" +
+                $"empresas/estado/" +
                 $"{cuitEmpresa}";
 
             using HttpResponseMessage response =

@@ -60,7 +60,7 @@ export async function validarCuit(cuit) {
 
   const estadoApiUrl = `${EMPRESAS_ESTADO_SERVIDOR}:` + `${EMPRESAS_ESTADO_PUERTO}`;
 
-  const response = await fetch(`${estadoApiUrl}/empresas/consulta-estado/${cuitNormalizado}`, {
+  const response = await fetch(`${estadoApiUrl}/empresas/estado/${cuitNormalizado}`, {
     method: "GET",
     headers: {
       Accept: "application/json",
@@ -69,7 +69,7 @@ export async function validarCuit(cuit) {
 
   const data = await procesarRespuestaApi(response);
 
-  const codigoEstado = Number(data.codigoestado);
+  const codigoEstado = Number(data.codigoEstado ?? data.codigoestado);
 
   if (!Number.isInteger(codigoEstado)) {
     throw new Error("El servicio devolvió un código de estado inválido.");
