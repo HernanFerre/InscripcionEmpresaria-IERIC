@@ -95,6 +95,17 @@ namespace IERIC.SumariosIERIC.Application
             builder.AddEnvironmentVariables();
 
             Configuration = builder.Build();
+
+            bool defaultConnectionCargada =
+                !string.IsNullOrWhiteSpace(
+                    Configuration.GetConnectionString(
+                        "DefaultConnection"
+                    )
+                );
+
+            Console.WriteLine(
+                $"--> DefaultConnection cargada: {defaultConnectionCargada}"
+            );
         }
 
         public IConfiguration Configuration { get; }

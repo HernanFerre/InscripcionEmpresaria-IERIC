@@ -3,12 +3,13 @@ import { AlertTriangle, CheckCircle, Info } from "lucide-react";
 
 import "../styles/stepCuit.css";
 
-import { crearQuiz, obtenerCuilesPorCuit, validarCuit } from "../services/inscripcionService.js";
+import { crearQuiz, validarCuit } from "../services/inscripcionService.js";
 
 import { formatCuit } from "../utils/formatters.js";
 
 export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNext }) {
   const [cuit, setCuit] = useState(initialCuit);
+
   const [empresa, setEmpresa] = useState(initialEmpresa);
 
   const [estadoSolicitud, setEstadoSolicitud] = useState(initialEmpresa?.estadoSolicitud || "");
@@ -17,26 +18,38 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
 
   const [cargando, setCargando] = useState(false);
 
-  const [consultandoCuiles, setConsultandoCuiles] = useState(false);
+  const [preparandoQuiz, setPreparandoQuiz] = useState(false);
 
-  const [errorConsultaCuiles, setErrorConsultaCuiles] = useState("");
+  const [errorProceso, setErrorProceso] = useState("");
 
   const handleValidar = async () => {
     setCargando(true);
-    setErrorConsultaCuiles("");
+    setErrorProceso("");
 
     try {
       const resultado = await validarCuit(cuit);
 
       if (resultado.ok) {
         setEmpresa(resultado.empresa);
+
         setEstadoSolicitud(resultado.estadoSolicitud);
+
         setValidado(true);
       } else {
         setEmpresa(null);
+
         setEstadoSolicitud(resultado.estadoSolicitud || "NO_ENCONTRADA");
+
         setValidado(false);
+
+        setErrorProceso(resultado.mensaje || "No fue posible validar el CUIT.");
       }
+    } catch (error) {
+      setEmpresa(null);
+      setEstadoSolicitud("");
+      setValidado(false);
+
+      setErrorProceso(error.message || "No fue posible consultar el estado de la empresa.");
     } finally {
       setCargando(false);
     }
@@ -49,36 +62,34 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
     setValidado(false);
     setEmpresa(null);
     setEstadoSolicitud("");
-    setErrorConsultaCuiles("");
+    setErrorProceso("");
   };
 
   const handleNext = async () => {
-    setConsultandoCuiles(true);
-    setErrorConsultaCuiles("");
+    setPreparandoQuiz(true);
+    setErrorProceso("");
 
     try {
-      const resultadoCuiles = await obtenerCuilesPorCuit(cuit);
+      const cuitNormalizado = String(cuit).replace(/\D/g, "");
 
-      if (!resultadoCuiles.ok) {
-        setErrorConsultaCuiles(resultadoCuiles.mensaje || "No fue posible obtener la información de la empresa.");
-        return;
-      }
-
-      const quiz = await crearQuiz(resultadoCuiles.cuit, resultadoCuiles.cuiles);
+      const quiz = await crearQuiz(cuitNormalizado);
 
       onNext({
-        cuit: resultadoCuiles.cuit,
+        cuit: cuitNormalizado,
+
         empresa: {
           ...empresa,
           estadoSolicitud,
         },
-        cuiles: resultadoCuiles.cuiles,
+
+        cuiles: [],
+
         quiz,
       });
     } catch (error) {
-      setErrorConsultaCuiles(error.message || "No fue posible preparar la validación de información.");
+      setErrorProceso(error.message || "No fue posible preparar la validación de información.");
     } finally {
-      setConsultandoCuiles(false);
+      setPreparandoQuiz(false);
     }
   };
 
@@ -89,6 +100,8 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
   const esBloqueada = estadoSolicitud === "BLOQUEADA";
 
   const tieneRazonSocial = Boolean(empresa?.razonSocial?.trim());
+
+  const cuitTieneOnceNumeros = String(cuit).replace(/\D/g, "").length === 11;
 
   return (
     <>
@@ -114,10 +127,22 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
           <p className={validado ? "status-ok" : "status-muted"}>{validado ? "CUIT verificado con éxito" : "Pendiente de validación"}</p>
         </div>
 
-        <button onClick={handleValidar} disabled={cargando || cuit.replace(/\D/g, "").length < 5}>
+        <button onClick={handleValidar} disabled={cargando || !cuitTieneOnceNumeros} type="button">
           {cargando ? "Validando..." : "Validar CUIT"}
         </button>
       </div>
+
+      {errorProceso && (
+        <div className="cuit-result-card error">
+          <AlertTriangle size={20} />
+
+          <div>
+            <strong>No fue posible continuar.</strong>
+
+            <span>{errorProceso}</span>
+          </div>
+        </div>
+      )}
 
       {validado && (
         <>
@@ -136,7 +161,7 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
               <div>
                 <strong>La empresa ya se encuentra registrada.</strong>
 
-                <span>Será redirigido al portal del empleador.</span>
+                <span>{empresa?.mensaje || "Debe continuar desde el Portal del Empleador."}</span>
               </div>
             </div>
           )}
@@ -158,43 +183,20 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
               <AlertTriangle size={20} />
 
               <div>
-                <strong>No es posible completar la solicitud, debe registrar al menos un trabajador para continuar.</strong>
+                <strong>No es posible iniciar la inscripción.</strong>
 
-                <span>Comuníquese con un representante del IERIC al 0800-111-IERIC.</span>
+                <span>{empresa?.mensaje || "El estado de la empresa no permite continuar."}</span>
               </div>
             </div>
           )}
 
-          {errorConsultaCuiles && (
-            <div className="cuit-result-card error">
-              <AlertTriangle size={20} />
-
-              <div>
-                <strong>No fue posible continuar.</strong>
-                <span>{errorConsultaCuiles}</span>
-              </div>
+          {esHabilitada && (
+            <div className="next-step-container">
+              <button className="next-step-button" onClick={handleNext} type="button" disabled={preparandoQuiz}>
+                {preparandoQuiz ? "Preparando..." : "Continuar"}
+              </button>
             </div>
           )}
-
-          <div className={`next-step-container ${esHabilitada ? "" : "align-left"}`}>
-            {esRegistrada && (
-              <button className="next-step-button" type="button">
-                Continuar
-              </button>
-            )}
-
-            {esHabilitada && (
-              <button className="next-step-button" onClick={handleNext} type="button" disabled={consultandoCuiles}>
-                {consultandoCuiles ? "Preparando..." : "Continuar"}
-              </button>
-            )}
-
-            {esBloqueada && (
-              <button className="next-step-button" type="button">
-                Continuar
-              </button>
-            )}
-          </div>
         </>
       )}
     </>

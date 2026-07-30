@@ -1,7 +1,14 @@
-import { ESCENARIO_INFORMACION_DUMMY, empresasDummy, opcionesInformacionDummy } from "../mocks/inscripcionMocks";
+import { ESCENARIO_INFORMACION_DUMMY, opcionesInformacionDummy } from "../mocks/inscripcionMocks";
+
 import { delay } from "../utils/delay";
 
 const INSCRIPCION_API_URL = (import.meta.env.VITE_INSCRIPCION_API_URL || "").replace(/\/+$/, "");
+
+const EMPRESAS_ESTADO_SERVIDOR = (import.meta.env.VITE_EMPRESAS_ESTADO_SERVIDOR || "").replace(/\/+$/, "");
+
+const EMPRESAS_ESTADO_PUERTO = import.meta.env.VITE_EMPRESAS_ESTADO_PUERTO || "";
+
+const ESTADOS_HABILITADOS = new Set([5, 8, 9]);
 
 async function procesarRespuestaApi(response) {
   let data;
@@ -13,58 +20,83 @@ async function procesarRespuestaApi(response) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.mensaje || data?.message || `La solicitud devolvió el estado ${response.status}.`);
+    throw new Error(data?.mensaje || data?.message || data?.Message || `La solicitud devolvió el estado ${response.status}.`);
   }
 
   return data;
 }
 
+function obtenerEstadoSolicitud(codigoEstado) {
+  if (ESTADOS_HABILITADOS.has(codigoEstado)) {
+    return "HABILITADA";
+  }
+
+  if (codigoEstado === 0 || codigoEstado === 1) {
+    return "REGISTRADA";
+  }
+
+  return "BLOQUEADA";
+}
+
 export async function validarCuit(cuit) {
-  await delay(700);
+  const cuitNormalizado = String(cuit ?? "").replace(/\D/g, "");
 
-  const soloNumeros = cuit.replace(/\D/g, "");
-
-  if (soloNumeros.startsWith("300000")) {
+  if (cuitNormalizado.length !== 11) {
     return {
-      ok: true,
-      estadoSolicitud: empresasDummy.REGISTRADA.estadoSolicitud,
-      empresa: {
-        cuit,
-        razonSocial: empresasDummy.REGISTRADA.razonSocial,
-        estado: "CUIT válido",
-      },
+      ok: false,
+      estadoSolicitud: "NO_ENCONTRADA",
+      empresa: null,
+      mensaje: "El CUIT debe contener 11 números.",
     };
   }
 
-  if (soloNumeros.startsWith("301111")) {
-    return {
-      ok: true,
-      estadoSolicitud: empresasDummy.HABILITADA.estadoSolicitud,
-      empresa: {
-        cuit,
-        razonSocial: empresasDummy.HABILITADA.razonSocial,
-        estado: "CUIT válido",
-      },
-    };
+  if (!EMPRESAS_ESTADO_SERVIDOR) {
+    throw new Error("No se configuró VITE_EMPRESAS_ESTADO_SERVIDOR.");
   }
 
-  if (soloNumeros.startsWith("302222")) {
-    return {
-      ok: true,
-      estadoSolicitud: empresasDummy.BLOQUEADA.estadoSolicitud,
-      empresa: {
-        cuit,
-        razonSocial: empresasDummy.BLOQUEADA.razonSocial,
-        estado: "CUIT válido",
-      },
-    };
+  if (!EMPRESAS_ESTADO_PUERTO) {
+    throw new Error("No se configuró VITE_EMPRESAS_ESTADO_PUERTO.");
   }
+
+  const estadoApiUrl = `${EMPRESAS_ESTADO_SERVIDOR}:` + `${EMPRESAS_ESTADO_PUERTO}`;
+
+  const response = await fetch(`${estadoApiUrl}/empresas/consulta-estado/${cuitNormalizado}`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  const data = await procesarRespuestaApi(response);
+
+  const codigoEstado = Number(data.codigoestado);
+
+  if (!Number.isInteger(codigoEstado)) {
+    throw new Error("El servicio devolvió un código de estado inválido.");
+  }
+
+  const razonSocial = typeof data.razon === "string" ? data.razon.trim() : "";
+
+  const mensajeEstado = typeof data.mensaje === "string" ? data.mensaje.replace(/^\s*\d+\s*-\s*/, "").trim() : "";
 
   return {
-    ok: false,
-    estadoSolicitud: "NO_ENCONTRADA",
-    empresa: null,
-    mensaje: "No se encontró información para el CUIT ingresado.",
+    ok: true,
+
+    estadoSolicitud: obtenerEstadoSolicitud(codigoEstado),
+
+    empresa: {
+      cuit: String(data.cuit ?? cuitNormalizado),
+
+      razonSocial,
+
+      estado: "CUIT válido",
+
+      codigoEstado,
+
+      mensaje: mensajeEstado,
+    },
+
+    mensaje: mensajeEstado,
   };
 }
 
@@ -92,22 +124,34 @@ export async function obtenerDesafioInformacion() {
   if (ESCENARIO_INFORMACION_DUMMY === "UNICO_EMPLEADO") {
     return {
       escenario: "UNICO_EMPLEADO",
+
       titulo: "INFORMACIÓN DE LA EMPRESA",
+
       consigna: "Seleccione el CUIL que reconoce como vinculado a la empresa.",
+
       intentosTotales: 3,
+
       intentosRestantes: 3,
+
       opciones: opcionesInformacionDummy,
+
       respuestasCorrectas: ["a"],
     };
   }
 
   return {
     escenario: "MULTIPLES_EMPLEADOS",
+
     titulo: "INFORMACIÓN DE LA EMPRESA",
+
     consigna: "Seleccione los CUIL que reconoce como vinculados a la empresa.",
+
     intentosTotales: 3,
+
     intentosRestantes: 3,
+
     opciones: opcionesInformacionDummy,
+
     respuestasCorrectas: ["a", "c"],
   };
 }
@@ -116,61 +160,52 @@ export async function validarDesafioInformacion(seleccionadas, respuestasCorrect
   await delay(500);
 
   const seleccionOrdenada = [...seleccionadas].sort().join(",");
+
   const correctaOrdenada = [...respuestasCorrectas].sort().join(",");
 
   return seleccionOrdenada === correctaOrdenada;
 }
 
+/*
+ * Esta función se mantiene temporalmente para no romper
+ * otras referencias mientras terminamos la integración.
+ */
 export async function obtenerCuilesPorCuit(cuit) {
-  await delay(700);
-
   const cuitNormalizado = String(cuit ?? "").replace(/\D/g, "");
 
-  if (cuitNormalizado.length !== 11) {
-    return {
-      ok: false,
-      cuit: cuitNormalizado,
-      cuiles: [],
-      mensaje: "El CUIT debe contener 11 números.",
-    };
-  }
-
   return {
-    ok: true,
+    ok: cuitNormalizado.length === 11,
+
     cuit: cuitNormalizado,
-    cuiles: [
-      "20000000001",
-      "27000000006",
-      "23000000000",
-      "24000000007",
-      "20000000019",
-      "27000000014",
-      "23000000019",
-      "24000000015",
-      "20000000028",
-      "27000000022",
-    ],
+
+    cuiles: [],
+
+    mensaje: cuitNormalizado.length === 11 ? "" : "El CUIT debe contener 11 números.",
   };
 }
 
-export async function crearQuiz(cuit, cuiles) {
+export async function crearQuiz(cuit) {
   if (!INSCRIPCION_API_URL) {
     throw new Error("No se configuró VITE_INSCRIPCION_API_URL.");
   }
 
   const cuitNormalizado = String(cuit ?? "").replace(/\D/g, "");
 
-  const cuilesNormalizados = (cuiles ?? []).map((cuil) => String(cuil).replace(/\D/g, ""));
+  if (cuitNormalizado.length !== 11) {
+    throw new Error("El CUIT debe contener 11 números.");
+  }
 
   const response = await fetch(`${INSCRIPCION_API_URL}/v1/Quiz/Crear`, {
     method: "POST",
+
     headers: {
       "Content-Type": "application/json",
+
       Accept: "application/json",
     },
+
     body: JSON.stringify({
       cuit: cuitNormalizado,
-      cuiles: cuilesNormalizados,
     }),
   });
 
@@ -184,10 +219,13 @@ export async function validarQuiz(quizId, opcionesSeleccionadas) {
 
   const response = await fetch(`${INSCRIPCION_API_URL}/v1/Quiz/Validar`, {
     method: "POST",
+
     headers: {
       "Content-Type": "application/json",
+
       Accept: "application/json",
     },
+
     body: JSON.stringify({
       quizId,
       opcionesSeleccionadas,
