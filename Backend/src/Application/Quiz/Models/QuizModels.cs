@@ -6,9 +6,6 @@ namespace IERIC.SumariosIERIC.Application.Quiz.Models
     public class CrearQuizRequest
     {
         public string Cuit { get; set; }
-
-        public List<string> Cuiles { get; set; } =
-            new List<string>();
     }
 
     public class QuizOpcionDto

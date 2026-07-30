@@ -9,6 +9,7 @@ using IERIC.SumariosIERIC.Application.Quiz.Models;
 using IERIC.SumariosIERIC.Domain.Entities;
 using IERIC.SumariosIERIC.Domain.Exceptions;
 using IERIC.SumariosIERIC.Domain.Services;
+using IERIC.SumariosIERIC.Domain.ValueObjects;
 using IERIC.SumariosIERIC.Domain.ValueObjects.Network;
 using QuizDominio =
     IERIC.SumariosIERIC.Domain.Entities.Quiz;
@@ -18,12 +19,20 @@ namespace IERIC.SumariosIERIC.Application.Commands
     public class CrearQuizCommandHandler
         : IRequestHandler<CrearQuizCommand, QuizResponse>
     {
+        private const int LimiteCuiles = 10;
+
         private readonly IGeneradorQuiz _generadorQuiz;
         private readonly IQuizRepository _quizRepository;
+        private readonly IProveedorCuilesEmpresa
+            _proveedorCuilesEmpresa;
+        private readonly IProveedorEstadoEmpresa
+            _proveedorEstadoEmpresa;
 
         public CrearQuizCommandHandler(
             IGeneradorQuiz generadorQuiz,
-            IQuizRepository quizRepository
+            IQuizRepository quizRepository,
+            IProveedorCuilesEmpresa proveedorCuilesEmpresa,
+            IProveedorEstadoEmpresa proveedorEstadoEmpresa
         )
         {
             _generadorQuiz =
@@ -37,6 +46,18 @@ namespace IERIC.SumariosIERIC.Application.Commands
                 throw new ArgumentNullException(
                     nameof(quizRepository)
                 );
+
+            _proveedorCuilesEmpresa =
+                proveedorCuilesEmpresa ??
+                throw new ArgumentNullException(
+                    nameof(proveedorCuilesEmpresa)
+                );
+
+            _proveedorEstadoEmpresa =
+                proveedorEstadoEmpresa ??
+                throw new ArgumentNullException(
+                    nameof(proveedorEstadoEmpresa)
+                );
         }
 
         public async Task<QuizResponse> Handle(
@@ -47,8 +68,47 @@ namespace IERIC.SumariosIERIC.Application.Commands
             Cuit cuitEmpresa =
                 CrearCuit(command.Cuit);
 
+            EstadoInscripcionEmpresa estadoEmpresa =
+                await _proveedorEstadoEmpresa
+                    .ObtenerPorCuitAsync(
+                        cuitEmpresa,
+                        cancellationToken
+                    );
+
+            if (!estadoEmpresa.PuedeIniciarInscripcion)
+            {
+                string mensaje =
+                    string.IsNullOrWhiteSpace(
+                        estadoEmpresa.Mensaje
+                    )
+                        ? "El estado de la empresa no permite iniciar la inscripción."
+                        : estadoEmpresa.Mensaje;
+
+                throw new SumariosDomainException(
+                    mensaje
+                );
+            }
+
+            IReadOnlyCollection<Cuil> resultadoCuiles =
+                await _proveedorCuilesEmpresa
+                    .ObtenerPorCuitAsync(
+                        cuitEmpresa,
+                        LimiteCuiles,
+                        cancellationToken
+                    );
+
+            if (
+                resultadoCuiles == null ||
+                resultadoCuiles.Count == 0
+            )
+            {
+                throw new SumariosDomainException(
+                    "No se encontraron CUILes vinculados al CUIT informado."
+                );
+            }
+
             List<Cuil> cuilesVinculados =
-                CrearCuiles(command.Cuiles);
+                resultadoCuiles.ToList();
 
             QuizDominio quiz =
                 _generadorQuiz.CrearQuiz(
@@ -61,7 +121,9 @@ namespace IERIC.SumariosIERIC.Application.Commands
             return QuizResponseMapper.DesdeDominio(quiz);
         }
 
-        private Cuit CrearCuit(string valor)
+        private Cuit CrearCuit(
+            string valor
+        )
         {
             string numeroNormalizado =
                 NormalizarNumero(valor);
@@ -74,50 +136,16 @@ namespace IERIC.SumariosIERIC.Application.Commands
             )
             {
                 throw new SumariosDomainException(
-                    "El CUIT de la empresa no es válido"
+                    "El CUIT de la empresa no es válido."
                 );
             }
 
             return new Cuit(numero);
         }
 
-        private List<Cuil> CrearCuiles(
-            IEnumerable<string> valores
+        private string NormalizarNumero(
+            string valor
         )
-        {
-            if (valores == null)
-            {
-                throw new SumariosDomainException(
-                    "La lista de CUIL no puede ser nula"
-                );
-            }
-
-            List<Cuil> cuiles = new List<Cuil>();
-
-            foreach (string valor in valores)
-            {
-                string numeroNormalizado =
-                    NormalizarNumero(valor);
-
-                if (
-                    !long.TryParse(
-                        numeroNormalizado,
-                        out long numero
-                    )
-                )
-                {
-                    throw new SumariosDomainException(
-                        $"El CUIL '{valor}' no es válido"
-                    );
-                }
-
-                cuiles.Add(new Cuil(numero));
-            }
-
-            return cuiles;
-        }
-
-        private string NormalizarNumero(string valor)
         {
             if (string.IsNullOrWhiteSpace(valor))
             {

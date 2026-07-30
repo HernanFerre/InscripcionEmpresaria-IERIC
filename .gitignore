@@ -300,3 +300,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# Variables de entorno locales del backend
+.env

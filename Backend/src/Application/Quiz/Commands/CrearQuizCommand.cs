@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using MediatR;
 using IERIC.SumariosIERIC.Application.Quiz.Models;
 
@@ -9,18 +8,11 @@ namespace IERIC.SumariosIERIC.Application.Commands
     {
         public string Cuit { get; }
 
-        public List<string> Cuiles { get; }
-
         public CrearQuizCommand(
-            string cuit,
-            IEnumerable<string> cuiles
+            string cuit
         )
         {
             Cuit = cuit;
-
-            Cuiles = cuiles == null
-                ? new List<string>()
-                : new List<string>(cuiles);
         }
     }
 }

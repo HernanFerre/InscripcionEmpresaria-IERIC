@@ -55,33 +55,46 @@ namespace IERIC.SumariosIERIC.Application
     {
         private readonly IWebHostEnvironment _env;
 
-        public Startup(IConfiguration configuration, IWebHostEnvironment env)
+        public Startup(
+            IConfiguration configuration,
+            IWebHostEnvironment env
+        )
         {
             Configuration = configuration;
             _env = env;
 
             var builder =
                 new ConfigurationBuilder()
-                    .SetBasePath(env.ContentRootPath)
-                    .AddEnvironmentVariables();
+                    .SetBasePath(env.ContentRootPath);
 
             if (_env.IsProduction())
             {
-                Console.WriteLine("--> Corriendo en Produccion");
-                builder
-                    .AddJsonFile("appSettings.production.json",
+                Console.WriteLine(
+                    "--> Corriendo en Produccion"
+                );
+
+                builder.AddJsonFile(
+                    "appSettings.production.json",
                     optional: false,
-                    reloadOnChange: true);
+                    reloadOnChange: true
+                );
             }
             else
             {
-                Console.WriteLine("--> Corriendo en Desarrollo");
-                builder
-                    .AddJsonFile("appSettings.development.json",
+                Console.WriteLine(
+                    "--> Corriendo en Desarrollo"
+                );
+
+                builder.AddJsonFile(
+                    "appSettings.development.json",
                     optional: false,
-                    reloadOnChange: true);
+                    reloadOnChange: true
+                );
             }
-            this.Configuration = builder.Build();
+
+            builder.AddEnvironmentVariables();
+
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; }
@@ -150,7 +163,99 @@ namespace IERIC.SumariosIERIC.Application
                 IGeneradorQuiz,
                 GeneradorQuiz
             >();
-            services.AddHttpClient();
+            string empresasCuilesApiServidor =
+    Configuration["EmpresasCuilesApi:Servidor"];
+
+            int empresasCuilesApiPuerto =
+                Configuration.GetValue<int>(
+                    "EmpresasCuilesApi:Puerto"
+                );
+
+            if (
+                string.IsNullOrWhiteSpace(
+                    empresasCuilesApiServidor
+                )
+            )
+            {
+                throw new InvalidOperationException(
+                    "No se configuró EmpresasCuilesApi:Servidor."
+                );
+            }
+
+            if (
+                empresasCuilesApiPuerto <= 0 ||
+                empresasCuilesApiPuerto > 65535
+            )
+            {
+                throw new InvalidOperationException(
+                    "EmpresasCuilesApi:Puerto no es válido."
+                );
+            }
+
+            string empresasCuilesApiBaseUrl =
+                $"{empresasCuilesApiServidor.TrimEnd('/')}:" +
+                $"{empresasCuilesApiPuerto}/";
+
+            services.AddHttpClient<
+                IProveedorCuilesEmpresa,
+                ProveedorCuilesEmpresaApi
+            >(
+                client =>
+                {
+                    client.BaseAddress =
+                        new Uri(empresasCuilesApiBaseUrl);
+
+                    client.Timeout =
+                        TimeSpan.FromSeconds(30);
+                }
+            );
+
+            string empresasEstadoApiServidor =
+    Configuration["EmpresasEstadoApi:Servidor"];
+
+            int empresasEstadoApiPuerto =
+                Configuration.GetValue<int>(
+                    "EmpresasEstadoApi:Puerto"
+                );
+
+            if (
+                string.IsNullOrWhiteSpace(
+                    empresasEstadoApiServidor
+                )
+            )
+            {
+                throw new InvalidOperationException(
+                    "No se configuró EmpresasEstadoApi:Servidor."
+                );
+            }
+
+            if (
+                empresasEstadoApiPuerto <= 0 ||
+                empresasEstadoApiPuerto > 65535
+            )
+            {
+                throw new InvalidOperationException(
+                    "EmpresasEstadoApi:Puerto no es válido."
+                );
+            }
+
+            string empresasEstadoApiBaseUrl =
+                $"{empresasEstadoApiServidor.TrimEnd('/')}:" +
+                $"{empresasEstadoApiPuerto}/";
+
+            services.AddHttpClient<
+                IProveedorEstadoEmpresa,
+                ProveedorEstadoEmpresaApi
+            >(
+                client =>
+                {
+                    client.BaseAddress =
+                        new Uri(empresasEstadoApiBaseUrl);
+
+                    client.Timeout =
+                        TimeSpan.FromSeconds(30);
+                }
+            );
             services.AddOdataSwaggerSupport();
 
             //Queries

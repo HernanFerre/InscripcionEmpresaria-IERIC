@@ -1,13 +1,9 @@
-using MediatR;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using IERIC.SumariosIERIC.Application.Commands;
-using IERIC.SumariosIERIC.Application.Queries;
-using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using IERIC.SumariosIERIC.Application.Commands;
 using IERIC.SumariosIERIC.Application.Quiz.Models;
 
 namespace IERIC.SumariosIERIC.Application
@@ -22,26 +18,35 @@ namespace IERIC.SumariosIERIC.Application
         public QuizController(
             IMediator mediator,
             ILogger<QuizController> logger
-
-       )
+        )
         {
-            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _mediator =
+                mediator ??
+                throw new ArgumentNullException(
+                    nameof(mediator)
+                );
 
+            _logger =
+                logger ??
+                throw new ArgumentNullException(
+                    nameof(logger)
+                );
         }
 
         [Route("Crear")]
         [HttpPost]
-        public async Task<ActionResult<QuizResponse>> CrearQuizAsync(
-            [FromBody] CrearQuizRequest request
-        )
+        public async Task<ActionResult<QuizResponse>>
+            CrearQuizAsync(
+                [FromBody] CrearQuizRequest request
+            )
         {
             if (request == null)
             {
                 return BadRequest(
                     new
                     {
-                        mensaje = "La solicitud no puede estar vacía."
+                        mensaje =
+                            "La solicitud no puede estar vacía."
                     }
                 );
             }
@@ -51,25 +56,15 @@ namespace IERIC.SumariosIERIC.Application
                 return BadRequest(
                     new
                     {
-                        mensaje = "Debe informar el CUIT de la empresa."
-                    }
-                );
-            }
-
-            if (request.Cuiles == null || request.Cuiles.Count == 0)
-            {
-                return BadRequest(
-                    new
-                    {
-                        mensaje = "Debe informar al menos un CUIL."
+                        mensaje =
+                            "Debe informar el CUIT de la empresa."
                     }
                 );
             }
 
             CrearQuizCommand command =
                 new CrearQuizCommand(
-                    request.Cuit,
-                    request.Cuiles
+                    request.Cuit
                 );
 
             QuizResponse quiz =
@@ -90,7 +85,8 @@ namespace IERIC.SumariosIERIC.Application
                 return BadRequest(
                     new
                     {
-                        mensaje = "La solicitud no puede estar vacía."
+                        mensaje =
+                            "La solicitud no puede estar vacía."
                     }
                 );
             }
@@ -100,7 +96,8 @@ namespace IERIC.SumariosIERIC.Application
                 return BadRequest(
                     new
                     {
-                        mensaje = "Debe informar el identificador del quiz."
+                        mensaje =
+                            "Debe informar el identificador del quiz."
                     }
                 );
             }
@@ -113,7 +110,8 @@ namespace IERIC.SumariosIERIC.Application
                 return BadRequest(
                     new
                     {
-                        mensaje = "Debe seleccionar al menos una opción."
+                        mensaje =
+                            "Debe seleccionar al menos una opción."
                     }
                 );
             }
@@ -129,7 +127,5 @@ namespace IERIC.SumariosIERIC.Application
 
             return Ok(resultado);
         }
-
-
     }
 }
