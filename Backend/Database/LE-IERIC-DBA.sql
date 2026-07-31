@@ -1,15 +1,4 @@
-/*
-    Base de datos: LE-IERIC
-    Destinatario: DBA / Administración de Base de Datos
 
-    Alcance:
-    - Crea la base [LE-IERIC] si no existe.
-    - Crea las tablas, claves, relaciones e índices del modelo inicial.
-    - Registra la migración de Entity Framework.
-    - No crea logins, usuarios ni contraseñas.
-
-    El script es idempotente respecto de la migración registrada.
-*/
 
 USE [master];
 GO
