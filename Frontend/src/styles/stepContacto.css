@@ -44,6 +44,11 @@
   transition: var(--transition-fast);
 }
 
+.contact-input-row:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+}
+
 .contact-input-row.success {
   border-color: var(--color-success);
 }
@@ -131,6 +136,14 @@
   outline: none;
   background: var(--color-surface);
   color: var(--color-text);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.contact-token-row input:focus {
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
 }
 
 .telefono-info-message,
@@ -141,50 +154,34 @@
   margin-top: 12px;
   padding: 12px 14px;
   border-radius: var(--radius-sm);
-  background: var(--color-success-bg);
-  border: 1px solid rgba(76, 175, 80, 0.18);
-  color: var(--color-success);
   font-size: 14px;
   line-height: 1.35;
   font-weight: var(--font-weight-medium);
+}
+
+.telefono-info-message {
+  background: var(--color-info-bg);
+  border: 1px solid var(--color-info-soft);
+  color: var(--color-info);
+}
+
+.telefono-success-message {
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success-soft);
+  color: var(--color-success);
 }
 
 .telefono-success-message svg {
   flex-shrink: 0;
 }
 
-.telefono-info-message {
-  background: var(--color-info-bg);
-  border: 1px solid rgba(33, 150, 243, 0.18);
-  color: var(--color-info);
-}
-
-.telefono-success-message {
-  background: var(--color-success-bg);
-  border: 1px solid rgba(76, 175, 80, 0.18);
-  color: var(--color-success);
-}
-
-.contact-helper {
-  margin: 12px 0 0;
-  font-size: 13px;
-  color: var(--color-text-muted);
-}
-
-.telefono-attempts {
-  margin-top: 10px;
-  text-align: center;
-  color: var(--color-text-muted);
-  font-size: 14px;
-}
-
 .telefono-error-message {
   margin-top: 10px;
   padding: 12px 14px;
   border-radius: var(--radius-sm);
-  background: #fdeaea;
-  border: 1px solid #f2c4c4;
-  color: #c62828;
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-soft);
+  color: var(--color-error);
   font-size: 14px;
 }
 
@@ -192,11 +189,11 @@
   margin-top: 10px;
   padding: 14px;
   border-radius: var(--radius-sm);
-  background: #fff3e0;
-  border: 1px solid #ffcc80;
-  color: #e65100;
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-soft);
+  color: var(--color-warning);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .telefono-error-blocked span {

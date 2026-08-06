@@ -39,6 +39,11 @@
   transition: var(--transition-fast);
 }
 
+.identity-option:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+}
+
 .identity-option.selected {
   border-color: var(--color-primary);
   background: var(--color-primary-soft);
@@ -129,16 +134,13 @@
   display: flex;
   align-items: center;
   gap: 10px;
-
   margin-top: 18px;
   padding: 14px 16px;
-
-  border: 1px solid #c6e6c6;
-  background: #eef8ee;
+  border: 1px solid var(--color-success-soft);
+  background: var(--color-success-bg);
   color: var(--color-success);
-
   border-radius: var(--radius-sm);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .identity-success-message svg {
@@ -149,16 +151,13 @@
   display: flex;
   align-items: center;
   gap: 10px;
-
   margin-top: 18px;
   padding: 14px 16px;
-
-  border: 1px solid #f2c2c2;
-  background: #fdecec;
-  color: #b42318;
-
+  border: 1px solid var(--color-error-soft);
+  background: var(--color-error-bg);
+  color: var(--color-error);
   border-radius: var(--radius-sm);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .identity-error-message svg {
@@ -184,7 +183,7 @@
   padding: 18px 20px;
   border-radius: var(--radius-sm);
   background: var(--color-warning-bg);
-  border: 1px solid rgba(251, 140, 0, 0.32);
+  border: 1px solid var(--color-warning-soft);
   color: var(--color-warning);
 }
 

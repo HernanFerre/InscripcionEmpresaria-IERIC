@@ -3,7 +3,7 @@ import { AlertTriangle, CheckCircle, Info } from "lucide-react";
 
 import "../styles/stepCuit.css";
 
-import { crearQuiz, validarCuit } from "../services/inscripcionService.js";
+import { crearQuiz, validarCuit } from "../services/InscripcionService.js";
 
 import { formatCuit } from "../utils/formatters.js";
 

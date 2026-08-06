@@ -3,7 +3,7 @@ import { AlertTriangle, CheckCircle } from "lucide-react";
 
 import "../styles/stepIdentidad.css";
 
-import { validarQuiz } from "../services/inscripcionService.js";
+import { validarQuiz } from "../services/InscripcionService.js";
 
 export default function StepIdentidad({ initialQuiz, onNext }) {
   const [desafio, setDesafio] = useState(initialQuiz);

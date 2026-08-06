@@ -38,9 +38,9 @@
 }
 
 .input input:focus {
-  background-color: var(--formulario);
-  border-color: var(--primario10);
-  box-shadow: 0 0 0 2px rgba(12, 116, 228, 0.12);
+  background-color: var(--color-surface);
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
 }
 
 .input input::placeholder {

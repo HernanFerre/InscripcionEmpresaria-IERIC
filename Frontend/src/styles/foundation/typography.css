@@ -50,7 +50,7 @@ html {
   --font-button-weight: var(--font-weight-semibold);
 
   /* =========================================================
-       LEGACY MAPPING
+       LEGACY COMPATIBILITY
     ========================================================= */
 
   --font-header-h1-family: var(--font-family-base);
@@ -70,10 +70,27 @@ html {
   --font-bajada-weight: var(--font-body-weight);
 
   --font-label-family: var(--font-family-base);
-  --font-label-size: var(--font-label-size);
-  --font-label-weight: var(--font-label-weight);
 
   --font-error-family: var(--font-family-base);
   --font-error-size: var(--font-caption-size);
   --font-error-weight: var(--font-caption-weight);
+
+  /* =========================================================
+       LEGACY SIZE SCALE
+    ========================================================= */
+
+  --font-h1: 2rem;
+  --font-h2: 1.5rem;
+  --font-h3: 1.125rem;
+  --font-h4: 1rem;
+  --font-h5: 0.875rem;
+  --font-h6: 0.8125rem;
+
+  --font-subtitulo-1: 1rem;
+  --font-subtitulo-2: 0.875rem;
+  --font-cuerpo-1: 0.875rem;
+  --font-cuerpo-2: 0.8125rem;
+  --font-boton: 0.875rem;
+  --font-caption: 0.75rem;
+  --font-overline: 0.75rem;
 }

@@ -40,6 +40,7 @@ html {
 
   --color-border: #e6e8f1;
   --color-border-strong: #d8e0ec;
+  --color-border-soft: var(--color-border);
 
   /* =========================================================
        STATES
@@ -47,15 +48,19 @@ html {
 
   --color-success: #4caf50;
   --color-success-bg: #e8f5e9;
+  --color-success-soft: rgba(76, 175, 80, 0.35);
 
   --color-warning: #fb8c00;
   --color-warning-bg: #fff3e0;
+  --color-warning-soft: rgba(251, 140, 0, 0.35);
 
   --color-error: #f44336;
   --color-error-bg: #fdecec;
+  --color-error-soft: rgba(244, 67, 54, 0.35);
 
   --color-info: #2196f3;
   --color-info-bg: #e3f2fd;
+  --color-info-soft: rgba(33, 150, 243, 0.35);
 
   /* =========================================================
        OVERLAYS
