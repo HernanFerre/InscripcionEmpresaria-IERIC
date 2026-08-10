@@ -1,0 +1,319 @@
+.representantes-step {
+  width: 100%;
+  min-height: 560px;
+  display: flex;
+  flex-direction: column;
+}
+
+.representantes-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.representantes-title {
+  margin: 0 0 4px;
+  color: var(--color-primary);
+  font-size: 20px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.2;
+}
+
+.representantes-subtitle {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+}
+
+.representantes-add-button {
+  min-width: 205px;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.representantes-add-button:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-background);
+}
+
+.representantes-add-button:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+}
+
+.representantes-table-wrapper {
+  width: 100%;
+  margin-top: 16px;
+  overflow-x: auto;
+}
+
+.representantes-table {
+  width: 100%;
+  border-spacing: 0;
+  border-collapse: separate;
+  table-layout: fixed;
+  color: var(--color-text);
+  font-size: 12px;
+}
+
+.representantes-table th {
+  height: 50px;
+  padding: 0 9px;
+  background: #eff8fd;
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.representantes-table th:first-child {
+  width: 11.5%;
+  padding-left: 16px;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.representantes-table th:nth-child(2) {
+  width: 11.5%;
+}
+
+.representantes-table th:nth-child(3) {
+  width: 14%;
+}
+
+.representantes-table th:nth-child(4) {
+  width: 20.5%;
+}
+
+.representantes-table th:nth-child(5) {
+  width: 16.5%;
+}
+
+.representantes-table th:nth-child(6) {
+  width: 11.5%;
+}
+
+.representantes-table th:nth-child(7) {
+  width: 9%;
+}
+
+.representantes-table th:last-child {
+  width: 5.5%;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.representantes-sortable-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.representantes-table td {
+  height: 49px;
+  padding: 0 9px;
+  border: none;
+  overflow: hidden;
+  color: var(--color-text);
+  text-align: left;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.representantes-table td:first-child {
+  padding-left: 16px;
+}
+
+.representantes-table tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.035);
+}
+
+.representantes-placeholder-row td {
+  color: var(--color-text-disabled);
+}
+
+.representantes-firmante {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.representantes-firmante.si {
+  color: #16a34a;
+}
+
+.representantes-firmante.no {
+  color: var(--color-error);
+}
+
+.representantes-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.representantes-row-actions button {
+  width: 24px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.representantes-edit-button {
+  color: var(--color-primary);
+}
+
+.representantes-delete-button {
+  color: var(--color-error);
+}
+
+.representantes-row-actions button:hover {
+  opacity: 0.7;
+}
+
+.representantes-row-actions button:focus-visible {
+  outline: none;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--focus-ring);
+}
+
+.representantes-info {
+  min-height: 28px;
+  margin-top: 190px;
+  padding: 0 10px;
+  border: 1px solid var(--color-info);
+  border-radius: var(--radius-sm);
+  color: var(--color-info);
+  font-size: var(--font-caption-size);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.representantes-info svg {
+  flex-shrink: 0;
+}
+
+.representantes-pagination {
+  margin-top: auto;
+  padding-top: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+}
+
+.representantes-pagination button {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.representantes-pagination button:disabled {
+  color: var(--color-text-disabled);
+  cursor: default;
+}
+
+.representantes-footer-actions {
+  margin-top: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.representantes-back-button {
+  min-width: 96px;
+  height: 42px;
+  padding: 0 18px;
+  border: 1px solid var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-family-base);
+  font-size: var(--font-button-size);
+  font-weight: var(--font-button-weight);
+  cursor: pointer;
+}
+
+.representantes-back-button:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.representantes-back-button:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+}
+
+@media (max-width: 700px) {
+  .representantes-step {
+    min-height: auto;
+  }
+
+  .representantes-header {
+    flex-direction: column;
+  }
+
+  .representantes-add-button {
+    width: 100%;
+  }
+
+  .representantes-table {
+    min-width: 900px;
+  }
+
+  .representantes-info {
+    margin-top: 48px;
+  }
+
+  .representantes-pagination {
+    margin-top: 36px;
+  }
+
+  .representantes-footer-actions {
+    margin-top: 40px;
+    gap: 14px;
+  }
+
+  .representantes-footer-actions button {
+    width: 100%;
+    min-width: 0;
+  }
+}

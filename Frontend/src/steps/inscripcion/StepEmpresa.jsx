@@ -28,6 +28,8 @@ const DATOS_INICIALES = {
   telefono: "",
 };
 
+const PERMITIR_CONTINUAR_MOCK = true;
+
 function emailEsValido(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
@@ -81,7 +83,7 @@ export default function StepEmpresa({ initialData = null, onNext }) {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (!formularioValido) {
+    if (!PERMITIR_CONTINUAR_MOCK && !formularioValido) {
       return;
     }
 
@@ -287,7 +289,11 @@ export default function StepEmpresa({ initialData = null, onNext }) {
       </section>
 
       <div className="empresa-form-actions">
-        <button type="submit" className="next-step-button" disabled={!formularioValido}>
+        <button type="button" className="empresa-back-button" disabled>
+          Volver
+        </button>
+
+        <button type="submit" className="next-step-button" disabled={!PERMITIR_CONTINUAR_MOCK && !formularioValido}>
           Continuar
         </button>
       </div>

@@ -105,8 +105,34 @@
 
 .empresa-form-actions {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
   margin-top: 68px;
+}
+
+.empresa-back-button {
+  min-width: 96px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family-base);
+  font-size: var(--font-button-size);
+  font-weight: var(--font-button-weight);
+}
+
+.empresa-form-actions .next-step-button {
+  width: auto;
+  min-width: 180px;
+}
+.empresa-back-button {
+  border: none;
+  background: var(--color-secondary);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.empresa-form-actions .next-step-button {
+  width: auto;
 }
 
 .empresa-form-actions .next-step-button:disabled {
@@ -129,10 +155,18 @@
   }
 
   .empresa-form-actions {
+    gap: 12px;
     margin-top: 36px;
   }
 
+  .empresa-back-button {
+    width: 96px;
+    flex: 0 0 96px;
+  }
+
   .empresa-form-actions .next-step-button {
-    width: 100%;
+    width: auto;
+    min-width: 0;
+    flex: 1;
   }
 }

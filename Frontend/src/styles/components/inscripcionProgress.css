@@ -1,6 +1,6 @@
 .inscripcion-progress {
   width: 100%;
-  margin-bottom: 28px;
+  margin-bottom: 14px;
   padding-bottom: 22px;
   border-bottom: 1px solid var(--color-border);
 }
@@ -23,7 +23,7 @@
 
 .inscripcion-progress-label {
   white-space: nowrap;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-medium);
   letter-spacing: 0.1px;
   transition: color var(--transition-fast);

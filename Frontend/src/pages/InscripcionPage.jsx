@@ -11,6 +11,7 @@ import StepIdentidad from "../steps/StepIdentidad.jsx";
 
 import IericAuth from "../auth/IericAuth.jsx";
 import StepEmpresa from "../steps/inscripcion/StepEmpresa.jsx";
+import StepRepresentantes from "../steps/inscripcion/StepRepresentantes.jsx";
 
 import { INICIAR_EN_INSCRIPCION, MOSTRAR_VALIDACION_TELEFONO } from "../config/featureFlags.js";
 
@@ -19,23 +20,26 @@ import "../styles/inscripcion.css";
 export default function InscripcionPage() {
   const [currentStep, setCurrentStep] = useState(1);
 
-  const faseActual = INICIAR_EN_INSCRIPCION ? "inscripcion" : "validacion";
+  const [inscripcionStep, setInscripcionStep] = useState("empresa");
 
-  const inscripcionStep = "empresa";
+  const faseActual = INICIAR_EN_INSCRIPCION ? "inscripcion" : "validacion";
 
   const [formData, setFormData] = useState({
     cuit: "",
     empresa: null,
     cuiles: [],
     quiz: null,
+
     contacto: {
       email: "",
       telefono: "",
       emailValidado: false,
       telefonoValidado: false,
     },
+
     datosInscripcion: {
       empresa: null,
+      representantes: [],
     },
   });
 
@@ -73,6 +77,12 @@ export default function InscripcionPage() {
         empresa: datosEmpresa,
       },
     }));
+
+    setInscripcionStep("representantes");
+  };
+
+  const handleVolverAEmpresa = () => {
+    setInscripcionStep("empresa");
   };
 
   const handleAuthenticated = () => {
@@ -115,7 +125,13 @@ export default function InscripcionPage() {
                   <>
                     <InscripcionProgress currentStep={inscripcionStep} />
 
-                    <StepEmpresa initialData={formData.datosInscripcion.empresa} onNext={handleEmpresaCompletada} />
+                    {inscripcionStep === "empresa" && (
+                      <StepEmpresa initialData={formData.datosInscripcion.empresa} onNext={handleEmpresaCompletada} />
+                    )}
+
+                    {inscripcionStep === "representantes" && (
+                      <StepRepresentantes representantes={formData.datosInscripcion.representantes} onBack={handleVolverAEmpresa} />
+                    )}
                   </>
                 )}
               </div>
