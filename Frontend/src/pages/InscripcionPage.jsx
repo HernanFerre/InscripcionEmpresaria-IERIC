@@ -3,19 +3,25 @@ import { useState } from "react";
 import Topbar from "../components/layout/Topbar.jsx";
 import Footer from "../components/layout/Footer.jsx";
 import StepIndicator from "../components/wizard/StepIndicator.jsx";
+import InscripcionProgress from "../components/wizard/InscripcionProgress.jsx";
 
 import StepCuit from "../steps/StepCuit.jsx";
 import StepContacto from "../steps/StepContacto.jsx";
 import StepIdentidad from "../steps/StepIdentidad.jsx";
 
 import IericAuth from "../auth/IericAuth.jsx";
+import StepEmpresa from "../steps/inscripcion/StepEmpresa.jsx";
 
-import { MOSTRAR_VALIDACION_TELEFONO } from "../config/featureFlags.js";
+import { INICIAR_EN_INSCRIPCION, MOSTRAR_VALIDACION_TELEFONO } from "../config/featureFlags.js";
 
 import "../styles/inscripcion.css";
 
 export default function InscripcionPage() {
   const [currentStep, setCurrentStep] = useState(1);
+
+  const faseActual = INICIAR_EN_INSCRIPCION ? "inscripcion" : "validacion";
+
+  const inscripcionStep = "empresa";
 
   const [formData, setFormData] = useState({
     cuit: "",
@@ -27,6 +33,9 @@ export default function InscripcionPage() {
       telefono: "",
       emailValidado: false,
       telefonoValidado: false,
+    },
+    datosInscripcion: {
+      empresa: null,
     },
   });
 
@@ -56,15 +65,19 @@ export default function InscripcionPage() {
     setCurrentStep(3);
   };
 
-  const handleAuthenticated = (token) => {
-    console.log("Token autenticación:", token);
+  const handleEmpresaCompletada = (datosEmpresa) => {
+    setFormData((prev) => ({
+      ...prev,
+      datosInscripcion: {
+        ...prev.datosInscripcion,
+        empresa: datosEmpresa,
+      },
+    }));
+  };
 
-    // A partir de acá, esta aplicación decide qué hacer con el token.
-    // Por ejemplo:
-    // - guardarlo en sessionStorage/localStorage
-    // - decodificarlo localmente si necesita mostrar datos
-    // - enviarlo al backend propio de inscripción empresaria
-    // - consultar permisos propios del sistema
+  const handleAuthenticated = () => {
+    // La autenticación se vinculará al flujo de inscripción
+    // después de construir las nuevas pantallas.
   };
 
   return (
@@ -76,22 +89,34 @@ export default function InscripcionPage() {
           <main className="main-area">
             <section className="content-grid">
               <div className="wizard-card">
-                <StepIndicator currentStep={currentStep} mostrarTelefono={MOSTRAR_VALIDACION_TELEFONO} />
+                {faseActual === "validacion" && (
+                  <>
+                    <StepIndicator currentStep={currentStep} mostrarTelefono={MOSTRAR_VALIDACION_TELEFONO} />
 
-                {currentStep === 1 && (
-                  <StepCuit initialCuit={formData.cuit} initialEmpresa={formData.empresa} onNext={handleCuitCompletado} />
+                    {currentStep === 1 && (
+                      <StepCuit initialCuit={formData.cuit} initialEmpresa={formData.empresa} onNext={handleCuitCompletado} />
+                    )}
+
+                    {currentStep === 2 && MOSTRAR_VALIDACION_TELEFONO && (
+                      <StepContacto initialContacto={formData.contacto} onNext={handleContactoCompletado} />
+                    )}
+
+                    {currentStep === 2 && !MOSTRAR_VALIDACION_TELEFONO && (
+                      <StepIdentidad cuit={formData.cuit} cuiles={formData.cuiles} initialQuiz={formData.quiz} onNext={() => {}} />
+                    )}
+
+                    {currentStep === 3 && MOSTRAR_VALIDACION_TELEFONO && (
+                      <StepIdentidad cuit={formData.cuit} cuiles={formData.cuiles} initialQuiz={formData.quiz} onNext={() => {}} />
+                    )}
+                  </>
                 )}
 
-                {currentStep === 2 && MOSTRAR_VALIDACION_TELEFONO && (
-                  <StepContacto initialContacto={formData.contacto} onNext={handleContactoCompletado} />
-                )}
+                {faseActual === "inscripcion" && (
+                  <>
+                    <InscripcionProgress currentStep={inscripcionStep} />
 
-                {currentStep === 2 && !MOSTRAR_VALIDACION_TELEFONO && (
-                  <StepIdentidad cuit={formData.cuit} cuiles={formData.cuiles} initialQuiz={formData.quiz} onNext={() => {}} />
-                )}
-
-                {currentStep === 3 && MOSTRAR_VALIDACION_TELEFONO && (
-                  <StepIdentidad cuit={formData.cuit} cuiles={formData.cuiles} initialQuiz={formData.quiz} onNext={() => {}} />
+                    <StepEmpresa initialData={formData.datosInscripcion.empresa} onNext={handleEmpresaCompletada} />
+                  </>
                 )}
               </div>
             </section>

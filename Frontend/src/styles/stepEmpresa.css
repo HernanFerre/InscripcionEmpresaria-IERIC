@@ -1,0 +1,138 @@
+.empresa-step-form {
+  width: 100%;
+}
+
+.empresa-form-section {
+  margin-top: 22px;
+}
+
+.empresa-form-section:first-child {
+  margin-top: 0;
+}
+
+.empresa-section-title {
+  margin: 0 0 10px;
+  color: var(--color-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.empresa-form-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.empresa-col-12 {
+  grid-column: span 12;
+}
+
+.empresa-col-6 {
+  grid-column: span 6;
+}
+
+.empresa-col-4 {
+  grid-column: span 4;
+}
+
+.empresa-col-2 {
+  grid-column: span 2;
+}
+
+.empresa-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  outline: none;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.empresa-input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.85;
+}
+
+.empresa-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+}
+
+.empresa-select {
+  cursor: pointer;
+}
+
+.empresa-input.has-error {
+  border-color: var(--color-error);
+}
+
+.empresa-input.has-error:focus {
+  box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.14);
+}
+
+.empresa-field-error {
+  display: block;
+  margin-top: 5px;
+  color: var(--color-error);
+  font-size: var(--font-caption-size);
+}
+
+.empresa-required-note {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 7px 10px;
+  border: 1px solid var(--color-info);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-info);
+  font-size: var(--font-caption-size);
+}
+
+.empresa-required-note svg {
+  flex-shrink: 0;
+}
+
+.empresa-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 68px;
+}
+
+.empresa-form-actions .next-step-button:disabled {
+  background: var(--color-secondary);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 700px) {
+  .empresa-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .empresa-col-12,
+  .empresa-col-6,
+  .empresa-col-4,
+  .empresa-col-2 {
+    grid-column: span 1;
+  }
+
+  .empresa-form-actions {
+    margin-top: 36px;
+  }
+
+  .empresa-form-actions .next-step-button {
+    width: 100%;
+  }
+}
