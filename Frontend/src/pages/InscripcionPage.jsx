@@ -12,6 +12,7 @@ import StepIdentidad from "../steps/StepIdentidad.jsx";
 import IericAuth from "../auth/IericAuth.jsx";
 import StepEmpresa from "../steps/inscripcion/StepEmpresa.jsx";
 import StepRepresentantes from "../steps/inscripcion/StepRepresentantes.jsx";
+import StepNomina from "../steps/inscripcion/StepNomina.jsx";
 
 import { INICIAR_EN_INSCRIPCION, MOSTRAR_VALIDACION_TELEFONO } from "../config/featureFlags.js";
 
@@ -85,6 +86,14 @@ export default function InscripcionPage() {
     setInscripcionStep("empresa");
   };
 
+  const handleContinuarANomina = () => {
+    setInscripcionStep("nomina");
+  };
+
+  const handleVolverARepresentantes = () => {
+    setInscripcionStep("representantes");
+  };
+
   const handleAuthenticated = () => {
     // La autenticación se vinculará al flujo de inscripción
     // después de construir las nuevas pantallas.
@@ -130,8 +139,14 @@ export default function InscripcionPage() {
                     )}
 
                     {inscripcionStep === "representantes" && (
-                      <StepRepresentantes representantes={formData.datosInscripcion.representantes} onBack={handleVolverAEmpresa} />
+                      <StepRepresentantes
+                        representantes={formData.datosInscripcion.representantes}
+                        onBack={handleVolverAEmpresa}
+                        onNext={handleContinuarANomina}
+                      />
                     )}
+
+                    {inscripcionStep === "nomina" && <StepNomina onBack={handleVolverARepresentantes} />}
                   </>
                 )}
               </div>

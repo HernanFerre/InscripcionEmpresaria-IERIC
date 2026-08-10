@@ -1,0 +1,412 @@
+.nomina-step {
+  width: 100%;
+  min-height: 560px;
+  display: flex;
+  flex-direction: column;
+}
+
+.nomina-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.nomina-start-info {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.nomina-title {
+  margin: 0 0 3px;
+  color: var(--color-primary);
+  font-size: 20px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.2;
+}
+
+.nomina-subtitle {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.nomina-start-date {
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+
+.nomina-info-wrapper {
+  position: relative;
+}
+
+.nomina-info-button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nomina-info-button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.nomina-info-tooltip {
+  position: absolute;
+  z-index: 30;
+  top: -42px;
+  left: 28px;
+  box-sizing: border-box;
+  width: 330px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-elevation-8-box);
+  font-size: 11px;
+  line-height: 1.45;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--transition-fast),
+    visibility var(--transition-fast);
+}
+
+.nomina-info-wrapper:hover .nomina-info-tooltip,
+.nomina-info-wrapper:focus-within .nomina-info-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+.nomina-add-button {
+  min-width: 168px;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.nomina-add-button:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-background);
+}
+
+.nomina-add-button:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+}
+
+.nomina-table-wrapper {
+  width: 100%;
+  margin-top: 16px;
+  overflow-x: auto;
+}
+
+.nomina-table {
+  width: 100%;
+  border-spacing: 0;
+  border-collapse: separate;
+  table-layout: fixed;
+  color: var(--color-text);
+  font-size: 12px;
+}
+
+.nomina-table th {
+  height: 46px;
+  padding: 0 10px;
+  background: #eff8fd;
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.nomina-table th:first-child {
+  width: 27%;
+  padding-left: 28px;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.nomina-table th:nth-child(2) {
+  width: 15%;
+}
+
+.nomina-table th:nth-child(3) {
+  width: 13%;
+}
+
+.nomina-table th:nth-child(4) {
+  width: 12%;
+}
+
+.nomina-table th:nth-child(5) {
+  width: 26%;
+}
+
+.nomina-table th:last-child {
+  width: 7%;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.nomina-sortable-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nomina-table td {
+  height: 45px;
+  padding: 0 10px;
+  border: none;
+  overflow: hidden;
+  color: var(--color-text);
+  text-align: left;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.nomina-table td:first-child {
+  padding-left: 28px;
+}
+
+.nomina-table tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.035);
+}
+
+.nomina-egreso {
+  color: var(--color-error) !important;
+  font-weight: var(--font-weight-semibold);
+}
+
+.nomina-construccion-options {
+  display: flex;
+  align-items: center;
+  gap: 27px;
+}
+
+.nomina-construccion-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.nomina-construccion-options input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.nomina-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.nomina-row-actions button {
+  width: 24px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nomina-edit-button {
+  color: var(--color-primary);
+}
+
+.nomina-delete-button {
+  color: var(--color-error);
+}
+
+.nomina-row-actions button:hover {
+  opacity: 0.7;
+}
+
+.nomina-row-actions button:focus-visible {
+  outline: none;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--focus-ring);
+}
+
+.nomina-secondary-actions {
+  margin-top: auto;
+  padding-top: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 21px;
+}
+
+.nomina-declaration-button {
+  min-width: 158px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-family: var(--font-family-base);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.nomina-declaration-button:hover {
+  background: var(--color-background);
+}
+
+.nomina-declaration-button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.nomina-pagination {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+}
+
+.nomina-pagination button {
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-family-base);
+  font-size: 20px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nomina-pagination button:disabled {
+  color: var(--color-text-disabled);
+  cursor: default;
+}
+
+.nomina-footer-actions {
+  margin-top: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nomina-back-button {
+  min-width: 96px;
+  height: 42px;
+  padding: 0 18px;
+  border: 1px solid var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-family-base);
+  font-size: var(--font-button-size);
+  font-weight: var(--font-button-weight);
+  cursor: pointer;
+}
+
+.nomina-back-button:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.nomina-back-button:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+}
+
+@media (max-width: 700px) {
+  .nomina-step {
+    min-height: auto;
+  }
+
+  .nomina-header {
+    flex-direction: column;
+  }
+
+  .nomina-start-info {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+  }
+
+  .nomina-add-button {
+    width: 100%;
+  }
+
+  .nomina-info-tooltip {
+    top: 30px;
+    right: 0;
+    left: auto;
+    width: min(330px, calc(100vw - 64px));
+  }
+
+  .nomina-table {
+    min-width: 900px;
+  }
+
+  .nomina-secondary-actions {
+    margin-top: 40px;
+  }
+
+  .nomina-footer-actions {
+    margin-top: 40px;
+    gap: 14px;
+  }
+
+  .nomina-footer-actions button {
+    width: 100%;
+    min-width: 0;
+  }
+}
