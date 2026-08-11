@@ -141,7 +141,12 @@ export default function InscripcionPage() {
                     )}
 
                     {currentStep === 2 && !MOSTRAR_VALIDACION_TELEFONO && (
-                      <StepIdentidad cuit={formData.cuit} cuiles={formData.cuiles} initialQuiz={formData.quiz} onNext={() => {}} />
+                      <StepIdentidad
+                        cuit={formData.cuit}
+                        cuiles={formData.cuiles}
+                        initialQuiz={formData.quiz}
+                        onNext={handleIdentidadCompletada}
+                      />
                     )}
 
                     {currentStep === 3 && MOSTRAR_VALIDACION_TELEFONO && (

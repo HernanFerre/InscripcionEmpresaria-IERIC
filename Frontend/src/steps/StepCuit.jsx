@@ -7,6 +7,8 @@ import { crearQuiz, validarCuit } from "../services/InscripcionService.js";
 
 import { formatCuit } from "../utils/formatters.js";
 
+import { obtenerEstadoBloqueo } from "../services/QuizBlockingMockService.js";
+
 export default function StepCuit({ initialCuit = "", initialEmpresa = null, estaLogueado = false, onLoginRequired, onNext }) {
   const [cuit, setCuit] = useState(initialCuit);
 
@@ -24,10 +26,38 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, esta
 
   const [requiereAutenticacion, setRequiereAutenticacion] = useState(false);
 
+  const puedeContinuarPorBloqueo = () => {
+    const estadoBloqueo = obtenerEstadoBloqueo(cuit);
+
+    if (!estadoBloqueo.bloqueado) {
+      return true;
+    }
+
+    setRequiereAutenticacion(false);
+
+    if (estadoBloqueo.permanente) {
+      setErrorProceso("El CUIT se encuentra bloqueado permanentemente por haber agotado los intentos del quiz.");
+
+      return false;
+    }
+
+    setErrorProceso(
+      `El CUIT se encuentra temporalmente bloqueado. ` +
+        `Podrá volver a intentarlo en aproximadamente ` +
+        `${estadoBloqueo.segundosRestantes} segundos.`,
+    );
+
+    return false;
+  };
+
   const handleValidar = async () => {
     if (!estaLogueado) {
       setErrorProceso("");
       setRequiereAutenticacion(true);
+      return;
+    }
+
+    if (!puedeContinuarPorBloqueo()) {
       return;
     }
 
@@ -78,6 +108,10 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, esta
     if (!estaLogueado) {
       setErrorProceso("");
       setRequiereAutenticacion(true);
+      return;
+    }
+
+    if (!puedeContinuarPorBloqueo()) {
       return;
     }
 

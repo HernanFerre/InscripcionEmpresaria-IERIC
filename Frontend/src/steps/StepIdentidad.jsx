@@ -4,8 +4,9 @@ import { AlertTriangle, CheckCircle } from "lucide-react";
 import "../styles/stepIdentidad.css";
 
 import { validarQuiz } from "../services/InscripcionService.js";
+import { bloquearCuit } from "../services/QuizBlockingMockService.js";
 
-export default function StepIdentidad({ initialQuiz, onNext }) {
+export default function StepIdentidad({ cuit, initialQuiz, onNext }) {
   const [desafio, setDesafio] = useState(initialQuiz);
 
   const [seleccionadas, setSeleccionadas] = useState([]);
@@ -66,8 +67,11 @@ export default function StepIdentidad({ initialQuiz, onNext }) {
       }
 
       if (resultado.limiteExcedido) {
+        bloquearCuit(cuit);
+
         setLimiteExcedido(true);
         setSeleccionadas([]);
+
         return;
       }
 
@@ -137,7 +141,7 @@ export default function StepIdentidad({ initialQuiz, onNext }) {
               Contactar a IERIC
             </button>
 
-            <button type="button" className="identity-secondary-button">
+            <button type="button" className="identity-secondary-button" onClick={() => window.location.reload()}>
               Volver al Inicio
             </button>
           </div>
