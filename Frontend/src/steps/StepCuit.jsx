@@ -7,7 +7,7 @@ import { crearQuiz, validarCuit } from "../services/InscripcionService.js";
 
 import { formatCuit } from "../utils/formatters.js";
 
-export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNext }) {
+export default function StepCuit({ initialCuit = "", initialEmpresa = null, estaLogueado = false, onLoginRequired, onNext }) {
   const [cuit, setCuit] = useState(initialCuit);
 
   const [empresa, setEmpresa] = useState(initialEmpresa);
@@ -22,7 +22,16 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
 
   const [errorProceso, setErrorProceso] = useState("");
 
+  const [requiereAutenticacion, setRequiereAutenticacion] = useState(false);
+
   const handleValidar = async () => {
+    if (!estaLogueado) {
+      setErrorProceso("");
+      setRequiereAutenticacion(true);
+      return;
+    }
+
+    setRequiereAutenticacion(false);
     setCargando(true);
     setErrorProceso("");
 
@@ -66,6 +75,13 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
   };
 
   const handleNext = async () => {
+    if (!estaLogueado) {
+      setErrorProceso("");
+      setRequiereAutenticacion(true);
+      return;
+    }
+
+    setRequiereAutenticacion(false);
     setPreparandoQuiz(true);
     setErrorProceso("");
 
@@ -131,6 +147,22 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, onNe
           {cargando ? "Validando..." : "Validar CUIT"}
         </button>
       </div>
+
+      {requiereAutenticacion && !estaLogueado && (
+        <div className="cuit-result-card warning">
+          <AlertTriangle size={20} />
+
+          <div>
+            <strong>Debe iniciar sesión para continuar.</strong>
+
+            <span>Inicie sesión o cree una cuenta antes de validar el CUIT de la empresa.</span>
+
+            <button type="button" className="next-step-button cuit-auth-button" onClick={onLoginRequired}>
+              Iniciar sesión / Crear cuenta
+            </button>
+          </div>
+        </div>
+      )}
 
       {errorProceso && (
         <div className="cuit-result-card error">

@@ -204,7 +204,7 @@ export default function StepIdentidad({ initialQuiz, onNext }) {
       {informacionValidada && (
         <div className="next-step-container">
           <button className="next-step-button" onClick={onNext}>
-            Finalizar
+            Continuar...
           </button>
         </div>
       )}

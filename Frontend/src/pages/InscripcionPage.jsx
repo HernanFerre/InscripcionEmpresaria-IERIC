@@ -24,7 +24,7 @@ export default function InscripcionPage() {
 
   const [inscripcionStep, setInscripcionStep] = useState("empresa");
 
-  const faseActual = INICIAR_EN_INSCRIPCION ? "inscripcion" : "validacion";
+  const [faseActual, setFaseActual] = useState(INICIAR_EN_INSCRIPCION ? "inscripcion" : "validacion");
 
   const [formData, setFormData] = useState({
     cuit: "",
@@ -71,6 +71,11 @@ export default function InscripcionPage() {
     setCurrentStep(3);
   };
 
+  const handleIdentidadCompletada = () => {
+    setInscripcionStep("empresa");
+    setFaseActual("inscripcion");
+  };
+
   const handleEmpresaCompletada = (datosEmpresa) => {
     setFormData((prev) => ({
       ...prev,
@@ -110,7 +115,7 @@ export default function InscripcionPage() {
 
   return (
     <IericAuth onAuthenticated={handleAuthenticated}>
-      {({ usuario, abrirLogin, cambiarUsuario }) => (
+      {({ usuario, estaLogueado, abrirLogin, cambiarUsuario }) => (
         <div className="app-shell">
           <Topbar usuario={usuario} onAbrirLogin={abrirLogin} onCambiarUsuario={cambiarUsuario} />
 
@@ -122,7 +127,13 @@ export default function InscripcionPage() {
                     <StepIndicator currentStep={currentStep} mostrarTelefono={MOSTRAR_VALIDACION_TELEFONO} />
 
                     {currentStep === 1 && (
-                      <StepCuit initialCuit={formData.cuit} initialEmpresa={formData.empresa} onNext={handleCuitCompletado} />
+                      <StepCuit
+                        initialCuit={formData.cuit}
+                        initialEmpresa={formData.empresa}
+                        estaLogueado={estaLogueado}
+                        onLoginRequired={abrirLogin}
+                        onNext={handleCuitCompletado}
+                      />
                     )}
 
                     {currentStep === 2 && MOSTRAR_VALIDACION_TELEFONO && (
@@ -134,7 +145,12 @@ export default function InscripcionPage() {
                     )}
 
                     {currentStep === 3 && MOSTRAR_VALIDACION_TELEFONO && (
-                      <StepIdentidad cuit={formData.cuit} cuiles={formData.cuiles} initialQuiz={formData.quiz} onNext={() => {}} />
+                      <StepIdentidad
+                        cuit={formData.cuit}
+                        cuiles={formData.cuiles}
+                        initialQuiz={formData.quiz}
+                        onNext={handleIdentidadCompletada}
+                      />
                     )}
                   </>
                 )}

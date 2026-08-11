@@ -15,6 +15,7 @@ export default function IericAuth({ children, onAuthenticated }) {
   const authenticationUrl = import.meta.env.VITE_AUTHENTICATION_URL;
 
   const abrirLogin = () => {
+    setVerificandoSesion(false);
     setNuevoUsuario(false);
     setMostrarLogin(true);
   };
