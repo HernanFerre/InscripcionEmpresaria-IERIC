@@ -1,80 +1,9 @@
-export const ACTIVIDADES_EMPRESA_MOCK = [
-  {
-    value: "construccion-residencial",
-    label: "Construcción de edificios residenciales",
-  },
-  {
-    value: "construccion-no-residencial",
-    label: "Construcción de edificios no residenciales",
-  },
-  {
-    value: "obras-viales",
-    label: "Obras viales",
-  },
-  {
-    value: "obras-infraestructura",
-    label: "Obras de infraestructura",
-  },
-  {
-    value: "instalaciones-electricas",
-    label: "Instalaciones eléctricas",
-  },
-  {
-    value: "instalaciones-sanitarias",
-    label: "Instalaciones sanitarias",
-  },
-  {
-    value: "demolicion",
-    label: "Demolición y preparación de terrenos",
-  },
-  {
-    value: "terminacion-edificios",
-    label: "Terminación de edificios",
-  },
-];
+import catalogos from "./InscripcionCatalogosMock.json";
 
-export const CARACTERES_EMPRESA_MOCK = [
-  { value: "privada", label: "Privada" },
-  { value: "publica", label: "Pública" },
-  { value: "mixta", label: "Mixta" },
-];
+export const ACTIVIDADES_EMPRESA_MOCK = catalogos.actividadesEmpresa ?? [];
 
-export const TIPOS_SOCIEDAD_MOCK = [
-  {
-    value: "sa",
-    label: "Sociedad Anónima (S.A.)",
-  },
-  {
-    value: "srl",
-    label: "Sociedad de Responsabilidad Limitada (S.R.L.)",
-  },
-  {
-    value: "sas",
-    label: "Sociedad por Acciones Simplificada (S.A.S.)",
-  },
-  {
-    value: "cooperativa",
-    label: "Cooperativa",
-  },
-  {
-    value: "sociedad-colectiva",
-    label: "Sociedad Colectiva",
-  },
-  {
-    value: "sociedad-comandita",
-    label: "Sociedad en Comandita",
-  },
-];
+export const CARACTERES_EMPRESA_MOCK = catalogos.caracteresEmpresa ?? [];
 
-export const LOCALIDADES_MOCK = [
-  { value: "caba", label: "Ciudad Autónoma de Buenos Aires" },
-  { value: "la-plata", label: "La Plata" },
-  { value: "mar-del-plata", label: "Mar del Plata" },
-  { value: "bahia-blanca", label: "Bahía Blanca" },
-  { value: "cordoba", label: "Córdoba" },
-  { value: "rosario", label: "Rosario" },
-  { value: "santa-fe", label: "Santa Fe" },
-  { value: "mendoza", label: "Mendoza" },
-  { value: "neuquen", label: "Neuquén" },
-  { value: "tucuman", label: "San Miguel de Tucumán" },
-];
+export const TIPOS_SOCIEDAD_MOCK = catalogos.tiposSociedad ?? [];
+
+export const LOCALIDADES_MOCK = catalogos.localidades ?? [];

@@ -221,7 +221,7 @@ export default function StepEmpresa({ initialData = null, onNext }) {
       </section>
 
       <section className="empresa-form-section">
-        <h2 className="empresa-section-title">Domicilio</h2>
+        <h2 className="empresa-section-title">Domicilio Legal</h2>
 
         <div className="empresa-form-grid">
           <div className="empresa-col-6">

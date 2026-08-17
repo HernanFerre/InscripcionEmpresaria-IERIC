@@ -117,7 +117,13 @@ export default function InscripcionPage() {
     <IericAuth onAuthenticated={handleAuthenticated}>
       {({ usuario, estaLogueado, abrirLogin, cambiarUsuario }) => (
         <div className="app-shell">
-          <Topbar usuario={usuario} onAbrirLogin={abrirLogin} onCambiarUsuario={cambiarUsuario} />
+          <Topbar
+            usuario={usuario}
+            cuit={formData.cuit}
+            mostrarDatosInscripcion={faseActual === "inscripcion"}
+            onAbrirLogin={abrirLogin}
+            onCambiarUsuario={cambiarUsuario}
+          />
 
           <main className="main-area">
             <section className="content-grid">
@@ -187,7 +193,7 @@ export default function InscripcionPage() {
             </section>
           </main>
 
-          <Footer />
+          {faseActual !== "inscripcion" && <Footer />}
         </div>
       )}
     </IericAuth>

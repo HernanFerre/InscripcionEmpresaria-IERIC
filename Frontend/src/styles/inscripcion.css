@@ -47,6 +47,23 @@
   gap: 14px;
 }
 
+.topbar-inscripcion-data {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 180px;
+  margin-right: 24px;
+  line-height: 1.35;
+  text-align: right;
+}
+
+.topbar-inscripcion-data span {
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
 .user-icon,
 .bell-wrapper {
   color: var(--color-primary-soft);
