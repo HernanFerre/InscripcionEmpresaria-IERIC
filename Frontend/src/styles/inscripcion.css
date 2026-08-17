@@ -107,6 +107,13 @@
   box-shadow: var(--shadow-elevation-8-box);
 }
 
+.wizard-card--inscripcion {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
 .steps {
   display: grid;
   position: relative;

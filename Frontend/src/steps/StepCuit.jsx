@@ -9,6 +9,31 @@ import { formatCuit } from "../utils/formatters.js";
 
 import { obtenerEstadoBloqueo } from "../services/QuizBlockingMockService.js";
 
+function formatearTiempoRestante(segundosRestantes) {
+  const totalSegundos = Math.max(0, Math.ceil(Number(segundosRestantes) || 0));
+
+  if (totalSegundos < 60) {
+    return `${totalSegundos} ${totalSegundos === 1 ? "segundo" : "segundos"}`;
+  }
+
+  const totalMinutos = Math.ceil(totalSegundos / 60);
+
+  if (totalMinutos < 60) {
+    return `${totalMinutos} ${totalMinutos === 1 ? "minuto" : "minutos"}`;
+  }
+
+  const horas = Math.floor(totalMinutos / 60);
+  const minutos = totalMinutos % 60;
+
+  const textoHoras = `${horas} ${horas === 1 ? "hora" : "horas"}`;
+
+  if (minutos === 0) {
+    return textoHoras;
+  }
+
+  return `${textoHoras} y ${minutos} ${minutos === 1 ? "minuto" : "minutos"}`;
+}
+
 export default function StepCuit({ initialCuit = "", initialEmpresa = null, estaLogueado = false, onLoginRequired, onNext }) {
   const [cuit, setCuit] = useState(initialCuit);
 
@@ -26,26 +51,25 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, esta
 
   const [requiereAutenticacion, setRequiereAutenticacion] = useState(false);
 
+  const [bloqueoQuiz, setBloqueoQuiz] = useState(null);
+
+  // const [bloqueoQuiz, setBloqueoQuiz] = useState({
+  //   bloqueado: true,
+  //   permanente: false,
+  //   segundosRestantes: 120,
+  // });
+
   const puedeContinuarPorBloqueo = () => {
     const estadoBloqueo = obtenerEstadoBloqueo(cuit);
 
     if (!estadoBloqueo.bloqueado) {
+      setBloqueoQuiz(null);
       return true;
     }
 
     setRequiereAutenticacion(false);
-
-    if (estadoBloqueo.permanente) {
-      setErrorProceso("El CUIT se encuentra bloqueado permanentemente por haber agotado los intentos del quiz.");
-
-      return false;
-    }
-
-    setErrorProceso(
-      `El CUIT se encuentra temporalmente bloqueado. ` +
-        `Podrá volver a intentarlo en aproximadamente ` +
-        `${estadoBloqueo.segundosRestantes} segundos.`,
-    );
+    setErrorProceso("");
+    setBloqueoQuiz(estadoBloqueo);
 
     return false;
   };
@@ -102,6 +126,7 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, esta
     setEmpresa(null);
     setEstadoSolicitud("");
     setErrorProceso("");
+    setBloqueoQuiz(null);
   };
 
   const handleNext = async () => {
@@ -196,6 +221,34 @@ export default function StepCuit({ initialCuit = "", initialEmpresa = null, esta
             </button>
           </div>
         </div>
+      )}
+
+      {bloqueoQuiz?.bloqueado && (
+        <section className="identity-limit-card">
+          <div className="identity-warning-message">
+            <AlertTriangle size={22} />
+
+            <div>
+              <strong>{bloqueoQuiz.permanente ? "CUIT bloqueado permanentemente" : "CUIT temporalmente bloqueado"}</strong>
+
+              <span>
+                {bloqueoQuiz.permanente
+                  ? "El bloqueo no posee una fecha de vencimiento. Para continuar deberá comunicarse con un representante del IERIC."
+                  : `Podrá realizar un nuevo intento dentro de aproximadamente ${formatearTiempoRestante(bloqueoQuiz.segundosRestantes)}.`}
+              </span>
+            </div>
+          </div>
+
+          <div className="identity-limit-actions">
+            <button type="button" className="next-step-button">
+              Contactar a IERIC
+            </button>
+
+            <button type="button" className="identity-secondary-button" onClick={() => window.location.reload()}>
+              Volver al Inicio
+            </button>
+          </div>
+        </section>
       )}
 
       {errorProceso && (

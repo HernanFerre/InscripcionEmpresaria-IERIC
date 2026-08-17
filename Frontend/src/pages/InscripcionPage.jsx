@@ -121,7 +121,7 @@ export default function InscripcionPage() {
 
           <main className="main-area">
             <section className="content-grid">
-              <div className="wizard-card">
+              <div className={`wizard-card ${faseActual === "inscripcion" ? "wizard-card--inscripcion" : ""}`}>
                 {faseActual === "validacion" && (
                   <>
                     <StepIndicator currentStep={currentStep} mostrarTelefono={MOSTRAR_VALIDACION_TELEFONO} />
