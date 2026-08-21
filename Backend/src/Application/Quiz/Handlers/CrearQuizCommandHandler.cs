@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
 using IERIC.SumariosIERIC.Application.Quiz.Mappers;
 using IERIC.SumariosIERIC.Application.Quiz.Models;
 using IERIC.SumariosIERIC.Domain.Entities;
@@ -11,6 +10,7 @@ using IERIC.SumariosIERIC.Domain.Exceptions;
 using IERIC.SumariosIERIC.Domain.Services;
 using IERIC.SumariosIERIC.Domain.ValueObjects;
 using IERIC.SumariosIERIC.Domain.ValueObjects.Network;
+using MediatR;
 using QuizDominio =
     IERIC.SumariosIERIC.Domain.Entities.Quiz;
 
@@ -23,8 +23,10 @@ namespace IERIC.SumariosIERIC.Application.Commands
 
         private readonly IGeneradorQuiz _generadorQuiz;
         private readonly IQuizRepository _quizRepository;
+
         private readonly IProveedorCuilesEmpresa
             _proveedorCuilesEmpresa;
+
         private readonly IProveedorEstadoEmpresa
             _proveedorEstadoEmpresa;
 
@@ -65,8 +67,47 @@ namespace IERIC.SumariosIERIC.Application.Commands
             CancellationToken cancellationToken
         )
         {
+            if (
+                string.IsNullOrWhiteSpace(
+                    command.UsuarioId
+                )
+            )
+            {
+                throw new SumariosDomainException(
+                    "No fue posible identificar al usuario autenticado."
+                );
+            }
+
             Cuit cuitEmpresa =
-                CrearCuit(command.Cuit);
+                CrearCuit(
+                    command.Cuit
+                );
+
+            (
+                bool estaBloqueado,
+                DateTime? bloqueadoHasta
+            ) =
+                await _quizRepository
+                    .ObtenerBloqueoVigenteAsync(
+                        cuitEmpresa
+                    );
+
+            if (estaBloqueado)
+            {
+                string mensaje =
+                    bloqueadoHasta.HasValue
+                        ? "El CUIT se encuentra bloqueado " +
+                          "hasta " +
+                          bloqueadoHasta.Value.ToString(
+                              "dd/MM/yyyy HH:mm:ss"
+                          ) +
+                          "."
+                        : "El CUIT se encuentra bloqueado.";
+
+                throw new SumariosDomainException(
+                    mensaje
+                );
+            }
 
             EstadoInscripcionEmpresa estadoEmpresa =
                 await _proveedorEstadoEmpresa
@@ -81,7 +122,8 @@ namespace IERIC.SumariosIERIC.Application.Commands
                     string.IsNullOrWhiteSpace(
                         estadoEmpresa.Mensaje
                     )
-                        ? "El estado de la empresa no permite iniciar la inscripción."
+                        ? "El estado de la empresa no permite " +
+                          "iniciar la inscripción."
                         : estadoEmpresa.Mensaje;
 
                 throw new SumariosDomainException(
@@ -103,7 +145,8 @@ namespace IERIC.SumariosIERIC.Application.Commands
             )
             {
                 throw new SumariosDomainException(
-                    "No se encontraron CUILes vinculados al CUIT informado."
+                    "No se encontraron CUILes vinculados " +
+                    "al CUIT informado."
                 );
             }
 
@@ -113,12 +156,17 @@ namespace IERIC.SumariosIERIC.Application.Commands
             QuizDominio quiz =
                 _generadorQuiz.CrearQuiz(
                     cuitEmpresa,
+                    command.UsuarioId,
                     cuilesVinculados
                 );
 
-            await _quizRepository.GuardarAsync(quiz);
+            await _quizRepository.GuardarAsync(
+                quiz
+            );
 
-            return QuizResponseMapper.DesdeDominio(quiz);
+            return QuizResponseMapper.DesdeDominio(
+                quiz
+            );
         }
 
         private Cuit CrearCuit(
@@ -126,7 +174,9 @@ namespace IERIC.SumariosIERIC.Application.Commands
         )
         {
             string numeroNormalizado =
-                NormalizarNumero(valor);
+                NormalizarNumero(
+                    valor
+                );
 
             if (
                 !long.TryParse(
@@ -140,7 +190,9 @@ namespace IERIC.SumariosIERIC.Application.Commands
                 );
             }
 
-            return new Cuit(numero);
+            return new Cuit(
+                numero
+            );
         }
 
         private string NormalizarNumero(

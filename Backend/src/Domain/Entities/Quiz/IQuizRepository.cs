@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using IERIC.SumariosIERIC.Domain.ValueObjects.Network;
 
 namespace IERIC.SumariosIERIC.Domain.Entities
 {
@@ -8,12 +9,19 @@ namespace IERIC.SumariosIERIC.Domain.Entities
     {
         Task GuardarAsync(Quiz quiz);
 
-        Task<Quiz> ObtenerPorIdAsync(Guid quizId);
+        Task<Quiz> ObtenerPorIdAsync(long quizId);
 
         Task GuardarValidacionAsync(
             Quiz quiz,
             IEnumerable<string> opcionesSeleccionadas,
             bool respuestaCorrecta
+        );
+
+        Task<(
+            bool EstaBloqueado,
+            DateTime? BloqueadoHasta
+        )> ObtenerBloqueoVigenteAsync(
+            Cuit cuitEmpresa
         );
     }
 }

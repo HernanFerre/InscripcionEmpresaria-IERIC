@@ -48,6 +48,7 @@ using Microsoft.Extensions.Options;
 using Minio;
 using IERIC.SumariosIERIC.Domain.Services;
 using IERIC.SumariosIERIC.Infrastructure.Services;
+using IERIC.SumariosIERIC.Application.Quiz.Settings;
 
 namespace IERIC.SumariosIERIC.Application
 {
@@ -163,6 +164,8 @@ namespace IERIC.SumariosIERIC.Application
 
             services.AddAutoMapper(typeof(Startup));
             services.AddMediatR(Assembly.GetExecutingAssembly());
+
+            services.Configure<QuizSettings>(Configuration.GetSection("QuizSettings"));
             services.AddSingleton<
                 IAleatoriedadQuiz,
                 AleatoriedadCriptograficaQuiz

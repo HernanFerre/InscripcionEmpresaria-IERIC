@@ -7,13 +7,17 @@ using IERIC.SumariosIERIC.Domain.ValueObjects.Network;
 
 namespace IERIC.SumariosIERIC.Domain.Entities
 {
-    public class Quiz : Entity, IAggregateRoot
+    public class Quiz : IAggregateRoot
     {
         private readonly List<Cuil> _cuilesVinculados =
             new List<Cuil>();
 
         private readonly List<OpcionQuiz> _opciones =
             new List<OpcionQuiz>();
+
+        public long Id { get; private set; }
+
+        public string UsuarioId { get; private set; }
 
         public Cuit CuitEmpresa { get; private set; }
 
@@ -23,11 +27,22 @@ namespace IERIC.SumariosIERIC.Domain.Entities
 
         public int IntentosTotales { get; private set; }
 
-        public int IntentosRestantes { get; private set; }
+        public int IntentosRealizados { get; private set; }
 
-        public bool Validado { get; private set; }
+        public int IntentosRestantes =>
+            Math.Max(
+                0,
+                IntentosTotales - IntentosRealizados
+            );
 
-        public DateTime FechaExpiracionUtc { get; private set; }
+        public bool Validado =>
+            Estado == EstadoQuiz.Validado;
+
+        public DateTime FechaCreacion { get; private set; }
+
+        public DateTime FechaExpiracion { get; private set; }
+
+        public DateTime? BloqueadoHasta { get; private set; }
 
         public IReadOnlyCollection<Cuil> CuilesVinculados =>
             _cuilesVinculados.AsReadOnly();
@@ -41,7 +56,7 @@ namespace IERIC.SumariosIERIC.Domain.Entities
 
         public bool EstaExpirado =>
             Estado == EstadoQuiz.Expirado ||
-            DateTime.UtcNow >= FechaExpiracionUtc;
+            DateTime.Now >= FechaExpiracion;
 
         private Quiz()
         {
@@ -49,6 +64,7 @@ namespace IERIC.SumariosIERIC.Domain.Entities
 
         public Quiz(
             Cuit cuitEmpresa,
+            string usuarioId,
             IEnumerable<Cuil> cuilesVinculados,
             EscenarioQuiz escenario,
             IEnumerable<OpcionQuiz> opciones,
@@ -59,6 +75,23 @@ namespace IERIC.SumariosIERIC.Domain.Entities
             {
                 throw new SumariosDomainException(
                     "El quiz debe estar asociado a un CUIT"
+                );
+            }
+
+            if (string.IsNullOrWhiteSpace(usuarioId))
+            {
+                throw new SumariosDomainException(
+                    "El quiz debe estar asociado a un usuario"
+                );
+            }
+
+            string usuarioNormalizado = usuarioId.Trim();
+
+            if (usuarioNormalizado.Length > 200)
+            {
+                throw new SumariosDomainException(
+                    "El identificador del usuario supera " +
+                    "la longitud permitida"
                 );
             }
 
@@ -81,48 +114,53 @@ namespace IERIC.SumariosIERIC.Domain.Entities
                 );
             }
 
-            Id = Guid.NewGuid();
-            Activo = true;
-            FechaAlta = DateTime.UtcNow;
-
+            Id = 0;
+            UsuarioId = usuarioNormalizado;
             CuitEmpresa = cuitEmpresa;
             Estado = EstadoQuiz.Activo;
             IntentosTotales = intentosTotales;
-            IntentosRestantes = intentosTotales;
-            Validado = false;
-            FechaExpiracionUtc = DateTime.UtcNow.AddMinutes(10);
+            IntentosRealizados = 0;
+            FechaCreacion = DateTime.Now;
+            FechaExpiracion = DateTime.Now.AddMinutes(10);
+            BloqueadoHasta = null;
 
             _cuilesVinculados.AddRange(cuiles);
 
-            CambiarDesafio(escenario, opciones);
+            CambiarDesafio(
+                escenario,
+                opciones
+            );
         }
+
         public static Quiz Restaurar(
-            Guid id,
+            long id,
+            string usuarioId,
             Cuit cuitEmpresa,
             IEnumerable<Cuil> cuilesVinculados,
             EscenarioQuiz escenario,
             IEnumerable<OpcionQuiz> opciones,
             EstadoQuiz estado,
             int intentosTotales,
-            int intentosRestantes,
-            DateTime fechaCreacionUtc,
-            DateTime fechaExpiracionUtc
+            int intentosRealizados,
+            DateTime fechaCreacion,
+            DateTime fechaExpiracion,
+            DateTime? bloqueadoHasta
         )
         {
-            if (id == Guid.Empty)
+            if (id <= 0)
             {
                 throw new SumariosDomainException(
-                    "El identificador del quiz no puede estar vacío"
+                    "El identificador del quiz no es válido"
                 );
             }
 
             if (
-                intentosRestantes < 0 ||
-                intentosRestantes > intentosTotales
+                intentosRealizados < 0 ||
+                intentosRealizados > intentosTotales
             )
             {
                 throw new SumariosDomainException(
-                    "La cantidad de intentos restantes no es válida"
+                    "La cantidad de intentos realizados no es válida"
                 );
             }
 
@@ -135,6 +173,7 @@ namespace IERIC.SumariosIERIC.Domain.Entities
 
             Quiz quiz = new Quiz(
                 cuitEmpresa,
+                usuarioId,
                 cuilesVinculados,
                 escenario,
                 opciones,
@@ -143,23 +182,36 @@ namespace IERIC.SumariosIERIC.Domain.Entities
 
             quiz.Id = id;
             quiz.Estado = estado;
-            quiz.IntentosRestantes = intentosRestantes;
-            quiz.Validado = estado == EstadoQuiz.Validado;
-
-            quiz.FechaAlta = DateTime.SpecifyKind(
-                fechaCreacionUtc,
-                DateTimeKind.Utc
-            );
-
-            quiz.FechaExpiracionUtc = DateTime.SpecifyKind(
-                fechaExpiracionUtc,
-                DateTimeKind.Utc
-            );
+            quiz.IntentosRealizados = intentosRealizados;
+            quiz.FechaCreacion = fechaCreacion;
+            quiz.FechaExpiracion = fechaExpiracion;
+            quiz.BloqueadoHasta = bloqueadoHasta;
 
             return quiz;
         }
+
+        public void AsignarId(long id)
+        {
+            if (id <= 0)
+            {
+                throw new SumariosDomainException(
+                    "El identificador del quiz no es válido"
+                );
+            }
+
+            if (Id != 0)
+            {
+                throw new SumariosDomainException(
+                    "El quiz ya tiene un identificador asignado"
+                );
+            }
+
+            Id = id;
+        }
+
         public bool ValidarRespuesta(
-            IEnumerable<string> opcionesSeleccionadas
+            IEnumerable<string> opcionesSeleccionadas,
+            TimeSpan? duracionBloqueo
         )
         {
             MarcarComoExpirado();
@@ -171,6 +223,11 @@ namespace IERIC.SumariosIERIC.Domain.Entities
                 );
             }
 
+            if (Estado == EstadoQuiz.Validado)
+            {
+                return true;
+            }
+
             if (LimiteExcedido)
             {
                 Estado = EstadoQuiz.Bloqueado;
@@ -180,14 +237,36 @@ namespace IERIC.SumariosIERIC.Domain.Entities
                 );
             }
 
-            if (Estado == EstadoQuiz.Validado)
+            if (
+                duracionBloqueo.HasValue &&
+                duracionBloqueo.Value <= TimeSpan.Zero
+            )
             {
-                return true;
+                throw new SumariosDomainException(
+                    "La duración del bloqueo debe ser mayor a cero"
+                );
             }
 
+            List<string> opcionesNormalizadas =
+                opcionesSeleccionadas?
+                    .Where(
+                        opcion =>
+                            !string.IsNullOrWhiteSpace(opcion)
+                    )
+                    .Select(
+                        opcion =>
+                            opcion
+                                .Trim()
+                                .ToLowerInvariant()
+                    )
+                    .Distinct(
+                        StringComparer.OrdinalIgnoreCase
+                    )
+                    .ToList();
+
             if (
-                opcionesSeleccionadas == null ||
-                !opcionesSeleccionadas.Any()
+                opcionesNormalizadas == null ||
+                opcionesNormalizadas.Count == 0
             )
             {
                 throw new SumariosDomainException(
@@ -197,9 +276,13 @@ namespace IERIC.SumariosIERIC.Domain.Entities
 
             HashSet<string> seleccionadas =
                 new HashSet<string>(
-                    opcionesSeleccionadas,
+                    opcionesNormalizadas,
                     StringComparer.OrdinalIgnoreCase
                 );
+
+            ValidarOpcionesSeleccionadas(
+                seleccionadas
+            );
 
             HashSet<string> correctas =
                 ObtenerRespuestasCorrectas();
@@ -207,19 +290,25 @@ namespace IERIC.SumariosIERIC.Domain.Entities
             bool respuestaCorrecta =
                 seleccionadas.SetEquals(correctas);
 
+            IntentosRealizados++;
+
             if (respuestaCorrecta)
             {
-                Validado = true;
                 Estado = EstadoQuiz.Validado;
 
                 return true;
             }
 
-            IntentosRestantes--;
-
             if (IntentosRestantes <= 0)
             {
                 Estado = EstadoQuiz.Bloqueado;
+
+                BloqueadoHasta =
+                    duracionBloqueo.HasValue
+                        ? DateTime.Now.Add(
+                            duracionBloqueo.Value
+                        )
+                        : null;
             }
 
             return false;
@@ -270,7 +359,9 @@ namespace IERIC.SumariosIERIC.Domain.Entities
                         opcion => opcion.Id,
                         StringComparer.OrdinalIgnoreCase
                     )
-                    .Any(grupo => grupo.Count() > 1);
+                    .Any(
+                        grupo => grupo.Count() > 1
+                    );
 
             if (identificadoresRepetidos)
             {
@@ -279,7 +370,10 @@ namespace IERIC.SumariosIERIC.Domain.Entities
                 );
             }
 
-            ValidarEscenario(escenario, nuevasOpciones);
+            ValidarEscenario(
+                escenario,
+                nuevasOpciones
+            );
 
             Escenario = escenario;
 
@@ -291,10 +385,52 @@ namespace IERIC.SumariosIERIC.Domain.Entities
         {
             if (
                 Estado == EstadoQuiz.Activo &&
-                DateTime.UtcNow >= FechaExpiracionUtc
+                DateTime.Now >= FechaExpiracion
             )
             {
                 Estado = EstadoQuiz.Expirado;
+            }
+        }
+
+        private void ValidarOpcionesSeleccionadas(
+            HashSet<string> seleccionadas
+        )
+        {
+            HashSet<string> opcionesDisponibles =
+                new HashSet<string>(
+                    _opciones.Select(opcion => opcion.Id),
+                    StringComparer.OrdinalIgnoreCase
+                )
+                {
+                    "ninguna",
+                    "todas"
+                };
+
+            if (
+                seleccionadas.Any(
+                    opcion =>
+                        !opcionesDisponibles.Contains(opcion)
+                )
+            )
+            {
+                throw new SumariosDomainException(
+                    "La respuesta contiene una opción inválida"
+                );
+            }
+
+            bool incluyeOpcionEspecial =
+                seleccionadas.Contains("ninguna") ||
+                seleccionadas.Contains("todas");
+
+            if (
+                incluyeOpcionEspecial &&
+                seleccionadas.Count > 1
+            )
+            {
+                throw new SumariosDomainException(
+                    "Las opciones 'Ninguna' y 'Todas' " +
+                    "deben seleccionarse individualmente"
+                );
             }
         }
 
@@ -304,7 +440,9 @@ namespace IERIC.SumariosIERIC.Domain.Entities
         )
         {
             int cantidadVinculadas =
-                opciones.Count(opcion => opcion.EsVinculado);
+                opciones.Count(
+                    opcion => opcion.EsVinculado
+                );
 
             bool escenarioValido =
                 escenario switch
@@ -334,7 +472,10 @@ namespace IERIC.SumariosIERIC.Domain.Entities
 
         private HashSet<string> ObtenerRespuestasCorrectas()
         {
-            if (Escenario == EscenarioQuiz.TodasCorrectas)
+            if (
+                Escenario ==
+                EscenarioQuiz.TodasCorrectas
+            )
             {
                 return new HashSet<string>(
                     new[] { "todas" },
@@ -342,7 +483,10 @@ namespace IERIC.SumariosIERIC.Domain.Entities
                 );
             }
 
-            if (Escenario == EscenarioQuiz.NingunaCorrecta)
+            if (
+                Escenario ==
+                EscenarioQuiz.NingunaCorrecta
+            )
             {
                 return new HashSet<string>(
                     new[] { "ninguna" },
@@ -352,8 +496,14 @@ namespace IERIC.SumariosIERIC.Domain.Entities
 
             return new HashSet<string>(
                 _opciones
-                    .Where(opcion => opcion.EsVinculado)
-                    .Select(opcion => opcion.Id),
+                    .Where(
+                        opcion =>
+                            opcion.EsVinculado
+                    )
+                    .Select(
+                        opcion =>
+                            opcion.Id
+                    ),
                 StringComparer.OrdinalIgnoreCase
             );
         }

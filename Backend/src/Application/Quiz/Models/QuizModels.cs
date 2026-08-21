@@ -17,7 +17,7 @@ namespace IERIC.SumariosIERIC.Application.Quiz.Models
 
     public class QuizResponse
     {
-        public Guid QuizId { get; set; }
+        public long QuizId { get; set; }
 
         public string Titulo { get; set; }
 
@@ -33,9 +33,10 @@ namespace IERIC.SumariosIERIC.Application.Quiz.Models
 
     public class ValidarQuizRequest
     {
-        public Guid QuizId { get; set; }
+        public long QuizId { get; set; }
 
-        public List<string> OpcionesSeleccionadas { get; set; } =
+        public List<string> OpcionesSeleccionadas
+        { get; set; } =
             new List<string>();
     }
 
@@ -46,6 +47,8 @@ namespace IERIC.SumariosIERIC.Application.Quiz.Models
         public bool LimiteExcedido { get; set; }
 
         public int IntentosRestantes { get; set; }
+
+        public DateTime? BloqueadoHasta { get; set; }
 
         public string Mensaje { get; set; }
 

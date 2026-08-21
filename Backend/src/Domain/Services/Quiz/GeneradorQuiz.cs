@@ -32,21 +32,30 @@ namespace IERIC.SumariosIERIC.Domain.Services
 
         public Quiz CrearQuiz(
             Cuit cuitEmpresa,
+            string usuarioId,
             IEnumerable<Cuil> cuilesVinculados,
             int intentosTotales = 3
         )
         {
             List<Cuil> cuiles =
-                PrepararCuiles(cuilesVinculados);
+                PrepararCuiles(
+                    cuilesVinculados
+                );
 
             EscenarioQuiz escenario =
-                SeleccionarEscenario(cuiles.Count);
+                SeleccionarEscenario(
+                    cuiles.Count
+                );
 
             List<OpcionQuiz> opciones =
-                GenerarOpciones(escenario, cuiles);
+                GenerarOpciones(
+                    escenario,
+                    cuiles
+                );
 
             return new Quiz(
                 cuitEmpresa,
+                usuarioId,
                 cuiles,
                 escenario,
                 opciones,

@@ -1,13 +1,16 @@
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using IERIC.SumariosIERIC.Application.Commands;
 using IERIC.SumariosIERIC.Application.Quiz.Models;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace IERIC.SumariosIERIC.Application
 {
+    [Authorize]
     [Route("v1/[controller]")]
     [ApiController]
     public class QuizController : ControllerBase
@@ -62,15 +65,35 @@ namespace IERIC.SumariosIERIC.Application
                 );
             }
 
+            string usuarioId =
+                ObtenerUsuarioId();
+
+            if (string.IsNullOrWhiteSpace(usuarioId))
+            {
+                return Unauthorized(
+                    new
+                    {
+                        mensaje =
+                            "No fue posible identificar " +
+                            "al usuario autenticado."
+                    }
+                );
+            }
+
             CrearQuizCommand command =
                 new CrearQuizCommand(
-                    request.Cuit
+                    request.Cuit,
+                    usuarioId
                 );
 
             QuizResponse quiz =
-                await _mediator.Send(command);
+                await _mediator.Send(
+                    command
+                );
 
-            return Ok(quiz);
+            return Ok(
+                quiz
+            );
         }
 
         [Route("Validar")]
@@ -91,7 +114,7 @@ namespace IERIC.SumariosIERIC.Application
                 );
             }
 
-            if (request.QuizId == Guid.Empty)
+            if (request.QuizId <= 0)
             {
                 return BadRequest(
                     new
@@ -116,16 +139,48 @@ namespace IERIC.SumariosIERIC.Application
                 );
             }
 
+            string usuarioId =
+                ObtenerUsuarioId();
+
+            if (string.IsNullOrWhiteSpace(usuarioId))
+            {
+                return Unauthorized(
+                    new
+                    {
+                        mensaje =
+                            "No fue posible identificar " +
+                            "al usuario autenticado."
+                    }
+                );
+            }
+
             ValidarQuizCommand command =
                 new ValidarQuizCommand(
                     request.QuizId,
+                    usuarioId,
                     request.OpcionesSeleccionadas
                 );
 
             ValidarQuizResponse resultado =
-                await _mediator.Send(command);
+                await _mediator.Send(
+                    command
+                );
 
-            return Ok(resultado);
+            return Ok(
+                resultado
+            );
+        }
+
+        private string ObtenerUsuarioId()
+        {
+            return
+                User.FindFirstValue(
+                    ClaimTypes.NameIdentifier
+                )
+                ??
+                User.FindFirstValue(
+                    "sub"
+                );
         }
     }
 }

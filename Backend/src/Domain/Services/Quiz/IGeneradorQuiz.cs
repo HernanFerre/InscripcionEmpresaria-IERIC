@@ -8,10 +8,13 @@ namespace IERIC.SumariosIERIC.Domain.Services
     {
         Quiz CrearQuiz(
             Cuit cuitEmpresa,
+            string usuarioId,
             IEnumerable<Cuil> cuilesVinculados,
             int intentosTotales = 3
         );
 
-        void GenerarNuevoDesafio(Quiz quiz);
+        void GenerarNuevoDesafio(
+            Quiz quiz
+        );
     }
 }
