@@ -325,3 +325,23 @@
     top: 19px;
   }
 }
+
+@media (max-height: 950px) and (min-width: 701px) {
+  .topbar {
+    height: 58px;
+    padding: 0 38px;
+  }
+
+  .topbar-left,
+  .topbar-right {
+    zoom: 0.8;
+  }
+
+  .main-area {
+    padding: 16px 24px 24px;
+  }
+
+  .content-grid {
+    zoom: 0.8;
+  }
+}
