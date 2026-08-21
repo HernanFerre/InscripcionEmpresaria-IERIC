@@ -4,202 +4,386 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace IERIC.SumariosIERIC.Infrastructure.Persistence.Quiz.Configurations
 {
-    public class QuizSesionConfiguration : IEntityTypeConfiguration<QuizSesionEntity>
+    public class QuizSesionConfiguration
+        : IEntityTypeConfiguration<QuizSesionEntity>
     {
-        public void Configure(EntityTypeBuilder<QuizSesionEntity> builder)
+        public void Configure(
+            EntityTypeBuilder<QuizSesionEntity> builder
+        )
         {
-            builder.ToTable("QuizSesion");
+            builder.ToTable(
+                "QuizSesion",
+                "dbo",
+                table =>
+                {
+                    table.HasCheckConstraint(
+                        "CK_QuizSesion_Estado",
+                        "[Estado] BETWEEN 1 AND 4"
+                    );
 
-            builder.HasKey(x => x.Id);
+                    table.HasCheckConstraint(
+                        "CK_QuizSesion_IntentosTotales",
+                        "[IntentosTotales] > 0"
+                    );
+                }
+            );
+
+            builder.HasKey(x => x.Id)
+                .HasName("PK_QuizSesion");
 
             builder.Property(x => x.Id)
-                .ValueGeneratedNever();
+                .HasColumnType("bigint")
+                .UseIdentityColumn();
 
             builder.Property(x => x.CuitEmpresa)
-                .HasColumnType("char(11)")
-                .HasMaxLength(11)
-                .IsFixedLength()
+                .HasColumnType("bigint")
+                .IsRequired();
+
+            builder.Property(x => x.UsuarioId)
+                .HasColumnType("nvarchar(200)")
+                .HasMaxLength(200)
                 .IsRequired();
 
             builder.Property(x => x.Estado)
+                .HasColumnType("tinyint")
                 .IsRequired();
 
             builder.Property(x => x.IntentosTotales)
+                .HasColumnType("tinyint")
                 .IsRequired();
 
-            builder.Property(x => x.IntentosRestantes)
+            builder.Property(x => x.FechaCreacion)
+                .HasColumnType("datetime")
                 .IsRequired();
 
-            builder.Property(x => x.FechaCreacionUtc)
-                .HasColumnType("datetime2")
+            builder.Property(x => x.FechaExpiracion)
+                .HasColumnType("datetime")
                 .IsRequired();
 
-            builder.Property(x => x.FechaExpiracionUtc)
-                .HasColumnType("datetime2")
-                .IsRequired();
+            builder.Property(x => x.FechaFinalizacion)
+                .HasColumnType("datetime");
 
-            builder.Property(x => x.FechaFinalizacionUtc)
-                .HasColumnType("datetime2");
+            builder.Property(x => x.BloqueadoHasta)
+                .HasColumnType("datetime");
 
-            builder.HasIndex(x => x.CuitEmpresa)
-                .HasDatabaseName("IX_QuizSesion_CuitEmpresa");
+            builder.HasIndex(x => new
+            {
+                x.CuitEmpresa,
+                x.Estado,
+                x.BloqueadoHasta
+            })
+                .HasDatabaseName(
+                    "IX_QuizSesion_Cuit_Bloqueo"
+                );
 
-            builder.HasIndex(x => x.Estado)
-                .HasDatabaseName("IX_QuizSesion_Estado");
+            builder.HasIndex(x => new
+            {
+                x.UsuarioId,
+                x.FechaCreacion
+            })
+                .HasDatabaseName(
+                    "IX_QuizSesion_Usuario_Fecha"
+                );
         }
     }
 
     public class QuizCuilVinculadoConfiguration
         : IEntityTypeConfiguration<QuizCuilVinculadoEntity>
     {
-        public void Configure(EntityTypeBuilder<QuizCuilVinculadoEntity> builder)
+        public void Configure(
+            EntityTypeBuilder<QuizCuilVinculadoEntity> builder
+        )
         {
-            builder.ToTable("QuizCuilVinculado");
+            builder.ToTable(
+                "QuizCuilVinculado",
+                "dbo"
+            );
 
             builder.HasKey(x => new
             {
-                x.QuizId,
+                x.QuizSesionId,
                 x.Cuil
-            });
+            })
+                .HasName("PK_QuizCuilVinculado");
 
-            builder.Property(x => x.Cuil)
-                .HasColumnType("char(11)")
-                .HasMaxLength(11)
-                .IsFixedLength()
+            builder.Property(x => x.QuizSesionId)
+                .HasColumnType("bigint")
                 .IsRequired();
 
-            builder.HasOne(x => x.Quiz)
+            builder.Property(x => x.Cuil)
+                .HasColumnType("bigint")
+                .IsRequired();
+
+            builder.HasOne(x => x.QuizSesion)
                 .WithMany(x => x.CuilesVinculados)
-                .HasForeignKey(x => x.QuizId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(x => x.QuizSesionId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName(
+                    "FK_QuizCuilVinculado_QuizSesion_QuizSesionId"
+                );
         }
     }
 
     public class QuizDesafioConfiguration
         : IEntityTypeConfiguration<QuizDesafioEntity>
     {
-        public void Configure(EntityTypeBuilder<QuizDesafioEntity> builder)
+        public void Configure(
+            EntityTypeBuilder<QuizDesafioEntity> builder
+        )
         {
-            builder.ToTable("QuizDesafio");
+            builder.ToTable(
+                "QuizDesafio",
+                "dbo",
+                table =>
+                {
+                    table.HasCheckConstraint(
+                        "CK_QuizDesafio_Numero",
+                        "[Numero] > 0"
+                    );
 
-            builder.HasKey(x => x.Id);
+                    table.HasCheckConstraint(
+                        "CK_QuizDesafio_Escenario",
+                        "[Escenario] BETWEEN 1 AND 4"
+                    );
+                }
+            );
+
+            builder.HasKey(x => x.Id)
+                .HasName("PK_QuizDesafio");
 
             builder.Property(x => x.Id)
-                .ValueGeneratedNever();
+                .HasColumnType("bigint")
+                .UseIdentityColumn();
+
+            builder.Property(x => x.QuizSesionId)
+                .HasColumnType("bigint")
+                .IsRequired();
 
             builder.Property(x => x.Numero)
+                .HasColumnType("tinyint")
                 .IsRequired();
 
             builder.Property(x => x.Escenario)
+                .HasColumnType("tinyint")
                 .IsRequired();
 
             builder.Property(x => x.EsActual)
+                .HasColumnType("bit")
                 .IsRequired();
 
-            builder.Property(x => x.FechaCreacionUtc)
-                .HasColumnType("datetime2")
+            builder.Property(x => x.FechaCreacion)
+                .HasColumnType("datetime")
                 .IsRequired();
 
-            builder.HasOne(x => x.Quiz)
+            builder.HasOne(x => x.QuizSesion)
                 .WithMany(x => x.Desafios)
-                .HasForeignKey(x => x.QuizId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(x => x.QuizSesionId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName(
+                    "FK_QuizDesafio_QuizSesion_QuizSesionId"
+                );
 
             builder.HasIndex(x => new
             {
-                x.QuizId,
+                x.QuizSesionId,
                 x.Numero
             })
                 .IsUnique()
-                .HasDatabaseName("UX_QuizDesafio_Quiz_Numero");
+                .HasDatabaseName(
+                    "UX_QuizDesafio_Sesion_Numero"
+                );
 
-            builder.HasIndex(x => x.QuizId)
+            builder.HasIndex(x => x.QuizSesionId)
                 .IsUnique()
                 .HasFilter("[EsActual] = 1")
-                .HasDatabaseName("UX_QuizDesafio_Quiz_Actual");
+                .HasDatabaseName(
+                    "UX_QuizDesafio_Sesion_Actual"
+                );
         }
     }
 
     public class QuizOpcionConfiguration
         : IEntityTypeConfiguration<QuizOpcionEntity>
     {
-        public void Configure(EntityTypeBuilder<QuizOpcionEntity> builder)
+        public void Configure(
+            EntityTypeBuilder<QuizOpcionEntity> builder
+        )
         {
-            builder.ToTable("QuizOpcion");
+            builder.ToTable(
+                "QuizOpcion",
+                "dbo",
+                table =>
+                {
+                    table.HasCheckConstraint(
+                        "CK_QuizOpcion_Codigo",
+                        "[CodigoOpcion] BETWEEN 0 AND 5"
+                    );
+
+                    table.HasCheckConstraint(
+                        "CK_QuizOpcion_Cuil",
+                        @"(
+                            (
+                                [CodigoOpcion] BETWEEN 0 AND 3
+                                AND [Cuil] IS NOT NULL
+                            )
+                            OR
+                            (
+                                [CodigoOpcion] BETWEEN 4 AND 5
+                                AND [Cuil] IS NULL
+                            )
+                        )"
+                    );
+                }
+            );
 
             builder.HasKey(x => new
             {
                 x.QuizDesafioId,
-                x.Id
-            });
+                x.CodigoOpcion
+            })
+                .HasName("PK_QuizOpcion");
 
-            builder.Property(x => x.Id)
-                .HasColumnType("varchar(10)")
-                .HasMaxLength(10)
+            builder.Property(x => x.QuizDesafioId)
+                .HasColumnType("bigint")
+                .IsRequired();
+
+            builder.Property(x => x.CodigoOpcion)
+                .HasColumnType("tinyint")
                 .IsRequired();
 
             builder.Property(x => x.Cuil)
-                .HasColumnType("char(11)")
-                .HasMaxLength(11)
-                .IsFixedLength()
-                .IsRequired();
+                .HasColumnType("bigint");
 
             builder.Property(x => x.EsVinculado)
-                .IsRequired();
-
-            builder.Property(x => x.Orden)
+                .HasColumnType("bit")
                 .IsRequired();
 
             builder.HasOne(x => x.Desafio)
                 .WithMany(x => x.Opciones)
                 .HasForeignKey(x => x.QuizDesafioId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasIndex(x => new
-            {
-                x.QuizDesafioId,
-                x.Orden
-            })
-                .IsUnique()
-                .HasDatabaseName("UX_QuizOpcion_Desafio_Orden");
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName(
+                    "FK_QuizOpcion_QuizDesafio_QuizDesafioId"
+                );
         }
     }
 
     public class QuizRespuestaConfiguration
         : IEntityTypeConfiguration<QuizRespuestaEntity>
     {
-        public void Configure(EntityTypeBuilder<QuizRespuestaEntity> builder)
+        public void Configure(
+            EntityTypeBuilder<QuizRespuestaEntity> builder
+        )
         {
-            builder.ToTable("QuizRespuesta");
+            builder.ToTable(
+                "QuizRespuesta",
+                "dbo"
+            );
 
-            builder.HasKey(x => x.Id);
+            builder.HasKey(x => x.Id)
+                .HasName("PK_QuizRespuesta");
+
+            builder.HasAlternateKey(x => new
+            {
+                x.Id,
+                x.QuizDesafioId
+            })
+                .HasName(
+                    "AK_QuizRespuesta_Id_QuizDesafioId"
+                );
+
+            builder.HasAlternateKey(x => x.QuizDesafioId)
+                .HasName(
+                    "UX_QuizRespuesta_QuizDesafio"
+                );
 
             builder.Property(x => x.Id)
-                .ValueGeneratedNever();
+                .HasColumnType("bigint")
+                .UseIdentityColumn();
 
-            builder.Property(x => x.OpcionesSeleccionadas)
-                .HasColumnType("nvarchar(200)")
-                .HasMaxLength(200)
+            builder.Property(x => x.QuizDesafioId)
+                .HasColumnType("bigint")
                 .IsRequired();
 
             builder.Property(x => x.EsCorrecta)
+                .HasColumnType("bit")
                 .IsRequired();
 
-            builder.Property(x => x.FechaRespuestaUtc)
-                .HasColumnType("datetime2")
+            builder.Property(x => x.FechaRespuesta)
+                .HasColumnType("datetime")
                 .IsRequired();
 
             builder.HasOne(x => x.Desafio)
-                .WithMany(x => x.Respuestas)
-                .HasForeignKey(x => x.QuizDesafioId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .WithOne(x => x.Respuesta)
+                .HasForeignKey<QuizRespuestaEntity>(
+                    x => x.QuizDesafioId
+                )
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName(
+                    "FK_QuizRespuesta_QuizDesafio_QuizDesafioId"
+                );
+        }
+    }
 
-            builder.HasIndex(x => new
+    public class QuizRespuestaOpcionConfiguration
+        : IEntityTypeConfiguration<QuizRespuestaOpcionEntity>
+    {
+        public void Configure(
+            EntityTypeBuilder<QuizRespuestaOpcionEntity> builder
+        )
+        {
+            builder.ToTable(
+                "QuizRespuestaOpcion",
+                "dbo"
+            );
+
+            builder.HasKey(x => new
             {
-                x.QuizDesafioId,
-                x.FechaRespuestaUtc
+                x.QuizRespuestaId,
+                x.CodigoOpcion
             })
-                .HasDatabaseName("IX_QuizRespuesta_Desafio_Fecha");
+                .HasName("PK_QuizRespuestaOpcion");
+
+            builder.Property(x => x.QuizRespuestaId)
+                .HasColumnType("bigint")
+                .IsRequired();
+
+            builder.Property(x => x.QuizDesafioId)
+                .HasColumnType("bigint")
+                .IsRequired();
+
+            builder.Property(x => x.CodigoOpcion)
+                .HasColumnType("tinyint")
+                .IsRequired();
+
+            builder.HasOne(x => x.Respuesta)
+                .WithMany(x => x.OpcionesSeleccionadas)
+                .HasForeignKey(x => new
+                {
+                    x.QuizRespuestaId,
+                    x.QuizDesafioId
+                })
+                .HasPrincipalKey(x => new
+                {
+                    x.Id,
+                    x.QuizDesafioId
+                })
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName(
+                    "FK_QuizRespuestaOpcion_QuizRespuesta"
+                );
+
+            builder.HasOne(x => x.Opcion)
+                .WithMany(x => x.RespuestasSeleccionadas)
+                .HasForeignKey(x => new
+                {
+                    x.QuizDesafioId,
+                    x.CodigoOpcion
+                })
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName(
+                    "FK_QuizRespuestaOpcion_QuizOpcion"
+                );
         }
     }
 }

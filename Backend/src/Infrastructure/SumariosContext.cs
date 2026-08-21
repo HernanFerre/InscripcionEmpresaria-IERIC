@@ -35,6 +35,10 @@ namespace IERIC.SumariosIERIC.Infrastructure
 
         public DbSet<QuizRespuestaEntity> QuizRespuestas { get; set; }
 
+        public DbSet<QuizRespuestaOpcionEntity>
+            QuizRespuestasOpciones
+        { get; set; }
+
 
         private readonly IMediator _mediator;
         private IDbContextTransaction _currentTransaction;
