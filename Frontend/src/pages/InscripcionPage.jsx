@@ -115,7 +115,7 @@ export default function InscripcionPage() {
 
   return (
     <IericAuth onAuthenticated={handleAuthenticated}>
-      {({ usuario, estaLogueado, abrirLogin, cambiarUsuario }) => (
+      {({ token, usuario, estaLogueado, abrirLogin, cambiarUsuario }) => (
         <div className="app-shell">
           <Topbar
             usuario={usuario}
@@ -134,6 +134,7 @@ export default function InscripcionPage() {
 
                     {currentStep === 1 && (
                       <StepCuit
+                        token={token}
                         initialCuit={formData.cuit}
                         initialEmpresa={formData.empresa}
                         estaLogueado={estaLogueado}
@@ -148,7 +149,7 @@ export default function InscripcionPage() {
 
                     {currentStep === 2 && !MOSTRAR_VALIDACION_TELEFONO && (
                       <StepIdentidad
-                        cuit={formData.cuit}
+                        token={token}
                         cuiles={formData.cuiles}
                         initialQuiz={formData.quiz}
                         onNext={handleIdentidadCompletada}
@@ -157,7 +158,7 @@ export default function InscripcionPage() {
 
                     {currentStep === 3 && MOSTRAR_VALIDACION_TELEFONO && (
                       <StepIdentidad
-                        cuit={formData.cuit}
+                        token={token}
                         cuiles={formData.cuiles}
                         initialQuiz={formData.quiz}
                         onNext={handleIdentidadCompletada}

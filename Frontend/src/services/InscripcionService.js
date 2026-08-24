@@ -10,6 +10,18 @@ const EMPRESAS_ESTADO_PUERTO = import.meta.env.VITE_EMPRESAS_ESTADO_PUERTO || ""
 
 const ESTADOS_HABILITADOS = new Set([5, 8, 9]);
 
+function crearHeadersAutorizados(token) {
+  if (!token) {
+    throw new Error("Debe iniciar sesión para realizar esta operación.");
+  }
+
+  return {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+}
+
 async function procesarRespuestaApi(response) {
   let data;
 
@@ -184,7 +196,7 @@ export async function obtenerCuilesPorCuit(cuit) {
   };
 }
 
-export async function crearQuiz(cuit) {
+export async function crearQuiz(cuit, token) {
   if (!INSCRIPCION_API_URL) {
     throw new Error("No se configuró VITE_INSCRIPCION_API_URL.");
   }
@@ -197,13 +209,7 @@ export async function crearQuiz(cuit) {
 
   const response = await fetch(`${INSCRIPCION_API_URL}/v1/Quiz/Crear`, {
     method: "POST",
-
-    headers: {
-      "Content-Type": "application/json",
-
-      Accept: "application/json",
-    },
-
+    headers: crearHeadersAutorizados(token),
     body: JSON.stringify({
       cuit: cuitNormalizado,
     }),
@@ -212,20 +218,14 @@ export async function crearQuiz(cuit) {
   return procesarRespuestaApi(response);
 }
 
-export async function validarQuiz(quizId, opcionesSeleccionadas) {
+export async function validarQuiz(quizId, opcionesSeleccionadas, token) {
   if (!INSCRIPCION_API_URL) {
     throw new Error("No se configuró VITE_INSCRIPCION_API_URL.");
   }
 
   const response = await fetch(`${INSCRIPCION_API_URL}/v1/Quiz/Validar`, {
     method: "POST",
-
-    headers: {
-      "Content-Type": "application/json",
-
-      Accept: "application/json",
-    },
-
+    headers: crearHeadersAutorizados(token),
     body: JSON.stringify({
       quizId,
       opcionesSeleccionadas,

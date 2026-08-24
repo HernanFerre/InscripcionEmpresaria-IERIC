@@ -4,9 +4,8 @@ import { AlertTriangle, CheckCircle } from "lucide-react";
 import "../styles/stepIdentidad.css";
 
 import { validarQuiz } from "../services/InscripcionService.js";
-import { bloquearCuit } from "../services/QuizBlockingMockService.js";
 
-export default function StepIdentidad({ cuit, initialQuiz, onNext }) {
+export default function StepIdentidad({ token, initialQuiz, onNext }) {
   const [desafio, setDesafio] = useState(initialQuiz);
 
   const [seleccionadas, setSeleccionadas] = useState([]);
@@ -56,7 +55,7 @@ export default function StepIdentidad({ cuit, initialQuiz, onNext }) {
     setError("");
 
     try {
-      const resultado = await validarQuiz(desafio.quizId, seleccionadas);
+      const resultado = await validarQuiz(desafio.quizId, seleccionadas, token);
 
       setIntentos(resultado.intentosRestantes);
 
@@ -67,8 +66,6 @@ export default function StepIdentidad({ cuit, initialQuiz, onNext }) {
       }
 
       if (resultado.limiteExcedido) {
-        bloquearCuit(cuit);
-
         setLimiteExcedido(true);
         setSeleccionadas([]);
 
