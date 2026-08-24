@@ -1,49 +1,153 @@
 using System;
+using System.Security.Cryptography;
 using System.Text;
-using AutoMapper.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+
 namespace Auth
 {
-
     static class CustomExtensionsMethods
     {
-        public static IServiceCollection AddAutorizacion(this IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        public const string PublicAuthenticationScheme =
+            "PublicAuthentication";
+
+        public static IServiceCollection AddAutorizacion(
+            this IServiceCollection services,
+            IConfiguration configuration
+        )
         {
+            IConfigurationSection authSection =
+                configuration.GetSection("AuthSettings");
 
+            if (!authSection.Exists())
+            {
+                throw new Exception(
+                    "Debe configurar la sección AuthSettings " +
+                    "en su archivo de configuración."
+                );
+            }
 
-            IConfigurationSection authSection = configuration.GetSection("AuthSettings") ?? throw new Exception("Debe configurar la seccion AuthSettings en su archivo de configuración");
+            AuthSettings authSettings =
+                authSection.Get<AuthSettings>()
+                ?? throw new Exception(
+                    "No fue posible cargar la configuración " +
+                    "de AuthSettings."
+                );
 
-            AuthSettings authSettings = authSection.Get<AuthSettings>();
+            if (
+                string.IsNullOrWhiteSpace(
+                    authSettings.AuthorizationSecret
+                )
+            )
+            {
+                throw new Exception(
+                    "Debe configurar " +
+                    "AuthSettings:AuthorizationSecret."
+                );
+            }
 
-            services.AddScoped<AuthSettings>(s => authSettings);
+            if (
+                string.IsNullOrWhiteSpace(
+                    authSettings.PublicKey
+                )
+            )
+            {
+                throw new Exception(
+                    "Debe configurar AuthSettings:PublicKey."
+                );
+            }
 
-            services.AddScoped<IAutorizacionRepository>(x => new AutorizacionRepository(authSettings));
+            services.AddScoped<AuthSettings>(
+                _ => authSettings
+            );
 
-            services.AddScoped<IUsuarioRepository>(x => new UsuarioRepository(authSettings));
+            services.AddScoped<IAutorizacionRepository>(
+                _ => new AutorizacionRepository(authSettings)
+            );
 
-            var key = Encoding.ASCII.GetBytes(authSettings.AuthorizationSecret);
+            services.AddScoped<IUsuarioRepository>(
+                _ => new UsuarioRepository(authSettings)
+            );
 
-            services.AddAuthentication(x =>
-           {
-               x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-               x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-           })
-           .AddJwtBearer(x =>
-           {
-               x.RequireHttpsMetadata = false;
-               x.SaveToken = true;
-               x.TokenValidationParameters = new TokenValidationParameters
-               {
-                   ValidateIssuerSigningKey = true,
-                   IssuerSigningKey = new SymmetricSecurityKey(key),
-                   ValidateIssuer = false,
-                   ValidateAudience = false
-               };
-           });
+            byte[] authorizationKey =
+                Encoding.ASCII.GetBytes(
+                    authSettings.AuthorizationSecret
+                );
 
+            RSA publicRsa = RSA.Create();
+
+            publicRsa.FromXmlString(
+                authSettings.PublicKey
+            );
+
+            RsaSecurityKey publicSigningKey =
+                new RsaSecurityKey(publicRsa);
+
+            services
+                .AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme =
+                        JwtBearerDefaults.AuthenticationScheme;
+
+                    options.DefaultChallengeScheme =
+                        JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(
+                    JwtBearerDefaults.AuthenticationScheme,
+                    options =>
+                    {
+                        options.RequireHttpsMetadata = false;
+                        options.SaveToken = true;
+
+                        options.TokenValidationParameters =
+                            new TokenValidationParameters
+                            {
+                                ValidateIssuerSigningKey = true,
+
+                                IssuerSigningKey =
+                                    new SymmetricSecurityKey(
+                                        authorizationKey
+                                    ),
+
+                                ValidateIssuer = false,
+                                ValidateAudience = false,
+                                ValidateLifetime = true
+                            };
+                    }
+                )
+                .AddJwtBearer(
+                    PublicAuthenticationScheme,
+                    options =>
+                    {
+                        options.RequireHttpsMetadata = false;
+                        options.SaveToken = true;
+
+                        options.TokenValidationParameters =
+                            new TokenValidationParameters
+                            {
+                                ValidateIssuerSigningKey = true,
+
+                                IssuerSigningKey =
+                                    publicSigningKey,
+
+                                ValidateIssuer = false,
+                                ValidateAudience = false,
+                                ValidateLifetime = true,
+
+                                ClockSkew =
+                                    TimeSpan.FromMinutes(1),
+
+                                ValidAlgorithms =
+                                    new[]
+                                    {
+                                        SecurityAlgorithms
+                                            .RsaSha256
+                                    }
+                            };
+                    }
+                );
 
             return services;
         }

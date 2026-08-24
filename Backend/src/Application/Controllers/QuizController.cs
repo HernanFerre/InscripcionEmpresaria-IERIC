@@ -7,10 +7,15 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Auth;
 
 namespace IERIC.SumariosIERIC.Application
 {
-    [Authorize]
+    [Authorize(
+        AuthenticationSchemes =
+            global::Auth.CustomExtensionsMethods
+                .PublicAuthenticationScheme
+    )]
     [Route("v1/[controller]")]
     [ApiController]
     public class QuizController : ControllerBase
