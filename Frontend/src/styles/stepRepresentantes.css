@@ -89,37 +89,29 @@
 }
 
 .representantes-table th:first-child {
-  width: 11.5%;
+  width: 13%;
   padding-left: 16px;
   border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 }
 
 .representantes-table th:nth-child(2) {
-  width: 11.5%;
+  width: 13%;
 }
 
 .representantes-table th:nth-child(3) {
-  width: 14%;
+  width: 16%;
 }
 
 .representantes-table th:nth-child(4) {
-  width: 20.5%;
+  width: 25%;
 }
 
 .representantes-table th:nth-child(5) {
-  width: 16.5%;
-}
-
-.representantes-table th:nth-child(6) {
-  width: 11.5%;
-}
-
-.representantes-table th:nth-child(7) {
-  width: 9%;
+  width: 18%;
 }
 
 .representantes-table th:last-child {
-  width: 5.5%;
+  width: 15%;
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
@@ -153,19 +145,20 @@
   color: var(--color-text-disabled);
 }
 
-.representantes-firmante {
-  display: inline-flex;
+.representantes-cargo-cell {
+  min-width: 0;
+  display: flex;
   align-items: center;
-  gap: 3px;
-  font-weight: var(--font-weight-semibold);
+  justify-content: space-between;
+  gap: 8px;
 }
 
-.representantes-firmante.si {
-  color: #16a34a;
-}
-
-.representantes-firmante.no {
-  color: var(--color-error);
+.representantes-cargo-cell > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .representantes-row-actions {

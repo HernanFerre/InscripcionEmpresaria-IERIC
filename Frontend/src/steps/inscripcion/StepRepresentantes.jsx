@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { ArrowUp, Check, ChevronLeft, ChevronRight, Info, Pencil, Plus, Trash2, X } from "lucide-react";
+import { ArrowUp, ChevronLeft, ChevronRight, Info, Pencil, Plus, Trash2 } from "lucide-react";
 
 import RepresentanteModal from "../../components/modals/RepresentanteModal.jsx";
 
@@ -8,6 +8,7 @@ import "../../styles/stepRepresentantes.css";
 
 export default function StepRepresentantes({ representantes = [], onSave, onDelete, onBack, onNext }) {
   const [modalAbierto, setModalAbierto] = useState(false);
+
   const [representanteSeleccionado, setRepresentanteSeleccionado] = useState(null);
 
   const hayRepresentantes = representantes.length > 0;
@@ -75,8 +76,6 @@ export default function StepRepresentantes({ representantes = [], onSave, onDele
               <th>CORREO ELECTRÓNICO</th>
               <th>TELÉFONO</th>
               <th>CARGO</th>
-              <th>FIRMANTE</th>
-              <th aria-label="Acciones" />
             </tr>
           </thead>
 
@@ -89,8 +88,6 @@ export default function StepRepresentantes({ representantes = [], onSave, onDele
                 <td>ejemplo@correo.com</td>
                 <td>+XX XX XXXX-XXXX</td>
                 <td>Cargo</td>
-                <td />
-                <td />
               </tr>
             )}
 
@@ -101,43 +98,30 @@ export default function StepRepresentantes({ representantes = [], onSave, onDele
                 <td>{representante.cuil}</td>
                 <td>{representante.email}</td>
                 <td>{representante.telefono}</td>
-                <td>{representante.cargo}</td>
 
                 <td>
-                  <span className={representante.firmaAutorizada ? "representantes-firmante si" : "representantes-firmante no"}>
-                    {representante.firmaAutorizada ? (
-                      <>
-                        Sí
-                        <Check size={15} aria-hidden="true" />
-                      </>
-                    ) : (
-                      <>
-                        No
-                        <X size={15} aria-hidden="true" />
-                      </>
-                    )}
-                  </span>
-                </td>
+                  <div className="representantes-cargo-cell">
+                    <span>{representante.cargo}</span>
 
-                <td>
-                  <div className="representantes-row-actions">
-                    <button
-                      type="button"
-                      className="representantes-edit-button"
-                      aria-label={`Editar a ${representante.nombre} ${representante.apellido}`}
-                      onClick={() => abrirEdicionRepresentante(representante)}
-                    >
-                      <Pencil size={18} />
-                    </button>
+                    <div className="representantes-row-actions">
+                      <button
+                        type="button"
+                        className="representantes-edit-button"
+                        aria-label={`Editar a ${representante.nombre} ${representante.apellido}`}
+                        onClick={() => abrirEdicionRepresentante(representante)}
+                      >
+                        <Pencil size={18} />
+                      </button>
 
-                    <button
-                      type="button"
-                      className="representantes-delete-button"
-                      aria-label={`Eliminar a ${representante.nombre} ${representante.apellido}`}
-                      onClick={() => onDelete?.(representante.id)}
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                      <button
+                        type="button"
+                        className="representantes-delete-button"
+                        aria-label={`Eliminar a ${representante.nombre} ${representante.apellido}`}
+                        onClick={() => onDelete?.(representante.id)}
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </div>
                 </td>
               </tr>
