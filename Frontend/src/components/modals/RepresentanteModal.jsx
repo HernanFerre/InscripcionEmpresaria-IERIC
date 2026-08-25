@@ -144,57 +144,6 @@ export default function RepresentanteModal({ initialData = null, onClose, onSave
                 onChange={(value) => actualizarValor("cargoId", value)}
               />
             </div>
-
-            <div className="representante-modal-divider" />
-
-            <p className="representante-modal-legal-text">
-              Aquellos representantes que informen que constan de firma autorizada en la empresa, deberán validarla en el apartado de
-              revisión junto a la firma de la solicitud de inscripción empresaria digital.
-            </p>
-
-            <div className="representante-signature-options">
-              <fieldset className="representante-radio-group">
-                <legend>¿Consta de firma autorizada?</legend>
-
-                <div className="representante-radio-options">
-                  <label>
-                    <input type="radio" name="firma-autorizada" checked={false} onChange={() => {}} />
-                    Sí
-                  </label>
-
-                  <label>
-                    <input type="radio" name="firma-autorizada" checked onChange={() => {}} />
-                    No
-                  </label>
-                </div>
-              </fieldset>
-
-              <fieldset className="representante-radio-group">
-                <legend>Modalidad de firma</legend>
-
-                <div className="representante-radio-options">
-                  <label className="disabled">
-                    <input type="radio" name="modalidad-firma" disabled />
-                    Individual/Indistinta
-                  </label>
-
-                  <label className="disabled">
-                    <input type="radio" name="modalidad-firma" disabled />
-                    Conjunta
-                  </label>
-                </div>
-              </fieldset>
-            </div>
-
-            <select
-              className="representante-modal-input representante-group-select"
-              aria-label="Grupo de firma"
-              value=""
-              disabled
-              onChange={() => {}}
-            >
-              <option value="">Seleccione los grupos de firma*</option>
-            </select>
           </div>
 
           <footer className="representante-modal-footer">
