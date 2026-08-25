@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import Topbar from "../components/layout/Topbar.jsx";
-import Footer from "../components/layout/Footer.jsx";
 import StepIndicator from "../components/wizard/StepIndicator.jsx";
 import InscripcionProgress from "../components/wizard/InscripcionProgress.jsx";
 
@@ -127,7 +126,7 @@ export default function InscripcionPage() {
 
           <main className="main-area">
             <section className="content-grid">
-              <div className={`wizard-card ${faseActual === "inscripcion" ? "wizard-card--inscripcion" : ""}`}>
+              <div className="wizard-card wizard-card--inscripcion">
                 {faseActual === "validacion" && (
                   <>
                     <StepIndicator currentStep={currentStep} mostrarTelefono={MOSTRAR_VALIDACION_TELEFONO} />
@@ -193,8 +192,6 @@ export default function InscripcionPage() {
               </div>
             </section>
           </main>
-
-          {faseActual !== "inscripcion" && <Footer />}
         </div>
       )}
     </IericAuth>

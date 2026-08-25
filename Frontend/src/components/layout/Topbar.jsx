@@ -1,4 +1,6 @@
-import { User, Bell } from "lucide-react";
+import { User } from "lucide-react";
+
+import logoIeric from "../../assets/logo-ieric.svg";
 
 function formatearCuit(cuit) {
   const numeros = String(cuit ?? "").replace(/\D/g, "");
@@ -24,8 +26,10 @@ export default function Topbar({ usuario, cuit, mostrarDatosInscripcion = false,
   return (
     <header className="topbar">
       <div className="topbar-left">
-        <strong className="brand">IERIC</strong>
+        <img className="brand-logo" src={logoIeric} alt="IERIC" />
+
         <span className="divider"></span>
+
         <span className="portal-title">SOLICITUD DE INSCRIPCION EMPRESARIA DIGITAL</span>
       </div>
 
@@ -52,11 +56,6 @@ export default function Topbar({ usuario, cuit, mostrarDatosInscripcion = false,
             Acceso Usuarios / Crear Cuenta
           </button>
         )}
-
-        <div className="bell-wrapper">
-          <Bell size={28} />
-          <span className="notification-dot"></span>
-        </div>
       </div>
     </header>
   );

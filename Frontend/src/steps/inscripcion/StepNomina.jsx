@@ -10,7 +10,7 @@ import "../../styles/stepNomina.css";
 const TRABAJADORES_MOCK = [
   {
     id: "trabajador-1",
-    apellidoNombre: "Rodriguez, Alberto Fabian",
+    apellidoNombre: "Rodriguez Alberto Fabian",
     cuil: "20-30456789-2",
     ingreso: "15/02/2021",
     egreso: "",
@@ -19,7 +19,7 @@ const TRABAJADORES_MOCK = [
   },
   {
     id: "trabajador-2",
-    apellidoNombre: "Gomez, María Elena",
+    apellidoNombre: "Gomez María Elena",
     cuil: "27-32987654-1",
     ingreso: "01/06/2023",
     egreso: "",
@@ -28,7 +28,7 @@ const TRABAJADORES_MOCK = [
   },
   {
     id: "trabajador-3",
-    apellidoNombre: "Sanchez, Patricia",
+    apellidoNombre: "Sanchez Patricia",
     cuil: "27-69001110-4",
     ingreso: "05/03/2024",
     egreso: "01/01/2026",
@@ -37,7 +37,7 @@ const TRABAJADORES_MOCK = [
   },
   {
     id: "trabajador-4",
-    apellidoNombre: "Martinez, Carlos",
+    apellidoNombre: "Martinez Carlos",
     cuil: "20-25123456-8",
     ingreso: "20/11/2022",
     egreso: "10/03/2025",

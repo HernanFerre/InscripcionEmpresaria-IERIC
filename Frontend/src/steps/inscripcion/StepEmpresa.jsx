@@ -154,69 +154,6 @@ export default function StepEmpresa({ initialData = null, onNext }) {
               onChange={(value) => actualizarValor("tipoSociedadId", value)}
             />
           </div>
-          <div className="empresa-col-6 empresa-radio-field">
-            <fieldset>
-              <legend>¿La empresa se encuentra en formación?</legend>
-
-              <div className="empresa-radio-options">
-                <label>
-                  <input
-                    type="radio"
-                    name="empresaEnFormacion"
-                    value="si"
-                    checked={datos.empresaEnFormacion === "si"}
-                    onChange={actualizarCampo}
-                  />
-
-                  <span>Sí</span>
-                </label>
-
-                <label>
-                  <input
-                    type="radio"
-                    name="empresaEnFormacion"
-                    value="no"
-                    checked={datos.empresaEnFormacion === "no"}
-                    onChange={actualizarCampo}
-                  />
-
-                  <span>No</span>
-                </label>
-              </div>
-            </fieldset>
-          </div>
-
-          <div className="empresa-col-6 empresa-radio-field disabled">
-            <fieldset disabled>
-              <legend>¿Cuenta con los libros rubricados en el Registro Público?</legend>
-
-              <div className="empresa-radio-options">
-                <label>
-                  <input
-                    type="radio"
-                    name="librosRubricados"
-                    value="si"
-                    checked={datos.librosRubricados === "si"}
-                    onChange={actualizarCampo}
-                  />
-
-                  <span>Sí</span>
-                </label>
-
-                <label>
-                  <input
-                    type="radio"
-                    name="librosRubricados"
-                    value="no"
-                    checked={datos.librosRubricados === "no"}
-                    onChange={actualizarCampo}
-                  />
-
-                  <span>No</span>
-                </label>
-              </div>
-            </fieldset>
-          </div>
         </div>
       </section>
 
