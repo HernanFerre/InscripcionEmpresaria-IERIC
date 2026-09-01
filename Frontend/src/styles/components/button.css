@@ -26,17 +26,18 @@ button[raised]:hover:not([disabled]) {
   box-shadow: 0 8px 18px rgba(0, 109, 204, 0.26);
 }
 
-button[raised]:focus {
+button[raised]:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 109, 204, 0.16);
+  box-shadow: var(--focus-ring);
 }
 
 button[raised]:active:not([disabled]) {
+  background-color: var(--color-primary-pressed);
   transform: translateY(1px);
 }
 
 button[raised][disabled] {
-  background-color: var(--light-separator);
+  background-color: var(--color-background-disabled);
   color: var(--on-formulario-disabled);
   cursor: not-allowed;
   box-shadow: none;

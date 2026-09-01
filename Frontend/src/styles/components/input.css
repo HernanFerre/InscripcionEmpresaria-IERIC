@@ -12,7 +12,7 @@
 
 .input {
   display: grid;
-  gap: 0.5rem;
+  gap: var(--space-sm);
   margin-bottom: 0.9rem;
 }
 
@@ -26,7 +26,7 @@
   box-sizing: border-box;
   width: 100%;
   min-height: 42px;
-  padding: 0 12px;
+  padding: 0 var(--space-md);
   background-color: var(--formulario);
   border: 1px solid var(--on-formulario-separador);
   color: var(--on-formulario);
@@ -44,7 +44,7 @@
 }
 
 .input input::placeholder {
-  color: var(--on-formulario-bajada);
+  color: var(--color-text-subtle);
   opacity: 1;
 }
 

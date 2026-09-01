@@ -25,7 +25,7 @@
   min-width: 0;
   flex: 1;
   height: 40px;
-  padding: 0 12px;
+  padding: 0 var(--space-md);
   border: none;
   outline: none;
   background: transparent;
@@ -35,8 +35,8 @@
 }
 
 .searchable-select-control input::placeholder {
-  color: var(--color-text-muted);
-  opacity: 0.85;
+  color: var(--color-text-subtle);
+  opacity: 1;
 }
 
 .searchable-select-search-icon {
@@ -105,7 +105,7 @@
 }
 
 .searchable-select-empty {
-  padding: 12px;
+  padding: var(--space-md);
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   text-align: center;

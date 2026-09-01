@@ -1,13 +1,19 @@
 /** @format */
 
 html {
-  --radius-sm: var(--control-radius);
-  --radius-md: 8px;
+  --radius-none: 0;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 999px;
 
-  --shadow-sm: var(--shadow-elevation-2-box);
-  --shadow-md: var(--shadow-elevation-4-box);
+  /* Compatibilidad temporal con los controles existentes */
+  --control-radius: var(--radius-sm);
 
   --transition-fast: 0.2s ease;
 
-  --focus-ring: 0 0 0 3px rgba(12, 116, 228, 0.14);
+  --focus-ring: 0 0 0 3px rgba(12, 116, 228, 0.35);
 }

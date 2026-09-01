@@ -15,7 +15,7 @@
   border: 1px solid var(--color-text-muted);
   border-radius: 5px;
   background: var(--color-surface);
-  box-shadow: 0 5px 12px rgba(20, 37, 55, 0.28);
+  box-shadow: var(--shadow-md);
 }
 
 .documento-upload-modal h2 {

@@ -7,7 +7,8 @@ html {
 
   --color-primary: #0c74e4;
   --color-primary-hover: #005cb8;
-  --color-primary-soft: #e3f2fd;
+  --color-primary-pressed: #004a94;
+  --color-primary-soft: #e6f0fc;
   --color-on-primary: #ffffff;
 
   /* =========================================================
@@ -23,6 +24,7 @@ html {
     ========================================================= */
 
   --color-background: #f5f7fa;
+  --color-background-disabled: #e6e8f1;
   --color-surface: #ffffff;
   --color-surface-alt: #f8fafc;
   --color-topbar: #e8f0fe;
@@ -31,9 +33,18 @@ html {
        TEXT
     ========================================================= */
 
-  --color-text: #414753;
-  --color-text-muted: #6f7b8a;
-  --color-text-disabled: #9aa6b2;
+  --color-text: #0f172a;
+  --color-text-muted: #475569;
+  --color-text-subtle: #64748b;
+  --color-text-disabled: var(--color-text-subtle);
+
+  /* =========================================================
+     ICONS
+  ========================================================= */
+
+  --color-icon-default: #334155;
+  --color-icon-muted: #94a3b8;
+  --color-icon-on-primary: #ffffff;
 
   /* =========================================================
        BORDERS

@@ -3,11 +3,11 @@ import { ChevronRight } from "lucide-react";
 import "../../styles/components/inscripcionProgress.css";
 
 const INSCRIPCION_STEPS = [
-  { id: "empresa", label: "EMPRESA" },
-  { id: "representantes", label: "REPRESENTANTES" },
-  { id: "nomina", label: "NÓMINA" },
-  { id: "documentacion", label: "DOCUMENTACIÓN" },
-  { id: "revision", label: "REVISIÓN" },
+  { id: "empresa", label: "Empresa" },
+  { id: "representantes", label: "Representantes" },
+  { id: "nomina", label: "Nómina" },
+  { id: "documentacion", label: "Documentación" },
+  { id: "revision", label: "Revisión" },
 ];
 
 export default function InscripcionProgress({ currentStep = "empresa" }) {

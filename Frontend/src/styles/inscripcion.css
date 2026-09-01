@@ -8,7 +8,7 @@
 
 .topbar {
   height: 72px;
-  padding: 0 48px;
+  padding: 0 var(--space-5xl);
   background: var(--color-topbar);
   border-bottom: 1px solid var(--color-border);
   display: flex;
@@ -32,9 +32,9 @@
 
 .divider {
   width: 1px;
-  height: 32px;
   background: var(--color-border);
-  margin: 0 24px;
+  height: var(--space-3xl);
+  margin: 0 var(--space-2xl);
 }
 
 .portal-title {
@@ -52,7 +52,7 @@
   flex-direction: column;
   align-items: flex-end;
   min-width: 180px;
-  margin-right: 24px;
+  margin-right: var(--space-2xl);
   line-height: 1.35;
   text-align: right;
 }
@@ -66,7 +66,7 @@
 
 .user-icon,
 .bell-wrapper {
-  color: var(--color-primary-soft);
+  color: var(--color-icon-default);
 }
 
 .user-info {
@@ -121,7 +121,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: 34px 56px 28px;
-  box-shadow: var(--shadow-elevation-8-box);
+  box-shadow: var(--shadow-lg);
 }
 
 .wizard-card--inscripcion {
@@ -200,17 +200,18 @@
 }
 
 .wizard-card h1 {
-  margin: 0 0 20px;
-  font-size: 22px;
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: -0.2px;
+  margin: 0 0 var(--space-xl);
   color: var(--color-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: 2rem;
+  letter-spacing: -0.2px;
 }
 
 .next-step-container {
   display: flex;
   justify-content: flex-end;
-  margin-top: 24px;
+  margin-top: var(--space-2xl);
 }
 
 .next-step-container.align-left {
@@ -237,6 +238,16 @@
   transform: translateY(-1px);
 }
 
+.next-step-button:active:not(:disabled) {
+  background: var(--color-primary-pressed);
+  transform: translateY(0);
+}
+
+.next-step-button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
 .app-footer {
   min-height: 84px;
   background: var(--color-surface);
@@ -245,7 +256,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 12px 20px;
+  padding: var(--space-md) var(--space-xl);
 }
 
 .app-footer div {
@@ -305,7 +316,7 @@
   }
 
   .main-area {
-    padding: 24px 16px 48px;
+    padding: var(--space-2xl) var(--space-lg) var(--space-5xl);
   }
 
   .wizard-card {
@@ -338,7 +349,7 @@
   }
 
   .main-area {
-    padding: 16px 24px 24px;
+    padding: var(--space-lg) var(--space-2xl) var(--space-2xl);
   }
 
   .content-grid {
