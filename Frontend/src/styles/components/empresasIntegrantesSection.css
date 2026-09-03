@@ -1,0 +1,228 @@
+.empresas-integrantes-section {
+  width: 100%;
+  margin-top: 22px;
+}
+
+.empresas-integrantes-header {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.empresas-integrantes-title-wrapper {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.empresas-integrantes-title-wrapper .empresa-section-title {
+  margin: 0;
+}
+
+.empresas-integrantes-info {
+  position: relative;
+  color: var(--color-primary);
+  cursor: help;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empresas-integrantes-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 30;
+  box-sizing: border-box;
+  width: 270px;
+  padding: 9px 11px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text);
+  font-size: var(--font-caption-size);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.4;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity var(--transition-fast),
+    visibility var(--transition-fast);
+}
+
+.empresas-integrantes-tooltip-more {
+  display: block;
+  margin-top: 2px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.empresas-integrantes-info:hover .empresas-integrantes-tooltip,
+.empresas-integrantes-info:focus .empresas-integrantes-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.empresas-integrantes-add {
+  min-width: 156px;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.empresas-integrantes-add:hover {
+  border-color: var(--color-primary-hover);
+  background: var(--color-background);
+  color: var(--color-primary-hover);
+}
+
+.empresas-integrantes-add:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.empresas-integrantes-list {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px 14px;
+}
+
+.empresas-integrantes-list.is-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.empresa-integrante-card {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  padding: 7px 10px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.empresa-integrante-card-content {
+  min-width: 0;
+}
+
+.empresa-integrante-card-name {
+  display: block;
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empresa-integrante-card-details {
+  min-width: 0;
+  margin-top: 3px;
+  color: var(--color-primary);
+  font-size: var(--font-caption-size);
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.empresa-integrante-card-details span:not(.empresa-integrante-card-divider) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empresa-integrante-card-divider {
+  width: 1px;
+  height: 12px;
+  background: var(--color-border-strong);
+  flex-shrink: 0;
+}
+
+.empresa-integrante-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.empresa-integrante-card-actions button {
+  width: 28px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empresa-integrante-edit {
+  color: var(--color-primary);
+}
+
+.empresa-integrante-delete {
+  color: var(--color-text);
+}
+
+.empresa-integrante-card-actions button:hover {
+  background: var(--color-background);
+}
+
+.empresa-integrante-card-actions button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.empresas-integrantes-section + .empresa-required-note {
+  margin-top: var(--space-3xl);
+}
+
+@media (max-width: 700px) {
+  .empresas-integrantes-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .empresas-integrantes-add {
+    width: 100%;
+  }
+
+  .empresas-integrantes-list.is-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .empresas-integrantes-tooltip {
+    right: 0;
+    left: auto;
+    width: min(270px, calc(100vw - 52px));
+  }
+}

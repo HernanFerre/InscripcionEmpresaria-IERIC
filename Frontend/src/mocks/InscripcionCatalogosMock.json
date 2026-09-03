@@ -71,6 +71,18 @@
     {
       "value": "sociedad-comandita",
       "label": "Sociedad en Comandita"
+    },
+    {
+      "value": "ut",
+      "label": "U.T."
+    },
+    {
+      "value": "ute",
+      "label": "U.T.E."
+    },
+    {
+      "value": "consorcio-cooperacion",
+      "label": "Consorcio de Cooperación"
     }
   ],
   "localidades": [
