@@ -7,6 +7,8 @@ import { crearQuiz, validarCuit } from "../services/InscripcionService.js";
 
 import { formatCuit } from "../utils/formatters.js";
 
+import SkipValidationButton from "../components/common/SkipValidationButton.jsx"; //luego sacar
+
 export default function StepCuit({ token, initialCuit = "", initialEmpresa = null, estaLogueado = false, onLoginRequired, onNext }) {
   const [cuit, setCuit] = useState(initialCuit);
 
@@ -104,6 +106,54 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
     }
   };
 
+  const handleSaltearValidacion = () => {
+    const cuitIngresado = String(cuit).replace(/\D/g, "");
+
+    const cuitDemo = cuitIngresado.length === 11 ? cuitIngresado : "30123456789";
+
+    onNext({
+      cuit: cuitDemo,
+      empresa: {
+        razonSocial: "Empresa de demostración",
+        estadoSolicitud: "HABILITADA",
+      },
+      cuiles: [],
+      quiz: {
+        quizId: "quiz-demostracion",
+        titulo: "INFORMACIÓN DE LA EMPRESA",
+        consigna: "Seleccione los trabajadores que reconoce como vinculados a la empresa.",
+        intentosTotales: 3,
+        intentosRestantes: 3,
+        opciones: [
+          {
+            id: "a",
+            label: "20-xxxxx458-3",
+          },
+          {
+            id: "b",
+            label: "27-xxxxx921-5",
+          },
+          {
+            id: "c",
+            label: "23-xxxxx774-1",
+          },
+          {
+            id: "d",
+            label: "24-xxxxx662-8",
+          },
+          {
+            id: "ninguna",
+            label: "Ninguna de las anteriores",
+          },
+          {
+            id: "todas",
+            label: "Todas las anteriores",
+          },
+        ],
+      },
+    });
+  };
+
   const esRegistrada = estadoSolicitud === "REGISTRADA";
 
   const esHabilitada = estadoSolicitud === "HABILITADA";
@@ -142,6 +192,8 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
           {cargando ? "Validando..." : "Validar CUIT"}
         </button>
       </div>
+
+      <SkipValidationButton onClick={handleSaltearValidacion} />
 
       {requiereAutenticacion && !estaLogueado && (
         <div className="cuit-result-card warning">

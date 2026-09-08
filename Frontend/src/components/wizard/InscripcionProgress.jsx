@@ -6,6 +6,7 @@ const INSCRIPCION_STEPS = [
   { id: "empresa", label: "Empresa" },
   { id: "representantes", label: "Representantes" },
   { id: "nomina", label: "Nómina" },
+  { id: "declaracion-jurada", label: "Declaración jurada" },
   { id: "documentacion", label: "Documentación" },
   { id: "revision", label: "Revisión" },
 ];

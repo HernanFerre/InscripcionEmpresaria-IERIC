@@ -13,6 +13,7 @@ import StepEmpresa from "../steps/inscripcion/StepEmpresa.jsx";
 import StepRepresentantes from "../steps/inscripcion/StepRepresentantes.jsx";
 import StepNomina from "../steps/inscripcion/StepNomina.jsx";
 import StepDocumentacion from "../steps/inscripcion/StepDocumentacion.jsx";
+import StepDeclaracionJurada from "../steps/inscripcion/StepDeclaracionJurada.jsx";
 
 import { INICIAR_EN_INSCRIPCION, MOSTRAR_VALIDACION_TELEFONO } from "../config/featureFlags.js";
 
@@ -41,6 +42,7 @@ export default function InscripcionPage() {
     datosInscripcion: {
       empresa: null,
       representantes: [],
+      declaracionJurada: null,
     },
   });
 
@@ -99,12 +101,28 @@ export default function InscripcionPage() {
     setInscripcionStep("representantes");
   };
 
-  const handleContinuarADocumentacion = () => {
+  const handleContinuarADeclaracionJurada = () => {
+    setInscripcionStep("declaracion-jurada");
+  };
+
+  const handleDeclaracionJuradaCompletada = (datosDeclaracionJurada) => {
+    setFormData((prev) => ({
+      ...prev,
+      datosInscripcion: {
+        ...prev.datosInscripcion,
+        declaracionJurada: datosDeclaracionJurada,
+      },
+    }));
+
     setInscripcionStep("documentacion");
   };
 
   const handleVolverANomina = () => {
     setInscripcionStep("nomina");
+  };
+
+  const handleVolverADeclaracionJurada = () => {
+    setInscripcionStep("declaracion-jurada");
   };
 
   const handleAuthenticated = () => {
@@ -183,10 +201,18 @@ export default function InscripcionPage() {
                     )}
 
                     {inscripcionStep === "nomina" && (
-                      <StepNomina onBack={handleVolverARepresentantes} onNext={handleContinuarADocumentacion} />
+                      <StepNomina onBack={handleVolverARepresentantes} onNext={handleContinuarADeclaracionJurada} />
                     )}
 
-                    {inscripcionStep === "documentacion" && <StepDocumentacion onBack={handleVolverANomina} />}
+                    {inscripcionStep === "declaracion-jurada" && (
+                      <StepDeclaracionJurada
+                        initialData={formData.datosInscripcion.declaracionJurada}
+                        onBack={handleVolverANomina}
+                        onNext={handleDeclaracionJuradaCompletada}
+                      />
+                    )}
+
+                    {inscripcionStep === "documentacion" && <StepDocumentacion onBack={handleVolverADeclaracionJurada} />}
                   </>
                 )}
               </div>

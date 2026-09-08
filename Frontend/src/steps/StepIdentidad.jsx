@@ -5,6 +5,8 @@ import "../styles/stepIdentidad.css";
 
 import { validarQuiz } from "../services/InscripcionService.js";
 
+import SkipValidationButton from "../components/common/SkipValidationButton.jsx"; //luego sacar
+
 export default function StepIdentidad({ token, initialQuiz, onNext }) {
   const [desafio, setDesafio] = useState(initialQuiz);
 
@@ -200,6 +202,8 @@ export default function StepIdentidad({ token, initialQuiz, onNext }) {
             {validando ? "Validando..." : "Confirmar información"}
           </button>
         )}
+
+        {!informacionValidada && <SkipValidationButton onClick={onNext} />}
       </section>
 
       {informacionValidada && (

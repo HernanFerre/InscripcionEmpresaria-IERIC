@@ -1,0 +1,34 @@
+.skip-validation-button {
+  display: block;
+  min-width: 112px;
+  height: 40px;
+  margin: var(--space-lg) auto 0;
+  padding: 0 var(--space-lg);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-button-size);
+  font-weight: var(--font-button-weight);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.skip-validation-button:hover {
+  background: var(--color-primary-soft);
+}
+
+.skip-validation-button:active {
+  border-color: var(--color-primary-pressed);
+  color: var(--color-primary-pressed);
+}
+
+.skip-validation-button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}

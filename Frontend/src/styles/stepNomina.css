@@ -279,33 +279,6 @@
   gap: 21px;
 }
 
-.nomina-declaration-button {
-  min-width: 158px;
-  height: 32px;
-  padding: 0 12px;
-  border: 1px solid var(--color-primary);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-primary);
-  font-family: var(--font-family-base);
-  font-size: 12px;
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.nomina-declaration-button:hover {
-  background: var(--color-background);
-}
-
-.nomina-declaration-button:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
-
 .nomina-pagination {
   display: flex;
   align-items: center;

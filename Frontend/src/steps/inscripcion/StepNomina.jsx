@@ -1,9 +1,8 @@
 import { useState } from "react";
 
-import { ArrowUp, FileText, Info, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowUp, Info, Pencil, Plus, Trash2 } from "lucide-react";
 
 import TrabajadorModal from "../../components/modals/TrabajadorModal.jsx";
-import DeclaracionJuradaModal from "../../components/modals/DeclaracionJuradaModal.jsx";
 
 import "../../styles/stepNomina.css";
 
@@ -46,7 +45,7 @@ const TRABAJADORES_MOCK = [
   },
 ];
 
-export default function StepNomina({ onSaveTrabajador, onSaveDeclaracion, onDelete, onBack, onNext }) {
+export default function StepNomina({ onSaveTrabajador, onDelete, onBack, onNext }) {
   const [pertenenciaConstruccion, setPertenenciaConstruccion] = useState(() =>
     Object.fromEntries(TRABAJADORES_MOCK.map((trabajador) => [trabajador.id, trabajador.perteneceConstruccion])),
   );
@@ -54,8 +53,6 @@ export default function StepNomina({ onSaveTrabajador, onSaveDeclaracion, onDele
   const [modalTrabajadorAbierto, setModalTrabajadorAbierto] = useState(false);
 
   const [trabajadorSeleccionado, setTrabajadorSeleccionado] = useState(null);
-
-  const [modalDeclaracionAbierto, setModalDeclaracionAbierto] = useState(false);
 
   const actualizarPertenencia = (trabajador, value) => {
     if (trabajador.origen !== "servicio") {
@@ -86,19 +83,6 @@ export default function StepNomina({ onSaveTrabajador, onSaveDeclaracion, onDele
   const guardarTrabajador = (datosTrabajador) => {
     onSaveTrabajador?.(datosTrabajador);
     cerrarModalTrabajador();
-  };
-
-  const abrirModalDeclaracion = () => {
-    setModalDeclaracionAbierto(true);
-  };
-
-  const cerrarModalDeclaracion = () => {
-    setModalDeclaracionAbierto(false);
-  };
-
-  const guardarDeclaracion = (datosDeclaracion) => {
-    onSaveDeclaracion?.(datosDeclaracion);
-    cerrarModalDeclaracion();
   };
 
   return (
@@ -245,11 +229,6 @@ export default function StepNomina({ onSaveTrabajador, onSaveDeclaracion, onDele
       </div>
 
       <div className="nomina-secondary-actions">
-        <button type="button" className="nomina-declaration-button" onClick={abrirModalDeclaracion}>
-          <FileText size={17} aria-hidden="true" />
-          Declaración Jurada
-        </button>
-
         <div className="nomina-pagination">
           <span>1-4 de 4</span>
 
@@ -281,8 +260,6 @@ export default function StepNomina({ onSaveTrabajador, onSaveDeclaracion, onDele
           onSave={guardarTrabajador}
         />
       )}
-
-      {modalDeclaracionAbierto && <DeclaracionJuradaModal onClose={cerrarModalDeclaracion} onSave={guardarDeclaracion} />}
     </section>
   );
 }
