@@ -9,7 +9,7 @@ export default function EmpresasIntegrantesSection({ empresas = [], onAdd, onEdi
     <div className="empresas-integrantes-section">
       <div className="empresas-integrantes-header">
         <div className="empresas-integrantes-title-wrapper">
-          <h2 className="empresa-section-title">Empresas integrantes</h2>
+          <h2 className="section-title empresa-section-title">Empresas integrantes</h2>
 
           <span className="empresas-integrantes-info" tabIndex="0" aria-label="Información sobre empresas integrantes">
             <Info size={16} aria-hidden="true" />

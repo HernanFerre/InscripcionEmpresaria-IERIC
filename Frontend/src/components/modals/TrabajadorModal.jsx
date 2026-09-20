@@ -51,7 +51,9 @@ export default function TrabajadorModal({ initialData = null, onClose, onSave })
         onMouseDown={(event) => event.stopPropagation()}
       >
         <header className="trabajador-modal-header">
-          <h2 id="trabajador-modal-title">Trabajador</h2>
+          <h2 id="trabajador-modal-title" className="section-title">
+            Trabajador
+          </h2>
 
           <button type="button" className="trabajador-modal-close" aria-label="Cerrar" onClick={onClose}>
             <X size={20} />

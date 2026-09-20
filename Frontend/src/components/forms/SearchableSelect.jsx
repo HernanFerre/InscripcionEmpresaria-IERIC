@@ -13,6 +13,7 @@ function normalizarTexto(value) {
 
 export default function SearchableSelect({
   id,
+  label = "",
   value = "",
   options = [],
   placeholder = "Seleccione una opción",
@@ -104,7 +105,7 @@ export default function SearchableSelect({
   };
 
   const inputValue = abierto ? busqueda : etiquetaSeleccionada;
-  const placeholderCompleto = `${placeholder}${required ? "*" : ""}`;
+  const placeholderCompleto = placeholder;
   const listboxId = `${id}-options`;
 
   return (
@@ -114,7 +115,17 @@ export default function SearchableSelect({
         .filter(Boolean)
         .join(" ")}
     >
+      {label && (
+        <label className="form-field-label" htmlFor={id}>
+          {label}
+          {required && <span aria-hidden="true">*</span>}
+        </label>
+      )}
       <div className="searchable-select-control">
+        <span className="searchable-select-search-icon">
+          <Search size={17} />
+        </span>
+
         <input
           id={id}
           type="text"
@@ -130,11 +141,8 @@ export default function SearchableSelect({
           onFocus={abrirListado}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
+          required={required}
         />
-
-        <span className="searchable-select-search-icon">
-          <Search size={17} />
-        </span>
 
         <button
           type="button"

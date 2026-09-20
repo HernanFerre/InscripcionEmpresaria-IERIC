@@ -50,7 +50,9 @@ export default function DocumentoUploadModal({ documentTitle, onClose, onFileSel
         aria-labelledby="documento-upload-title"
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <h2 id="documento-upload-title">Deberá adjuntar: {documentTitle}</h2>
+        <h2 id="documento-upload-title" className="section-title documento-upload-title">
+          Deberá adjuntar: {documentTitle}
+        </h2>
 
         <div className="documento-upload-options">
           <div

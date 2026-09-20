@@ -177,13 +177,18 @@ export default function StepEmpresa({ initialData = null, onNext }) {
 
           <div className="empresa-form-grid">
             <div className="empresa-col-6">
+              <label className="form-field-label" htmlFor="razon-social">
+                Razón social
+                <span aria-hidden="true">*</span>
+              </label>
+
               <input
+                id="razon-social"
                 className="empresa-input"
                 type="text"
                 name="razonSocial"
                 value={datos.razonSocial}
-                placeholder="Razón social*"
-                aria-label="Razón social"
+                placeholder="Nombre de la organización"
                 required
                 onChange={actualizarCampo}
               />
@@ -192,25 +197,31 @@ export default function StepEmpresa({ initialData = null, onNext }) {
             <div className="empresa-col-6">
               <SearchableSelect
                 id="actividad"
+                label="Actividad de la empresa"
                 value={datos.actividadId}
                 options={ACTIVIDADES_EMPRESA_MOCK}
-                placeholder="Actividad de la empresa"
+                placeholder="Actividad de la organización"
                 required
                 onChange={(value) => actualizarValor("actividadId", value)}
               />
             </div>
 
             <div className="empresa-col-6">
+              <label className="form-field-label" htmlFor="caracter-empresa">
+                Carácter
+                <span aria-hidden="true">*</span>
+              </label>
+
               <select
+                id="caracter-empresa"
                 className="empresa-input empresa-select"
                 name="caracter"
                 value={datos.caracter}
-                aria-label="Carácter de la empresa"
                 required
                 onChange={actualizarCampo}
               >
                 <option value="" disabled>
-                  Carácter de la empresa*
+                  Carácter de la organización
                 </option>
 
                 {CARACTERES_EMPRESA_MOCK.map((option) => (
@@ -224,9 +235,10 @@ export default function StepEmpresa({ initialData = null, onNext }) {
             <div className="empresa-col-6">
               <SearchableSelect
                 id="tipo-sociedad"
+                label="Tipo de sociedad"
                 value={datos.tipoSociedadId}
                 options={TIPOS_SOCIEDAD_MOCK}
-                placeholder="Tipo de sociedad"
+                placeholder="Busque y seleccione el tipo de sociedad"
                 required
                 onChange={(value) => actualizarValor("tipoSociedadId", value)}
               />
@@ -241,76 +253,104 @@ export default function StepEmpresa({ initialData = null, onNext }) {
 
           <div className="empresa-form-grid">
             <div className="empresa-col-6">
+              <label className="form-field-label" htmlFor="calle">
+                Calle
+                <span aria-hidden="true">*</span>
+              </label>
+
               <input
+                id="calle"
                 className="empresa-input"
                 type="text"
                 name="calle"
                 value={datos.calle}
-                placeholder="Calle*"
-                aria-label="Calle"
+                placeholder="Calle"
                 required
                 onChange={actualizarCampo}
               />
             </div>
 
             <div className="empresa-col-2">
+              <label className="form-field-label" htmlFor="numero">
+                Número
+                <span aria-hidden="true">*</span>
+              </label>
+
               <input
+                id="numero"
                 className="empresa-input"
                 type="text"
                 name="numero"
                 value={datos.numero}
-                placeholder="Número*"
-                aria-label="Número"
+                placeholder="Número"
                 required
                 onChange={actualizarCampo}
               />
             </div>
 
             <div className="empresa-col-2">
+              <label className="form-field-label" htmlFor="piso">
+                Piso
+              </label>
+
               <input
+                id="piso"
                 className="empresa-input"
                 type="text"
                 name="piso"
                 value={datos.piso}
                 placeholder="Piso"
-                aria-label="Piso"
                 onChange={actualizarCampo}
               />
             </div>
 
             <div className="empresa-col-2">
+              <label className="form-field-label" htmlFor="departamento">
+                Depto./Oficina
+              </label>
+
               <input
+                id="departamento"
                 className="empresa-input"
                 type="text"
                 name="departamento"
                 value={datos.departamento}
                 placeholder="Depto./Oficina"
-                aria-label="Departamento u oficina"
                 onChange={actualizarCampo}
               />
             </div>
 
             <div className="empresa-col-2">
+              <label className="form-field-label" htmlFor="codigo-postal">
+                Código postal
+                <span aria-hidden="true">*</span>
+              </label>
+
               <input
+                id="codigo-postal"
                 className="empresa-input"
                 type="text"
                 name="codigoPostal"
                 value={datos.codigoPostal}
-                placeholder="Código postal*"
-                aria-label="Código postal"
+                placeholder="Código postal"
                 required
                 onChange={actualizarCampo}
               />
             </div>
 
             <div className="empresa-col-4">
+              <label className="form-field-label" htmlFor="provincia">
+                Provincia
+                <span aria-hidden="true">*</span>
+              </label>
+
               <input
+                id="provincia"
                 className="empresa-input"
                 type="text"
                 name="provincia"
                 value={datos.provincia}
-                placeholder="Provincia*"
-                aria-label="Provincia"
+                placeholder="Provincia"
                 required
                 onChange={actualizarCampo}
               />
@@ -319,6 +359,7 @@ export default function StepEmpresa({ initialData = null, onNext }) {
             <div className="empresa-col-6">
               <SearchableSelect
                 id="localidad"
+                label="Localidad"
                 value={datos.localidadId}
                 options={LOCALIDADES_MOCK}
                 placeholder="Localidad"
@@ -334,13 +375,18 @@ export default function StepEmpresa({ initialData = null, onNext }) {
 
           <div className="empresa-form-grid">
             <div className="empresa-col-6">
+              <label className="form-field-label" htmlFor="correo-electronico">
+                Correo electrónico
+                <span aria-hidden="true">*</span>
+              </label>
+
               <input
+                id="correo-electronico"
                 className={["empresa-input", datos.email && !correoValido ? "has-error" : ""].filter(Boolean).join(" ")}
                 type="email"
                 name="email"
                 value={datos.email}
-                placeholder="Correo electrónico*"
-                aria-label="Correo electrónico"
+                placeholder="Correo electrónico"
                 required
                 onChange={actualizarCampo}
               />
@@ -349,13 +395,17 @@ export default function StepEmpresa({ initialData = null, onNext }) {
             </div>
 
             <div className="empresa-col-6">
+              <label className="form-field-label" htmlFor="telefono">
+                Teléfono
+              </label>
+
               <input
+                id="telefono"
                 className={["empresa-input", !telefonoValido ? "has-error" : ""].filter(Boolean).join(" ")}
                 type="tel"
                 name="telefono"
                 value={datos.telefono}
                 placeholder="Teléfono"
-                aria-label="Teléfono"
                 onChange={actualizarCampo}
               />
 

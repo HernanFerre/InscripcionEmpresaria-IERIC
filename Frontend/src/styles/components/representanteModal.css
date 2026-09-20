@@ -2,10 +2,11 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  padding: 132px 24px 40px;
-  background: rgba(18, 35, 52, 0.08);
+  padding: 24px;
+  background: var(--color-overlay);
+  backdrop-filter: blur(4px);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   overflow-y: auto;
 }
@@ -27,14 +28,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.representante-modal-header h2 {
-  margin: 0;
-  color: var(--color-text);
-  font-size: 20px;
-  font-weight: var(--font-weight-semibold);
-  line-height: 1.2;
 }
 
 .representante-modal-close {
