@@ -28,7 +28,7 @@ export default function StepDeclaracionJurada({ onBack, onNext }) {
   return (
     <form className="declaracion-step" onSubmit={handleSubmit}>
       <div className="declaracion-heading">
-        <h2>Manifiesta con carácter de declaración jurada:</h2>
+        <h2 className="section-title">Manifiesta con carácter de declaración jurada:</h2>
 
         <Info size={19} aria-hidden="true" />
       </div>
@@ -131,7 +131,7 @@ export default function StepDeclaracionJurada({ onBack, onNext }) {
       {datos.opcion !== "etapa-inspeccion" && (
         <section className="declaracion-manual-reason">
           <div className="declaracion-heading">
-            <h2>Informe el motivo de la carga manual:</h2>
+            <h2 className="section-title">Informe el motivo de la carga manual:</h2>
 
             <Info size={19} aria-hidden="true" />
           </div>

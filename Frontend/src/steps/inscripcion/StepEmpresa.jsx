@@ -173,7 +173,7 @@ export default function StepEmpresa({ initialData = null, onNext }) {
     <>
       <form className="empresa-step-form" noValidate onSubmit={handleSubmit}>
         <section className="empresa-form-section">
-          <h2 className="empresa-section-title">Información de la empresa</h2>
+          <h2 className="section-title empresa-section-title">Información de la empresa</h2>
 
           <div className="empresa-form-grid">
             <div className="empresa-col-6">
@@ -237,7 +237,7 @@ export default function StepEmpresa({ initialData = null, onNext }) {
         {!UBICAR_EMPRESAS_INTEGRANTES_AL_FINAL && bloqueEmpresasIntegrantes}
 
         <section className="empresa-form-section">
-          <h2 className="empresa-section-title">Domicilio</h2>
+          <h2 className="section-title empresa-section-title">Domicilio</h2>
 
           <div className="empresa-form-grid">
             <div className="empresa-col-6">
@@ -330,7 +330,7 @@ export default function StepEmpresa({ initialData = null, onNext }) {
         </section>
 
         <section className="empresa-form-section">
-          <h2 className="empresa-section-title">Datos de contacto</h2>
+          <h2 className="section-title empresa-section-title">Datos de contacto</h2>
 
           <div className="empresa-form-grid">
             <div className="empresa-col-6">

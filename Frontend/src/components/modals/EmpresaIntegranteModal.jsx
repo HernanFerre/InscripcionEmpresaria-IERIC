@@ -58,7 +58,9 @@ export default function EmpresaIntegranteModal({ initialData = null, onClose, on
       >
         <header className="empresa-integrante-modal-header">
           <div className="empresa-integrante-modal-title-wrapper">
-            <h2 id="empresa-integrante-modal-title">Empresa integrante</h2>
+            <h2 id="empresa-integrante-modal-title" className="section-title">
+              Empresa integrante
+            </h2>
 
             <span className="empresa-integrante-modal-info" tabIndex="0" aria-label="Más información">
               <Info size={16} aria-hidden="true" />

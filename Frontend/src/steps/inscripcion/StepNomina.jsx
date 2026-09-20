@@ -90,7 +90,7 @@ export default function StepNomina({ onSaveTrabajador, onDelete, onBack, onNext 
       <div className="nomina-header">
         <div className="nomina-start-info">
           <div>
-            <h2 className="nomina-title">Inicio de actividades</h2>
+            <h2 className="section-title nomina-title">Inicio de actividades</h2>
 
             <p className="nomina-subtitle">Información detallada por IERIC.</p>
           </div>

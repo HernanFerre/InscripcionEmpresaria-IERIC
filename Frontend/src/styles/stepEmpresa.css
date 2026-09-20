@@ -12,9 +12,6 @@
 
 .empresa-section-title {
   margin: 0 0 10px;
-  color: var(--color-primary);
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
 }
 
 .empresa-form-grid {

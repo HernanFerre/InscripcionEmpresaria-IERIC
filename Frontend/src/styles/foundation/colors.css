@@ -23,11 +23,12 @@ html {
        SURFACES / BACKGROUNDS
     ========================================================= */
 
-  --color-background: #f5f7fa;
+  --color-background: #f6f7f8;
   --color-background-disabled: #e6e8f1;
   --color-surface: #ffffff;
   --color-surface-alt: #f8fafc;
-  --color-topbar: #e8f0fe;
+  --color-topbar: #e0f4fb;
+  --color-grid-header: #cfe6f2;
 
   /* =========================================================
        TEXT

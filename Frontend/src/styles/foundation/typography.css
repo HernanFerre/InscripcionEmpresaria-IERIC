@@ -93,4 +93,10 @@ html {
   --font-boton: 0.875rem;
   --font-caption: 0.75rem;
   --font-overline: 0.75rem;
+
+  .section-title {
+    color: var(--color-text);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+  }
 }

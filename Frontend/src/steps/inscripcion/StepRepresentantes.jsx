@@ -37,7 +37,7 @@ export default function StepRepresentantes({ representantes = [], onSave, onDele
     <section className="representantes-step">
       <div className="representantes-header">
         <div>
-          <h2 className="representantes-title">Representantes y apoderados</h2>
+          <h2 className="section-title representantes-title">Representantes y apoderados</h2>
 
           <p className="representantes-subtitle">La documentación respaldatoria se solicitará en el apartado Documentación.</p>
         </div>

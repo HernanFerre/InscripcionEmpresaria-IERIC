@@ -41,7 +41,7 @@ export default function StepDocumentacion({ onViewDocumento, onDeleteDocumento, 
   return (
     <section className="documentacion-step">
       <div className="documentacion-introduction">
-        <h2>Requisitos adjuntos</h2>
+        <h2 className="section-title documentacion-title">Requisitos adjuntos</h2>
 
         <p>Información detallada por IERIC. --Sólo se admiten archivos PDF de hasta {CONFIGURACION_DOCUMENTOS_MOCK.tamanoMaximoMb}MB.--</p>
       </div>

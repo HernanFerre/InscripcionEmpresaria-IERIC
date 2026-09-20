@@ -70,7 +70,9 @@ export default function RepresentanteModal({ initialData = null, onClose, onSave
         onMouseDown={(event) => event.stopPropagation()}
       >
         <header className="representante-modal-header">
-          <h2 id="representante-modal-title">Representante</h2>
+          <h2 id="representante-modal-title" className="section-title">
+            Representante
+          </h2>
 
           <button type="button" className="representante-modal-close" aria-label="Cerrar" onClick={onClose}>
             <X size={20} />

@@ -13,9 +13,6 @@
 
 .declaracion-heading h2 {
   margin: 0;
-  color: var(--color-text);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
   line-height: 1.35;
 }
 
