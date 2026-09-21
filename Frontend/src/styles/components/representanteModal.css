@@ -14,10 +14,12 @@
 .representante-modal {
   box-sizing: border-box;
   width: min(572px, 100%);
+  max-height: calc(100vh - 48px);
   border: 1px solid var(--color-border);
   border-radius: 9px;
   background: var(--color-surface);
   box-shadow: var(--shadow-xl);
+  overflow-y: auto;
 }
 
 .representante-modal-header {
@@ -28,6 +30,22 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.representante-modal-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.representante-modal-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--color-primary);
+  cursor: help;
 }
 
 .representante-modal-close {
@@ -66,6 +84,10 @@
 
 .representante-modal-field {
   min-width: 0;
+}
+
+.representante-modal-field--full {
+  grid-column: 1 / -1;
 }
 
 .representante-modal-input {
@@ -166,7 +188,11 @@
 
 @media (max-width: 620px) {
   .representante-modal-overlay {
-    padding: 90px 16px 30px;
+    padding: 16px;
+  }
+
+  .representante-modal {
+    max-height: calc(100vh - 32px);
   }
 
   .representante-modal-body {
@@ -175,6 +201,10 @@
 
   .representante-modal-grid {
     grid-template-columns: 1fr;
+  }
+
+  .representante-modal-field--full {
+    grid-column: span 1;
   }
 
   .representante-modal-footer {

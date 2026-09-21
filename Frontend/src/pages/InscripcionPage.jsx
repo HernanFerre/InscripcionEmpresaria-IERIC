@@ -19,6 +19,10 @@ import { INICIAR_EN_INSCRIPCION, MOSTRAR_VALIDACION_TELEFONO } from "../config/f
 
 import "../styles/inscripcion.css";
 
+function crearIdRepresentante() {
+  return `representante-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 export default function InscripcionPage() {
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -87,6 +91,50 @@ export default function InscripcionPage() {
     }));
 
     setInscripcionStep("representantes");
+  };
+
+  const handleGuardarRepresentante = (datosRepresentante) => {
+    setFormData((prev) => {
+      const representantesActuales = prev.datosInscripcion.representantes ?? [];
+
+      const representanteId = datosRepresentante.id;
+
+      const representantesActualizados = representanteId
+        ? representantesActuales.map((representante) =>
+            representante.id === representanteId
+              ? {
+                  ...representante,
+                  ...datosRepresentante,
+                  id: representanteId,
+                }
+              : representante,
+          )
+        : [
+            ...representantesActuales,
+            {
+              ...datosRepresentante,
+              id: crearIdRepresentante(),
+            },
+          ];
+
+      return {
+        ...prev,
+        datosInscripcion: {
+          ...prev.datosInscripcion,
+          representantes: representantesActualizados,
+        },
+      };
+    });
+  };
+
+  const handleEliminarRepresentante = (representanteId) => {
+    setFormData((prev) => ({
+      ...prev,
+      datosInscripcion: {
+        ...prev.datosInscripcion,
+        representantes: (prev.datosInscripcion.representantes ?? []).filter((representante) => representante.id !== representanteId),
+      },
+    }));
   };
 
   const handleVolverAEmpresa = () => {
@@ -194,7 +242,11 @@ export default function InscripcionPage() {
 
                     {inscripcionStep === "representantes" && (
                       <StepRepresentantes
+                        tipoSociedadId={formData.datosInscripcion.empresa?.tipoSociedadId ?? ""}
+                        empresasIntegrantes={formData.datosInscripcion.empresa?.empresasIntegrantes ?? []}
                         representantes={formData.datosInscripcion.representantes}
+                        onSave={handleGuardarRepresentante}
+                        onDelete={handleEliminarRepresentante}
                         onBack={handleVolverAEmpresa}
                         onNext={handleContinuarANomina}
                       />

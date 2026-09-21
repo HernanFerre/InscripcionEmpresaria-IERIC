@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X } from "lucide-react";
+import { Info, X } from "lucide-react";
 
 import SearchableSelect from "../forms/SearchableSelect.jsx";
 
@@ -11,10 +11,14 @@ const CARGOS_REPRESENTANTE_MOCK = [
   { value: "director", label: "Director" },
   { value: "socio-gerente", label: "Socio gerente" },
   { value: "apoderado", label: "Apoderado" },
-  { value: "representante-legal", label: "Representante legal" },
+  {
+    value: "representante-legal",
+    label: "Representante legal",
+  },
 ];
 
 const DATOS_INICIALES = {
+  empresaId: "",
   apellido: "",
   nombre: "",
   email: "",
@@ -23,11 +27,22 @@ const DATOS_INICIALES = {
   cargoId: "",
 };
 
-export default function RepresentanteModal({ initialData = null, onClose, onSave }) {
+export default function RepresentanteModal({
+  initialData = null,
+  requiereEmpresaIntegrante = false,
+  empresasIntegrantes = [],
+  onClose,
+  onSave,
+}) {
   const [datos, setDatos] = useState({
     ...DATOS_INICIALES,
     ...(initialData ?? {}),
   });
+
+  const opcionesEmpresas = empresasIntegrantes.map((empresa) => ({
+    value: empresa.id,
+    label: empresa.razonSocial,
+  }));
 
   const actualizarValor = (campo, value) => {
     setDatos((prev) => ({
@@ -43,9 +58,13 @@ export default function RepresentanteModal({ initialData = null, onClose, onSave
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const camposObligatoriosCompletos = [datos.apellido, datos.nombre, datos.email, datos.telefono, datos.cuil, datos.cargoId].every(
-      (value) => String(value).trim().length > 0,
-    );
+    const camposObligatorios = [datos.apellido, datos.nombre, datos.email, datos.telefono, datos.cuil, datos.cargoId];
+
+    if (requiereEmpresaIntegrante) {
+      camposObligatorios.unshift(datos.empresaId);
+    }
+
+    const camposObligatoriosCompletos = camposObligatorios.every((value) => String(value).trim().length > 0);
 
     if (!camposObligatoriosCompletos) {
       return;
@@ -53,8 +72,12 @@ export default function RepresentanteModal({ initialData = null, onClose, onSave
 
     const cargoSeleccionado = CARGOS_REPRESENTANTE_MOCK.find((cargo) => cargo.value === datos.cargoId);
 
+    const empresaSeleccionada = empresasIntegrantes.find((empresa) => empresa.id === datos.empresaId);
+
     onSave?.({
       ...datos,
+      empresaId: requiereEmpresaIntegrante ? datos.empresaId : "",
+      empresaNombre: requiereEmpresaIntegrante ? (empresaSeleccionada?.razonSocial ?? "") : "",
       cargo: cargoSeleccionado?.label ?? "",
       firmaAutorizada: false,
     });
@@ -70,18 +93,44 @@ export default function RepresentanteModal({ initialData = null, onClose, onSave
         onMouseDown={(event) => event.stopPropagation()}
       >
         <header className="representante-modal-header">
-          <h2 id="representante-modal-title" className="section-title">
-            Representante
-          </h2>
+          <div className="representante-modal-title-wrapper">
+            <h2 id="representante-modal-title" className="section-title">
+              Representante
+            </h2>
+
+            {requiereEmpresaIntegrante && (
+              <span
+                className="representante-modal-info"
+                title="Seleccione la empresa integrante representada."
+                aria-label="Información sobre la empresa representada"
+              >
+                <Info size={16} aria-hidden="true" />
+              </span>
+            )}
+          </div>
 
           <button type="button" className="representante-modal-close" aria-label="Cerrar" onClick={onClose}>
-            <X size={20} />
+            <X size={20} aria-hidden="true" />
           </button>
         </header>
 
         <form onSubmit={handleSubmit}>
           <div className="representante-modal-body">
             <div className="representante-modal-grid">
+              {requiereEmpresaIntegrante && (
+                <div className="representante-modal-field representante-modal-field--full">
+                  <SearchableSelect
+                    id="empresa-representante"
+                    label="Empresa"
+                    value={datos.empresaId}
+                    options={opcionesEmpresas}
+                    placeholder="Seleccione la empresa integrante"
+                    required
+                    onChange={(value) => actualizarValor("empresaId", value)}
+                  />
+                </div>
+              )}
+
               <div className="representante-modal-field">
                 <label className="form-field-label" htmlFor="representante-apellido">
                   Apellido
