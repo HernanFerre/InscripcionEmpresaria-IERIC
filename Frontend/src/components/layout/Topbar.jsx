@@ -30,7 +30,7 @@ export default function Topbar({ usuario, cuit, mostrarDatosInscripcion = false,
 
         <span className="divider"></span>
 
-        <span className="portal-title">SOLICITUD DE INSCRIPCION EMPRESARIA DIGITAL</span>
+        <span className="section-title portal-title">Solicitud de inscripción empresaria digital</span>
       </div>
 
       <div className="topbar-right">

@@ -44,7 +44,7 @@ export default function StepRepresentantes({ representantes = [], onSave, onDele
 
         <button type="button" className="representantes-add-button" onClick={abrirNuevoRepresentante}>
           <Plus size={18} aria-hidden="true" />
-          Agregar Representante
+          Agregar representante
         </button>
       </div>
 
@@ -54,14 +54,14 @@ export default function StepRepresentantes({ representantes = [], onSave, onDele
             <tr>
               <th>
                 <span className="representantes-sortable-header">
-                  APELLIDO
+                  Apellido
                   <ArrowUp size={15} aria-hidden="true" />
                 </span>
               </th>
 
               <th>
                 <span className="representantes-sortable-header">
-                  NOMBRE
+                  Nombre
                   <ArrowUp size={15} aria-hidden="true" />
                 </span>
               </th>
@@ -73,9 +73,9 @@ export default function StepRepresentantes({ representantes = [], onSave, onDele
                 </span>
               </th>
 
-              <th>CORREO ELECTRÓNICO</th>
-              <th>TELÉFONO</th>
-              <th>CARGO</th>
+              <th>Correo electrónico</th>
+              <th>Teléfono</th>
+              <th>Cargo</th>
             </tr>
           </thead>
 

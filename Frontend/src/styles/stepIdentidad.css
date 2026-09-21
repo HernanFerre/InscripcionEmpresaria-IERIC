@@ -1,6 +1,12 @@
+.identity-title {
+  margin: 0 0 var(--space-xl);
+  text-align: left;
+}
+
 .identity-loading {
-  text-align: center;
   margin-top: var(--space-2xl);
+  color: var(--color-text-muted);
+  text-align: center;
 }
 
 .identity-card {
@@ -14,30 +20,39 @@
 
 .identity-instruction {
   margin: 0 0 14px;
-  font-size: 18px;
-  font-weight: 600;
   color: var(--color-text);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.4;
   text-align: center;
 }
 
 .identity-options {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
 .identity-option {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
+  min-width: 0;
+  min-height: 48px;
   gap: 10px;
+  padding: 10px 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  cursor: pointer;
   background: var(--color-surface);
-  font-size: 17px;
-  font-weight: 600;
-  transition: var(--transition-fast);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.35;
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .identity-option:focus-within {
@@ -53,47 +68,49 @@
 .identity-option input {
   width: 18px;
   height: 18px;
+  flex-shrink: 0;
+  margin: 0;
   accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.identity-option span {
+  min-width: 0;
+}
+
+.identity-card.validated .identity-option,
+.identity-card.validated .identity-option input {
+  cursor: default;
 }
 
 .identity-attempts {
   margin: var(--space-lg) 0 var(--space-sm);
-  text-align: center;
-  font-size: 18px;
   color: var(--color-text-muted);
-}
-
-.identity-error {
-  margin: var(--space-sm) 0;
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
   text-align: center;
-  color: var(--color-error);
-  font-weight: 700;
 }
 
-.identity-success {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  margin: 14px 0 0;
-  color: var(--color-success);
-  font-weight: 700;
+.identity-attempts strong {
+  color: var(--color-text);
+  font-weight: var(--font-weight-semibold);
 }
 
 .identity-confirm-button {
+  box-sizing: border-box;
   width: 100%;
-  height: 46px;
+  height: 42px;
   border: none;
   border-radius: var(--radius-sm);
-
   background: var(--color-background-disabled);
   color: var(--color-text-disabled);
-
-  font-size: 15px;
-  font-weight: 700;
+  font-family: var(--font-family-base);
+  font-size: var(--font-button-size);
+  font-weight: var(--font-button-weight);
   cursor: not-allowed;
-
-  transition: var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .identity-confirm-button:not(:disabled) {
@@ -115,61 +132,33 @@
   box-shadow: var(--focus-ring);
 }
 
-.identity-confirm-button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.identity-manual-card {
-  border: 1px solid var(--color-warning-soft);
-  border-radius: var(--radius-md);
-  padding: 18px;
-  background: var(--color-warning-bg);
-  text-align: center;
-  color: var(--color-warning);
-  box-shadow: var(--shadow-md);
-}
-
-.identity-manual-card h2 {
-  margin: 10px 0;
-  font-size: 22px;
-}
-
-.identity-manual-card p {
-  margin: var(--space-sm) 0;
-  font-size: 16px;
-}
-
-.identity-success-message {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 18px;
-  padding: 14px 16px;
-  border: 1px solid var(--color-success-soft);
-  background: var(--color-success-bg);
-  color: var(--color-success);
-  border-radius: var(--radius-sm);
-  font-weight: var(--font-weight-semibold);
-}
-
-.identity-success-message svg {
-  flex-shrink: 0;
-}
-
+.identity-success-message,
 .identity-error-message {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-top: 18px;
   padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+}
+
+.identity-success-message {
+  border: 1px solid var(--color-success-soft);
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  font-weight: var(--font-weight-semibold);
+}
+
+.identity-error-message {
   border: 1px solid var(--color-error-soft);
   background: var(--color-error-bg);
   color: var(--color-error);
-  border-radius: var(--radius-sm);
   font-weight: var(--font-weight-medium);
 }
 
+.identity-success-message svg,
 .identity-error-message svg {
   flex-shrink: 0;
 }
@@ -180,10 +169,10 @@
 }
 
 .identity-limit-intro {
-  margin: 0;
   max-width: 620px;
+  margin: 0;
   color: var(--color-text-muted);
-  font-size: 15px;
+  font-size: var(--font-size-sm);
   line-height: 1.5;
 }
 
@@ -191,9 +180,9 @@
   display: flex;
   gap: 14px;
   padding: 18px 20px;
+  border: 1px solid var(--color-warning-soft);
   border-radius: var(--radius-sm);
   background: var(--color-warning-bg);
-  border: 1px solid var(--color-warning-soft);
   color: var(--color-warning);
 }
 
@@ -205,32 +194,89 @@
 .identity-warning-message strong {
   display: block;
   margin-bottom: 6px;
-  font-size: 17px;
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
 }
 
 .identity-warning-message span {
   display: block;
   color: var(--color-text);
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   line-height: 1.45;
 }
 
 .identity-limit-actions {
   display: flex;
-  gap: 14px;
   justify-content: center;
+  gap: 14px;
   margin-top: var(--space-md);
 }
 
 .identity-secondary-button {
+  box-sizing: border-box;
   min-width: 180px;
   height: 42px;
-  border-radius: var(--radius-sm);
   border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
   background: var(--color-surface);
   color: var(--color-primary);
+  font-family: var(--font-family-base);
   font-size: var(--font-button-size);
   font-weight: var(--font-button-weight);
   cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.identity-secondary-button:hover {
+  background: var(--color-primary-soft);
+}
+
+.identity-secondary-button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.identity-manual-card {
+  padding: 18px;
+  border: 1px solid var(--color-warning-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  text-align: center;
+  box-shadow: var(--shadow-md);
+}
+
+.identity-manual-card h2 {
+  margin: 10px 0;
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.identity-manual-card p {
+  margin: var(--space-sm) 0;
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 700px) {
+  .identity-title {
+    margin-bottom: var(--space-lg);
+  }
+
+  .identity-options {
+    grid-template-columns: 1fr;
+  }
+
+  .identity-limit-actions {
+    flex-direction: column;
+  }
+
+  .identity-limit-actions .next-step-button,
+  .identity-secondary-button {
+    width: 100%;
+  }
 }

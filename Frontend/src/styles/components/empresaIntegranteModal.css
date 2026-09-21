@@ -110,6 +110,10 @@
   align-items: start;
 }
 
+.empresa-integrante-modal-field {
+  min-width: 0;
+}
+
 .empresa-integrante-modal-input {
   box-sizing: border-box;
   width: 100%;

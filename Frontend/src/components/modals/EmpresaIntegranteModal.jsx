@@ -66,7 +66,7 @@ export default function EmpresaIntegranteModal({ initialData = null, onClose, on
               <Info size={16} aria-hidden="true" />
 
               <span className="empresa-integrante-modal-tooltip" role="tooltip">
-                Deberá informar los representantes en el módulo REPRESENTANTES.
+                Deberá informar los representantes en el módulo Representantes.
               </span>
             </span>
           </div>
@@ -79,34 +79,49 @@ export default function EmpresaIntegranteModal({ initialData = null, onClose, on
         <form onSubmit={handleSubmit}>
           <div className="empresa-integrante-modal-body">
             <div className="empresa-integrante-modal-grid">
-              <input
-                className="empresa-integrante-modal-input"
-                type="text"
-                name="cuit"
-                value={datos.cuit}
-                placeholder="CUIT*"
-                aria-label="CUIT"
-                required
-                onChange={actualizarCampo}
-              />
+              <div className="empresa-integrante-modal-field">
+                <label className="form-field-label" htmlFor="empresa-integrante-cuit">
+                  CUIT
+                  <span aria-hidden="true">*</span>
+                </label>
 
-              <input
-                className="empresa-integrante-modal-input"
-                type="text"
-                name="razonSocial"
-                value={datos.razonSocial}
-                placeholder="Razón social*"
-                aria-label="Razón social"
-                required
-                onChange={actualizarCampo}
-              />
+                <input
+                  id="empresa-integrante-cuit"
+                  className="empresa-integrante-modal-input"
+                  type="text"
+                  name="cuit"
+                  value={datos.cuit}
+                  placeholder="XX-XXXXXXXX-X"
+                  required
+                  onChange={actualizarCampo}
+                />
+              </div>
+
+              <div className="empresa-integrante-modal-field">
+                <label className="form-field-label" htmlFor="empresa-integrante-razon-social">
+                  Razón social
+                  <span aria-hidden="true">*</span>
+                </label>
+
+                <input
+                  id="empresa-integrante-razon-social"
+                  className="empresa-integrante-modal-input"
+                  type="text"
+                  name="razonSocial"
+                  value={datos.razonSocial}
+                  placeholder="Razón social"
+                  required
+                  onChange={actualizarCampo}
+                />
+              </div>
 
               <div className="empresa-integrante-modal-sociedad">
                 <SearchableSelect
                   id="tipo-sociedad-integrante"
+                  label="Tipo de sociedad"
                   value={datos.tipoSociedadId}
                   options={TIPOS_SOCIEDAD_MOCK}
-                  placeholder="Tipo de sociedad"
+                  placeholder="Busque y seleccione el tipo de sociedad"
                   required
                   onChange={(value) => actualizarValor("tipoSociedadId", value)}
                 />

@@ -5,7 +5,17 @@ import "../styles/stepIdentidad.css";
 
 import { validarQuiz } from "../services/InscripcionService.js";
 
-import SkipValidationButton from "../components/common/SkipValidationButton.jsx"; //luego sacar
+import SkipValidationButton from "../components/common/SkipValidationButton.jsx"; // Luego sacar
+
+function formatearTitulo(titulo) {
+  const texto = String(titulo ?? "").trim();
+
+  if (!texto) {
+    return "Información de la empresa";
+  }
+
+  return texto.charAt(0).toLocaleUpperCase("es-AR") + texto.slice(1).toLocaleLowerCase("es-AR");
+}
 
 export default function StepIdentidad({ token, initialQuiz, onNext }) {
   const [desafio, setDesafio] = useState(initialQuiz);
@@ -70,20 +80,16 @@ export default function StepIdentidad({ token, initialQuiz, onNext }) {
       if (resultado.limiteExcedido) {
         setLimiteExcedido(true);
         setSeleccionadas([]);
-
         return;
       }
 
       if (resultado.nuevoQuiz) {
         setDesafio(resultado.nuevoQuiz);
-
         setIntentos(resultado.nuevoQuiz.intentosRestantes);
-
         setIntentosTotales(resultado.nuevoQuiz.intentosTotales);
-
         setSeleccionadas([]);
 
-        setError(`${resultado.mensaje} Le quedan ` + `${resultado.intentosRestantes} intentos.`);
+        setError(`${resultado.mensaje} Le quedan ${resultado.intentosRestantes} intentos.`);
 
         return;
       }
@@ -99,11 +105,11 @@ export default function StepIdentidad({ token, initialQuiz, onNext }) {
   if (!desafio) {
     return (
       <>
-        <h1>INFORMACIÓN DE LA EMPRESA</h1>
+        <h1 className="section-title identity-title">Información de la empresa</h1>
 
         <section className="identity-card">
-          <div className="identity-error-message">
-            <AlertTriangle size={18} />
+          <div className="identity-error-message" role="alert">
+            <AlertTriangle size={18} aria-hidden="true" />
 
             <span>No fue posible generar la validación de información.</span>
           </div>
@@ -115,15 +121,15 @@ export default function StepIdentidad({ token, initialQuiz, onNext }) {
   if (limiteExcedido) {
     return (
       <>
-        <h1>No fue posible validar la información</h1>
+        <h1 className="section-title identity-title">No fue posible validar la información</h1>
 
         <section className="identity-limit-card">
           <p className="identity-limit-intro">
             El sistema de seguridad institucional ha detectado múltiples inconsistencias durante el proceso de verificación.
           </p>
 
-          <div className="identity-warning-message">
-            <AlertTriangle size={22} />
+          <div className="identity-warning-message" role="alert">
+            <AlertTriangle size={22} aria-hidden="true" />
 
             <div>
               <strong>Límite de intentos excedido</strong>
@@ -141,7 +147,7 @@ export default function StepIdentidad({ token, initialQuiz, onNext }) {
             </button>
 
             <button type="button" className="identity-secondary-button" onClick={() => window.location.reload()}>
-              Volver al Inicio
+              Volver al inicio
             </button>
           </div>
         </section>
@@ -151,12 +157,12 @@ export default function StepIdentidad({ token, initialQuiz, onNext }) {
 
   return (
     <>
-      <h1>{desafio.titulo}</h1>
+      <h1 className="section-title identity-title">{formatearTitulo(desafio.titulo)}</h1>
 
       <section className={`identity-card ${informacionValidada ? "validated" : ""}`}>
         <p className="identity-instruction">{desafio.consigna}</p>
 
-        <div className="identity-options">
+        <div className="identity-options" role="group" aria-label="Opciones de validación">
           {desafio.opciones.map((opcion) => {
             const checked = seleccionadas.includes(opcion.id);
 
@@ -177,28 +183,34 @@ export default function StepIdentidad({ token, initialQuiz, onNext }) {
         </div>
 
         {!informacionValidada && !error && (
-          <p className="identity-attempts">
+          <p className="identity-attempts" aria-live="polite">
             Tiene <strong>{intentos}</strong> de <strong>{intentosTotales}</strong> intentos disponibles
           </p>
         )}
 
         {!informacionValidada && error && (
-          <div className="identity-error-message">
-            <AlertTriangle size={18} />
+          <div className="identity-error-message" role="alert">
+            <AlertTriangle size={18} aria-hidden="true" />
+
             <span>{error}</span>
           </div>
         )}
 
         {informacionValidada && (
-          <div className="identity-success-message">
-            <CheckCircle size={20} />
+          <div className="identity-success-message" role="status">
+            <CheckCircle size={20} aria-hidden="true" />
 
             <span>Información de la empresa validada correctamente</span>
           </div>
         )}
 
         {!informacionValidada && (
-          <button className="identity-confirm-button" onClick={confirmarInformacion} disabled={!seleccionadas.length || validando}>
+          <button
+            type="button"
+            className="identity-confirm-button"
+            onClick={confirmarInformacion}
+            disabled={!seleccionadas.length || validando}
+          >
             {validando ? "Validando..." : "Confirmar información"}
           </button>
         )}
@@ -208,8 +220,8 @@ export default function StepIdentidad({ token, initialQuiz, onNext }) {
 
       {informacionValidada && (
         <div className="next-step-container">
-          <button className="next-step-button" onClick={onNext}>
-            Continuar...
+          <button type="button" className="next-step-button" onClick={onNext}>
+            Continuar
           </button>
         </div>
       )}

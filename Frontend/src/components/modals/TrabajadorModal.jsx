@@ -10,10 +10,34 @@ const DATOS_INICIALES = {
   egreso: "",
 };
 
+function normalizarFechaParaInput(value) {
+  const fecha = String(value ?? "").trim();
+
+  if (!fecha) {
+    return "";
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+    return fecha;
+  }
+
+  const coincidencia = fecha.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+
+  if (!coincidencia) {
+    return "";
+  }
+
+  const [, dia, mes, anio] = coincidencia;
+
+  return `${anio}-${mes}-${dia}`;
+}
+
 export default function TrabajadorModal({ initialData = null, onClose, onSave }) {
   const [datos, setDatos] = useState({
     ...DATOS_INICIALES,
     ...(initialData ?? {}),
+    ingreso: normalizarFechaParaInput(initialData?.ingreso),
+    egreso: normalizarFechaParaInput(initialData?.egreso),
   });
 
   const actualizarCampo = (event) => {
@@ -63,48 +87,73 @@ export default function TrabajadorModal({ initialData = null, onClose, onSave })
         <form onSubmit={handleSubmit}>
           <div className="trabajador-modal-body">
             <div className="trabajador-modal-grid">
-              <input
-                className="trabajador-modal-input"
-                type="text"
-                name="apellidoNombre"
-                value={datos.apellidoNombre}
-                placeholder="Apellido y nombre*"
-                aria-label="Apellido y nombre"
-                required
-                onChange={actualizarCampo}
-              />
+              <div className="trabajador-modal-field">
+                <label className="form-field-label" htmlFor="trabajador-apellido-nombre">
+                  Apellido y nombre
+                  <span aria-hidden="true">*</span>
+                </label>
 
-              <input
-                className="trabajador-modal-input"
-                type="text"
-                name="cuil"
-                value={datos.cuil}
-                placeholder="CUIL*"
-                aria-label="CUIL"
-                required
-                onChange={actualizarCampo}
-              />
+                <input
+                  id="trabajador-apellido-nombre"
+                  className="trabajador-modal-input"
+                  type="text"
+                  name="apellidoNombre"
+                  value={datos.apellidoNombre}
+                  placeholder="Sin comas ni separaciones"
+                  required
+                  onChange={actualizarCampo}
+                />
+              </div>
 
-              <input
-                className="trabajador-modal-input"
-                type="text"
-                name="ingreso"
-                value={datos.ingreso}
-                placeholder="Fecha de ingreso*"
-                aria-label="Fecha de ingreso"
-                required
-                onChange={actualizarCampo}
-              />
+              <div className="trabajador-modal-field">
+                <label className="form-field-label" htmlFor="trabajador-cuil">
+                  CUIL
+                  <span aria-hidden="true">*</span>
+                </label>
 
-              <input
-                className="trabajador-modal-input"
-                type="text"
-                name="egreso"
-                value={datos.egreso}
-                placeholder="Fecha de egreso"
-                aria-label="Fecha de egreso"
-                onChange={actualizarCampo}
-              />
+                <input
+                  id="trabajador-cuil"
+                  className="trabajador-modal-input"
+                  type="text"
+                  name="cuil"
+                  value={datos.cuil}
+                  placeholder="XX-XXXXXXXX-X"
+                  required
+                  onChange={actualizarCampo}
+                />
+              </div>
+
+              <div className="trabajador-modal-field">
+                <label className="form-field-label" htmlFor="trabajador-ingreso">
+                  Fecha de ingreso
+                  <span aria-hidden="true">*</span>
+                </label>
+
+                <input
+                  id="trabajador-ingreso"
+                  className="trabajador-modal-input"
+                  type="date"
+                  name="ingreso"
+                  value={datos.ingreso}
+                  required
+                  onChange={actualizarCampo}
+                />
+              </div>
+
+              <div className="trabajador-modal-field">
+                <label className="form-field-label" htmlFor="trabajador-egreso">
+                  Fecha de egreso
+                </label>
+
+                <input
+                  id="trabajador-egreso"
+                  className="trabajador-modal-input"
+                  type="date"
+                  name="egreso"
+                  value={datos.egreso}
+                  onChange={actualizarCampo}
+                />
+              </div>
             </div>
           </div>
 

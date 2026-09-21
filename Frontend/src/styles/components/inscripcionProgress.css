@@ -35,7 +35,7 @@
 }
 
 .inscripcion-progress-step.completed .inscripcion-progress-label {
-  color: var(--color-primary);
+  color: var(--color-text);
 }
 
 .inscripcion-progress-separator {
@@ -45,7 +45,7 @@
 }
 
 .inscripcion-progress-step.completed .inscripcion-progress-separator {
-  color: var(--color-primary);
+  color: var(--color-text);
 }
 
 @media (max-width: 700px) {

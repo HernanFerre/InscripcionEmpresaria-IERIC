@@ -113,7 +113,7 @@ export default function StepNomina({ onSaveTrabajador, onDelete, onBack, onNext 
 
         <button type="button" className="nomina-add-button" onClick={abrirNuevoTrabajador}>
           <Plus size={18} aria-hidden="true" />
-          Agregar Trabajador
+          Agregar trabajador
         </button>
       </div>
 
@@ -123,7 +123,7 @@ export default function StepNomina({ onSaveTrabajador, onDelete, onBack, onNext 
             <tr>
               <th>
                 <span className="nomina-sortable-header">
-                  APELLIDO Y NOMBRE
+                  Apellido y nombre
                   <ArrowUp size={15} aria-hidden="true" />
                 </span>
               </th>
@@ -137,19 +137,19 @@ export default function StepNomina({ onSaveTrabajador, onDelete, onBack, onNext 
 
               <th>
                 <span className="nomina-sortable-header">
-                  INGRESO
+                  Ingreso
                   <ArrowUp size={15} aria-hidden="true" />
                 </span>
               </th>
 
               <th>
                 <span className="nomina-sortable-header">
-                  EGRESO
+                  Egreso
                   <ArrowUp size={15} aria-hidden="true" />
                 </span>
               </th>
 
-              <th>PERTENECE A CONSTRUCCIÓN</th>
+              <th>Pertenece a construcción</th>
               <th aria-label="Acciones" />
             </tr>
           </thead>

@@ -82,69 +82,107 @@ export default function RepresentanteModal({ initialData = null, onClose, onSave
         <form onSubmit={handleSubmit}>
           <div className="representante-modal-body">
             <div className="representante-modal-grid">
-              <input
-                className="representante-modal-input"
-                type="text"
-                name="apellido"
-                value={datos.apellido}
-                placeholder="Apellido*"
-                aria-label="Apellido"
-                required
-                onChange={actualizarCampo}
-              />
+              <div className="representante-modal-field">
+                <label className="form-field-label" htmlFor="representante-apellido">
+                  Apellido
+                  <span aria-hidden="true">*</span>
+                </label>
 
-              <input
-                className="representante-modal-input"
-                type="text"
-                name="nombre"
-                value={datos.nombre}
-                placeholder="Nombre*"
-                aria-label="Nombre"
-                required
-                onChange={actualizarCampo}
-              />
+                <input
+                  id="representante-apellido"
+                  className="representante-modal-input"
+                  type="text"
+                  name="apellido"
+                  value={datos.apellido}
+                  placeholder="Apellido"
+                  required
+                  onChange={actualizarCampo}
+                />
+              </div>
 
-              <input
-                className="representante-modal-input"
-                type="email"
-                name="email"
-                value={datos.email}
-                placeholder="Correo electrónico*"
-                aria-label="Correo electrónico"
-                required
-                onChange={actualizarCampo}
-              />
+              <div className="representante-modal-field">
+                <label className="form-field-label" htmlFor="representante-nombre">
+                  Nombre
+                  <span aria-hidden="true">*</span>
+                </label>
 
-              <input
-                className="representante-modal-input"
-                type="tel"
-                name="telefono"
-                value={datos.telefono}
-                placeholder="Teléfono*"
-                aria-label="Teléfono"
-                required
-                onChange={actualizarCampo}
-              />
+                <input
+                  id="representante-nombre"
+                  className="representante-modal-input"
+                  type="text"
+                  name="nombre"
+                  value={datos.nombre}
+                  placeholder="Nombre"
+                  required
+                  onChange={actualizarCampo}
+                />
+              </div>
 
-              <input
-                className="representante-modal-input"
-                type="text"
-                name="cuil"
-                value={datos.cuil}
-                placeholder="CUIL*"
-                aria-label="CUIL"
-                required
-                onChange={actualizarCampo}
-              />
+              <div className="representante-modal-field">
+                <label className="form-field-label" htmlFor="representante-cuil">
+                  CUIL
+                  <span aria-hidden="true">*</span>
+                </label>
 
-              <SearchableSelect
-                id="cargo-representante"
-                value={datos.cargoId}
-                options={CARGOS_REPRESENTANTE_MOCK}
-                placeholder="Seleccionar cargo"
-                required
-                onChange={(value) => actualizarValor("cargoId", value)}
-              />
+                <input
+                  id="representante-cuil"
+                  className="representante-modal-input"
+                  type="text"
+                  name="cuil"
+                  value={datos.cuil}
+                  placeholder="XX-XXXXXXXX-X"
+                  required
+                  onChange={actualizarCampo}
+                />
+              </div>
+
+              <div className="representante-modal-field">
+                <SearchableSelect
+                  id="cargo-representante"
+                  label="Cargo"
+                  value={datos.cargoId}
+                  options={CARGOS_REPRESENTANTE_MOCK}
+                  placeholder="Busque y seleccione el cargo"
+                  required
+                  onChange={(value) => actualizarValor("cargoId", value)}
+                />
+              </div>
+
+              <div className="representante-modal-field">
+                <label className="form-field-label" htmlFor="representante-correo">
+                  Correo electrónico
+                  <span aria-hidden="true">*</span>
+                </label>
+
+                <input
+                  id="representante-correo"
+                  className="representante-modal-input"
+                  type="email"
+                  name="email"
+                  value={datos.email}
+                  placeholder="Correo electrónico"
+                  required
+                  onChange={actualizarCampo}
+                />
+              </div>
+
+              <div className="representante-modal-field">
+                <label className="form-field-label" htmlFor="representante-telefono">
+                  Teléfono
+                  <span aria-hidden="true">*</span>
+                </label>
+
+                <input
+                  id="representante-telefono"
+                  className="representante-modal-input"
+                  type="tel"
+                  name="telefono"
+                  value={datos.telefono}
+                  placeholder="Teléfono"
+                  required
+                  onChange={actualizarCampo}
+                />
+              </div>
             </div>
           </div>
 

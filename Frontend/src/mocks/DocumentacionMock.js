@@ -18,13 +18,13 @@ export const SECCIONES_DOCUMENTACION_MOCK = [
       },
       {
         id: "acta-directorio",
-        titulo: "Acta Directorio",
+        titulo: "Acta de directorio",
         obligatorio: true,
         archivo: null,
       },
       {
         id: "constancia-domicilio",
-        titulo: "Constancia domicilio",
+        titulo: "Constancia de domicilio",
         obligatorio: true,
         archivo: null,
       },
@@ -37,7 +37,7 @@ export const SECCIONES_DOCUMENTACION_MOCK = [
     documentos: [
       {
         id: "nomina-sanchez-patricia",
-        titulo: "Nómina: Sanchez Patricia",
+        titulo: "Nómina: Sánchez Patricia",
         obligatorio: true,
         archivo: null,
       },

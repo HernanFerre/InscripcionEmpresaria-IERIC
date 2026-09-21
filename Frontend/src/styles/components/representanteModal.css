@@ -64,6 +64,10 @@
   align-items: start;
 }
 
+.representante-modal-field {
+  min-width: 0;
+}
+
 .representante-modal-input {
   box-sizing: border-box;
   width: 100%;

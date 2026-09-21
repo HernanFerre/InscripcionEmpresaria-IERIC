@@ -63,6 +63,18 @@
   gap: 14px 16px;
 }
 
+.trabajador-modal-field {
+  min-width: 0;
+}
+
+.trabajador-modal-input[type="date"] {
+  cursor: pointer;
+}
+
+.trabajador-modal-input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
 .trabajador-modal-input {
   box-sizing: border-box;
   width: 100%;

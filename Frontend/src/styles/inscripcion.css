@@ -37,12 +37,6 @@
   margin: 0 var(--space-2xl);
 }
 
-.portal-title {
-  color: var(--color-text);
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-medium);
-}
-
 .topbar-right {
   gap: 14px;
 }
@@ -197,15 +191,6 @@
 .step-item span {
   font-weight: var(--font-weight-medium);
   color: var(--color-text);
-}
-
-.wizard-card h1 {
-  margin: 0 0 var(--space-xl);
-  color: var(--color-primary);
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  line-height: 2rem;
-  letter-spacing: -0.2px;
 }
 
 .next-step-container {

@@ -7,7 +7,7 @@ import { crearQuiz, validarCuit } from "../services/InscripcionService.js";
 
 import { formatCuit } from "../utils/formatters.js";
 
-import SkipValidationButton from "../components/common/SkipValidationButton.jsx"; //luego sacar
+import SkipValidationButton from "../components/common/SkipValidationButton.jsx"; // Luego sacar
 
 export default function StepCuit({ token, initialCuit = "", initialEmpresa = null, estaLogueado = false, onLoginRequired, onNext }) {
   const [cuit, setCuit] = useState(initialCuit);
@@ -120,7 +120,7 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
       cuiles: [],
       quiz: {
         quizId: "quiz-demostracion",
-        titulo: "INFORMACIÓN DE LA EMPRESA",
+        titulo: "Información de la empresa",
         consigna: "Seleccione los trabajadores que reconoce como vinculados a la empresa.",
         intentosTotales: 3,
         intentosRestantes: 3,
@@ -166,29 +166,36 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
 
   return (
     <>
-      <h1>SOLICITUD DE INSCRIPCIÓN EMPRESARIA</h1>
+      <h1 className="section-title cuit-title">Solicitud de inscripción empresaria</h1>
 
       <div className="cuit-row">
         <div className="input-wrapper">
-          <label htmlFor="cuit">CUIT de la Empresa</label>
+          <label className="form-field-label" htmlFor="cuit">
+            CUIT de la empresa
+            <span aria-hidden="true">*</span>
+          </label>
 
           <div className={`input-with-check ${validado ? "success" : ""}`}>
             <input
               id="cuit"
+              type="text"
               value={cuit}
               onChange={handleCuitChange}
               placeholder="Ingrese su CUIT"
               inputMode="numeric"
               autoComplete="off"
+              required
             />
 
-            {validado && <CheckCircle size={22} />}
+            {validado && <CheckCircle size={22} aria-hidden="true" />}
           </div>
 
-          <p className={validado ? "status-ok" : "status-muted"}>{validado ? "CUIT verificado con éxito" : "Pendiente de validación"}</p>
+          <p className={validado ? "status-ok" : "status-muted"} aria-live="polite">
+            {validado ? "CUIT verificado con éxito" : "Pendiente de validación"}
+          </p>
         </div>
 
-        <button onClick={handleValidar} disabled={cargando || !cuitTieneOnceNumeros} type="button">
+        <button type="button" onClick={handleValidar} disabled={cargando || !cuitTieneOnceNumeros}>
           {cargando ? "Validando..." : "Validar CUIT"}
         </button>
       </div>
@@ -197,7 +204,7 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
 
       {requiereAutenticacion && !estaLogueado && (
         <div className="cuit-result-card warning">
-          <AlertTriangle size={20} />
+          <AlertTriangle size={20} aria-hidden="true" />
 
           <div>
             <strong>Debe iniciar sesión para continuar.</strong>
@@ -205,15 +212,15 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
             <span>Inicie sesión o cree una cuenta antes de validar el CUIT de la empresa.</span>
 
             <button type="button" className="next-step-button cuit-auth-button" onClick={onLoginRequired}>
-              Iniciar sesión / Crear cuenta
+              Iniciar sesión / crear cuenta
             </button>
           </div>
         </div>
       )}
 
       {errorProceso && (
-        <div className="cuit-result-card error">
-          <AlertTriangle size={20} />
+        <div className="cuit-result-card error" role="alert">
+          <AlertTriangle size={20} aria-hidden="true" />
 
           <div>
             <strong>No fue posible continuar.</strong>
@@ -227,7 +234,7 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
         <>
           {tieneRazonSocial && (
             <div className="readonly-group">
-              <label>Razón Social</label>
+              <span className="form-field-label">Razón social</span>
 
               <div className="readonly-box">{empresa.razonSocial}</div>
             </div>
@@ -235,7 +242,7 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
 
           {esRegistrada && (
             <div className="cuit-result-card warning">
-              <Info size={20} />
+              <Info size={20} aria-hidden="true" />
 
               <div>
                 <strong>La empresa ya se encuentra registrada.</strong>
@@ -247,7 +254,7 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
 
           {esHabilitada && (
             <div className="cuit-result-card success">
-              <CheckCircle size={20} />
+              <CheckCircle size={20} aria-hidden="true" />
 
               <div>
                 <strong>La empresa se encuentra en condiciones de iniciar la inscripción.</strong>
@@ -259,7 +266,7 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
 
           {esBloqueada && (
             <div className="cuit-result-card error">
-              <AlertTriangle size={20} />
+              <AlertTriangle size={20} aria-hidden="true" />
 
               <div>
                 <strong>No es posible iniciar la inscripción.</strong>
@@ -271,7 +278,7 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
 
           {esHabilitada && (
             <div className="next-step-container">
-              <button className="next-step-button" onClick={handleNext} type="button" disabled={preparandoQuiz}>
+              <button type="button" className="next-step-button" onClick={handleNext} disabled={preparandoQuiz}>
                 {preparandoQuiz ? "Preparando..." : "Continuar"}
               </button>
             </div>

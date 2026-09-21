@@ -2,9 +2,6 @@
   box-sizing: border-box;
   width: 100%;
   margin-top: var(--space-2xl);
-  padding: var(--space-md);
-  border-radius: var(--radius-sm);
-  background: var(--color-info-bg);
 }
 
 .empresas-integrantes-header {
