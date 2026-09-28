@@ -28,17 +28,14 @@ using IERIC.SumariosIERIC.BuildingBlocks.IntegrationEventLogEF;
 using IERIC.SumariosIERIC.BuildingBlocks.IntegrationEventLogEF.Services;
 using IERIC.SumariosIERIC.Application.Exceptions;
 using IERIC.SumariosIERIC.Application.Helper;
-using
-    IERIC.SumariosIERIC.Application.IntegrationEvents;
+
 using IERIC.SumariosIERIC.Application.Middlewares;
-using IERIC.SumariosIERIC.Application.Queries;
 using IERIC.SumariosIERIC.Domain.Entities;
 using IERIC.SumariosIERIC.Domain.Exceptions;
 using IERIC.SumariosIERIC.Infrastructure;
 using
     IERIC.SumariosIERIC.Infrastructure.Repositories;
 using RabbitMQ.Client;
-using IERIC.SumariosIERIC.Domain.Events;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Auth;
 using Microsoft.AspNetCore.Http;
@@ -272,14 +269,10 @@ namespace IERIC.SumariosIERIC.Application
             );
             services.AddOdataSwaggerSupport();
 
-            //Queries
-            services.AddQueries(Configuration);
 
             // Base de Datos
             services.AddDatabaseContext(Configuration);
 
-            //Eventos de Dominio
-            services.AddDomainEvents(Configuration);
 
             //Base de datos de Log
             services.AddIntegartionEventLog(Configuration);
@@ -336,20 +329,9 @@ namespace IERIC.SumariosIERIC.Application
             }
 
             // Suscribirse a eventos de integacion
-            //ConfigureEventBus(app);
+
         }
 
-        private void ConfigureEventBus(IApplicationBuilder app)
-        {
-            var eventBus =
-                app.ApplicationServices.GetRequiredService<IEventBus>();
-            eventBus
-                .Subscribe
-                <EmpresaModificadaIntegrationEvent,
-                    EmpresaModificadaIntegrationEventHandler
-                >();
-            //eventBus.Subscribe<MaterialCreadoIntegrationEvent, MaterialCreadoIntegrationEventHandler>();
-        }
 
         private void ConfigureErrors(IApplicationBuilder app)
         {
@@ -377,21 +359,6 @@ namespace IERIC.SumariosIERIC.Application
 
     static class CustomExtensionsMethods
     {
-        public static IServiceCollection
-        AddQueries(
-            this IServiceCollection services,
-            IConfiguration configuration
-        )
-        {
-
-            services.AddScoped<IEmpresaQueries, EmpresaQueries>();
-
-
-
-            services.AddControllers().AddNewtonsoftJson(options => { options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver(); options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore; });
-
-            return services;
-        }
 
         public static IServiceCollection
         AddDatabaseContext(
@@ -418,24 +385,6 @@ namespace IERIC.SumariosIERIC.Application
             return services;
         }
 
-        public static IServiceCollection
-        AddDomainEvents(
-            this IServiceCollection services,
-            IConfiguration configuration
-        )
-        {
-
-
-
-            services
-       .AddTransient(typeof(
-           INotificationHandler<EmpresaNuevaRequested>
-       ),
-        typeof(EmpresaNuevaDomainEventHandler));
-
-
-            return services;
-        }
 
         public static IServiceCollection
         AddIntegartionEventLog(
@@ -467,13 +416,6 @@ namespace IERIC.SumariosIERIC.Application
             IConfiguration configuration
         )
         {
-            //services.AddTransient<MaterialCreadoIntegrationEventHandler>();
-            services.AddTransient<EmpresaModificadaIntegrationEventHandler>();
-            services
-                .AddTransient
-                <IEmpresaIntegrationEventService,
-                    EmpresaIntegrationEventService
-                >();
 
             services
                 .AddTransient
