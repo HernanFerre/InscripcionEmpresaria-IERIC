@@ -371,7 +371,7 @@ namespace IERIC.SumariosIERIC.Application
                     opt.ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.NavigationBaseIncludeIgnored))
                         .UseSqlServer(configuration
                             .GetConnectionString("DefaultConnection"),
-                        b => b.MigrationsAssembly("Application")));
+                        b => b.MigrationsAssembly("Infrastructure")));
 
 
 
