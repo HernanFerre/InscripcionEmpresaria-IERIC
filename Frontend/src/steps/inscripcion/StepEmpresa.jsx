@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Info } from "lucide-react";
 
 import SearchableSelect from "../../components/forms/SearchableSelect.jsx";
@@ -7,12 +7,9 @@ import EmpresaIntegranteModal from "../../components/modals/EmpresaIntegranteMod
 
 import { UBICAR_EMPRESAS_INTEGRANTES_AL_FINAL } from "../../config/featureFlags.js";
 
-import {
-  ACTIVIDADES_EMPRESA_MOCK,
-  CARACTERES_EMPRESA_MOCK,
-  LOCALIDADES_MOCK,
-  TIPOS_SOCIEDAD_MOCK,
-} from "../../mocks/InscripcionCatalogosMock.js";
+import { LOCALIDADES_MOCK } from "../../mocks/InscripcionCatalogosMock.js";
+
+import { obtenerCatalogosEmpresa } from "../../services/DatosMaestrosService.js";
 
 import "../../styles/stepEmpresa.css";
 
@@ -33,9 +30,21 @@ const DATOS_INICIALES = {
   telefono: "",
 };
 
+const CATALOGOS_INICIALES = {
+  actividadesEmpresa: [],
+  caracteresEmpresa: [],
+  tiposSociedad: [],
+};
+
 const PERMITIR_CONTINUAR_MOCK = true;
 
-const TIPOS_SOCIEDAD_CON_INTEGRANTES = ["ut", "ute", "consorcio-cooperacion"];
+/*
+ * Identificadores provenientes del catálogo de tipos de sociedad:
+ * 8  = U.T.E.
+ * 26 = Consorcio de cooperación
+ * 28 = U.T.
+ */
+const TIPOS_SOCIEDAD_CON_INTEGRANTES = ["8", "26", "28"];
 
 function emailEsValido(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -58,11 +67,53 @@ export default function StepEmpresa({ initialData = null, onNext }) {
     empresasIntegrantes: initialData?.empresasIntegrantes ?? [],
   });
 
+  const [catalogos, setCatalogos] = useState(CATALOGOS_INICIALES);
+
+  const [cargandoCatalogos, setCargandoCatalogos] = useState(true);
+
+  const [errorCatalogos, setErrorCatalogos] = useState("");
+
   const [modalEmpresaIntegranteAbierto, setModalEmpresaIntegranteAbierto] = useState(false);
 
   const [empresaIntegranteSeleccionada, setEmpresaIntegranteSeleccionada] = useState(null);
 
-  const mostrarEmpresasIntegrantes = TIPOS_SOCIEDAD_CON_INTEGRANTES.includes(datos.tipoSociedadId);
+  useEffect(() => {
+    let componenteActivo = true;
+
+    const cargarCatalogos = async () => {
+      setCargandoCatalogos(true);
+      setErrorCatalogos("");
+
+      try {
+        const catalogosObtenidos = await obtenerCatalogosEmpresa();
+
+        if (!componenteActivo) {
+          return;
+        }
+
+        setCatalogos(catalogosObtenidos);
+      } catch (error) {
+        if (!componenteActivo) {
+          return;
+        }
+
+        setCatalogos(CATALOGOS_INICIALES);
+        setErrorCatalogos(error.message || "No fue posible obtener los datos necesarios para completar la empresa.");
+      } finally {
+        if (componenteActivo) {
+          setCargandoCatalogos(false);
+        }
+      }
+    };
+
+    cargarCatalogos();
+
+    return () => {
+      componenteActivo = false;
+    };
+  }, []);
+
+  const mostrarEmpresasIntegrantes = TIPOS_SOCIEDAD_CON_INTEGRANTES.includes(String(datos.tipoSociedadId ?? ""));
 
   const actualizarValor = (campo, value) => {
     setDatos((prev) => ({
@@ -199,37 +250,25 @@ export default function StepEmpresa({ initialData = null, onNext }) {
                 id="actividad"
                 label="Actividad de la empresa"
                 value={datos.actividadId}
-                options={ACTIVIDADES_EMPRESA_MOCK}
-                placeholder="Actividad de la organización"
+                options={catalogos.actividadesEmpresa}
+                placeholder={cargandoCatalogos ? "Cargando actividades..." : "Actividad de la organización"}
                 required
+                disabled={cargandoCatalogos || Boolean(errorCatalogos)}
                 onChange={(value) => actualizarValor("actividadId", value)}
               />
             </div>
 
             <div className="empresa-col-6">
-              <label className="form-field-label" htmlFor="caracter-empresa">
-                Carácter
-                <span aria-hidden="true">*</span>
-              </label>
-
-              <select
+              <SearchableSelect
                 id="caracter-empresa"
-                className="empresa-input empresa-select"
-                name="caracter"
+                label="Carácter"
                 value={datos.caracter}
+                options={catalogos.caracteresEmpresa}
+                placeholder={cargandoCatalogos ? "Cargando caracteres..." : "Carácter de la organización"}
                 required
-                onChange={actualizarCampo}
-              >
-                <option value="" disabled>
-                  Carácter de la organización
-                </option>
-
-                {CARACTERES_EMPRESA_MOCK.map((option) => (
-                  <option value={option.value} key={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                disabled={cargandoCatalogos || Boolean(errorCatalogos)}
+                onChange={(value) => actualizarValor("caracter", value)}
+              />
             </div>
 
             <div className="empresa-col-6">
@@ -237,13 +276,20 @@ export default function StepEmpresa({ initialData = null, onNext }) {
                 id="tipo-sociedad"
                 label="Tipo de sociedad"
                 value={datos.tipoSociedadId}
-                options={TIPOS_SOCIEDAD_MOCK}
-                placeholder="Busque y seleccione el tipo de sociedad"
+                options={catalogos.tiposSociedad}
+                placeholder={cargandoCatalogos ? "Cargando tipos de sociedad..." : "Busque y seleccione el tipo de sociedad"}
                 required
+                disabled={cargandoCatalogos || Boolean(errorCatalogos)}
                 onChange={(value) => actualizarValor("tipoSociedadId", value)}
               />
             </div>
           </div>
+
+          {errorCatalogos && (
+            <span className="empresa-field-error" role="alert">
+              {errorCatalogos}
+            </span>
+          )}
         </section>
 
         {!UBICAR_EMPRESAS_INTEGRANTES_AL_FINAL && bloqueEmpresasIntegrantes}
@@ -437,6 +483,7 @@ export default function StepEmpresa({ initialData = null, onNext }) {
         <EmpresaIntegranteModal
           key={empresaIntegranteSeleccionada?.id ?? "nueva-empresa"}
           initialData={empresaIntegranteSeleccionada}
+          tiposSociedad={catalogos.tiposSociedad}
           onClose={cerrarModalEmpresaIntegrante}
           onSave={guardarEmpresaIntegrante}
         />
