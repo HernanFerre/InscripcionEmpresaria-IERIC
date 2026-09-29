@@ -28,7 +28,7 @@ using IERIC.SumariosIERIC.BuildingBlocks.IntegrationEventLogEF;
 using IERIC.SumariosIERIC.BuildingBlocks.IntegrationEventLogEF.Services;
 using IERIC.SumariosIERIC.Application.Exceptions;
 using IERIC.SumariosIERIC.Application.Helper;
-
+using IERIC.SumariosIERIC.Infrastructure.Services.DatosMaestrosApi;
 using IERIC.SumariosIERIC.Application.Middlewares;
 using IERIC.SumariosIERIC.Domain.Entities;
 using IERIC.SumariosIERIC.Domain.Exceptions;
@@ -174,6 +174,89 @@ namespace IERIC.SumariosIERIC.Application
                 IGeneradorQuiz,
                 GeneradorQuiz
             >();
+            var datosMaestrosApiConfiguracion =
+    new DatosMaestrosApiConfiguracion
+    {
+        BaseUrl =
+            Configuration["DatosMaestrosApi:BaseUrl"],
+
+        Usuario =
+            Configuration["DatosMaestrosApi:Usuario"],
+
+        Password =
+            Configuration["DatosMaestrosApi:Password"],
+
+        Publica =
+            Configuration.GetValue<bool>(
+                "DatosMaestrosApi:Publica"
+            ),
+
+        MinutosDuracionToken =
+            Configuration.GetValue<int>(
+                "DatosMaestrosApi:MinutosDuracionToken",
+                120
+            )
+    };
+
+            if (
+                string.IsNullOrWhiteSpace(
+                    datosMaestrosApiConfiguracion.BaseUrl
+                )
+            )
+            {
+                throw new InvalidOperationException(
+                    "No se configuró DatosMaestrosApi:BaseUrl."
+                );
+            }
+
+            if (
+                !Uri.TryCreate(
+                    datosMaestrosApiConfiguracion.BaseUrl,
+                    UriKind.Absolute,
+                    out Uri datosMaestrosApiBaseUri
+                )
+            )
+            {
+                throw new InvalidOperationException(
+                    "DatosMaestrosApi:BaseUrl no es una URL válida."
+                );
+            }
+
+            services.AddSingleton(
+                datosMaestrosApiConfiguracion
+            );
+
+            services.AddSingleton<
+                EstadoTokenDatosMaestros
+            >();
+
+            services.AddHttpClient<
+                IProveedorTokenDatosMaestros,
+                ProveedorTokenDatosMaestrosApi
+            >(
+                client =>
+                {
+                    client.BaseAddress =
+                        datosMaestrosApiBaseUri;
+
+                    client.Timeout =
+                        TimeSpan.FromSeconds(30);
+                }
+            );
+
+            services.AddHttpClient<
+                IProveedorDatosMaestros,
+                ProveedorDatosMaestrosApi
+            >(
+                client =>
+                {
+                    client.BaseAddress =
+                        datosMaestrosApiBaseUri;
+
+                    client.Timeout =
+                        TimeSpan.FromSeconds(30);
+                }
+            );
             string empresasCuilesApiServidor =
     Configuration["EmpresasCuilesApi:Servidor"];
 

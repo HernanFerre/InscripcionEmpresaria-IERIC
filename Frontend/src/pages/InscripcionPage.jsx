@@ -237,7 +237,7 @@ export default function InscripcionPage() {
                     <InscripcionProgress currentStep={inscripcionStep} />
 
                     {inscripcionStep === "empresa" && (
-                      <StepEmpresa initialData={formData.datosInscripcion.empresa} onNext={handleEmpresaCompletada} />
+                      <StepEmpresa token={token} initialData={formData.datosInscripcion.empresa} onNext={handleEmpresaCompletada} />
                     )}
 
                     {inscripcionStep === "representantes" && (

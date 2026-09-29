@@ -60,7 +60,7 @@ function telefonoEsValido(telefono) {
   return soloNumeros.length >= 8 && soloNumeros.length <= 15;
 }
 
-export default function StepEmpresa({ initialData = null, onNext }) {
+export default function StepEmpresa({ token, initialData = null, onNext }) {
   const [datos, setDatos] = useState({
     ...DATOS_INICIALES,
     ...(initialData ?? {}),
@@ -85,7 +85,7 @@ export default function StepEmpresa({ initialData = null, onNext }) {
       setErrorCatalogos("");
 
       try {
-        const catalogosObtenidos = await obtenerCatalogosEmpresa();
+        const catalogosObtenidos = await obtenerCatalogosEmpresa(token);
 
         if (!componenteActivo) {
           return;
@@ -111,7 +111,7 @@ export default function StepEmpresa({ initialData = null, onNext }) {
     return () => {
       componenteActivo = false;
     };
-  }, []);
+  }, [token]);
 
   const mostrarEmpresasIntegrantes = TIPOS_SOCIEDAD_CON_INTEGRANTES.includes(String(datos.tipoSociedadId ?? ""));
 
