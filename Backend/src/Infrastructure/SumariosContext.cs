@@ -14,6 +14,8 @@ using System.Security.Principal;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 using IERIC.SumariosIERIC.Infrastructure.Persistence.Quiz;
+using IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace IERIC.SumariosIERIC.Infrastructure
 {
@@ -34,6 +36,14 @@ namespace IERIC.SumariosIERIC.Infrastructure
 
         public DbSet<QuizRespuestaOpcionEntity>
             QuizRespuestasOpciones
+        { get; set; }
+
+        public DbSet<EmpresaEntity> Empresas { get; set; }
+
+        public DbSet<EmpresaIntegranteEntity> EmpresasCuit { get; set; }
+
+        public DbSet<SolicitudInscripcionEntity>
+            SolicitudesInscripcion
         { get; set; }
 
 
@@ -59,7 +69,14 @@ namespace IERIC.SumariosIERIC.Infrastructure
 
         }
 
-
+        protected override void ConfigureConventions(
+            ModelConfigurationBuilder configurationBuilder
+        )
+        {
+            configurationBuilder.Conventions.Remove(
+                typeof(ForeignKeyIndexConvention)
+            );
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
