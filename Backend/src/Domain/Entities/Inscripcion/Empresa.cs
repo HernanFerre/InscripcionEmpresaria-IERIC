@@ -23,7 +23,7 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
 
         public string Numero { get; private set; }
 
-        public string Piso { get; private set; }
+        public byte? Piso { get; private set; }
 
         public string DepartamentoOficina { get; private set; }
 
@@ -96,7 +96,7 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
             int caracterId,
             string calle,
             string numero,
-            string piso,
+            byte? piso,
             string departamentoOficina,
             string codigoPostal,
             string provincia,
@@ -133,7 +133,7 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
             int caracterId,
             string calle,
             string numero,
-            string piso,
+            byte? piso,
             string departamentoOficina,
             string codigoPostal,
             string provincia,
@@ -173,7 +173,7 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
             CaracterId = caracterId;
             Calle = NormalizarObligatorio(calle, "calle", 150);
             Numero = NormalizarObligatorio(numero, "número", 20);
-            Piso = NormalizarOpcional(piso, "piso", 20);
+            Piso = piso;
 
             DepartamentoOficina = NormalizarOpcional(
                 departamentoOficina,

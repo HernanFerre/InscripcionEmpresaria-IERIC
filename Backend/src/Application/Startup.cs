@@ -46,6 +46,7 @@ using Minio;
 using IERIC.SumariosIERIC.Domain.Services;
 using IERIC.SumariosIERIC.Infrastructure.Services;
 using IERIC.SumariosIERIC.Application.Quiz.Settings;
+using IERIC.SumariosIERIC.Domain.Entities.Inscripcion;
 
 namespace IERIC.SumariosIERIC.Application
 {
@@ -169,6 +170,11 @@ namespace IERIC.SumariosIERIC.Application
             >();
 
             services.AddScoped<IQuizRepository, QuizSqlRepository>();
+
+            services.AddScoped<
+                ISolicitudInscripcionRepository,
+                SolicitudInscripcionSqlRepository
+            >();
 
             services.AddTransient<
                 IGeneradorQuiz,
