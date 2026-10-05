@@ -234,3 +234,21 @@ export async function validarQuiz(quizId, opcionesSeleccionadas, token) {
 
   return procesarRespuestaApi(response);
 }
+
+export async function guardarEmpresaSolicitud(datosEmpresa, token) {
+  if (!INSCRIPCION_API_URL) {
+    throw new Error("No se configuró VITE_INSCRIPCION_API_URL.");
+  }
+
+  if (!datosEmpresa) {
+    throw new Error("No se informaron los datos de la empresa.");
+  }
+
+  const response = await fetch(`${INSCRIPCION_API_URL}/v1/solicitudes/empresa`, {
+    method: "POST",
+    headers: crearHeadersAutorizados(token),
+    body: JSON.stringify(datosEmpresa),
+  });
+
+  return procesarRespuestaApi(response);
+}
