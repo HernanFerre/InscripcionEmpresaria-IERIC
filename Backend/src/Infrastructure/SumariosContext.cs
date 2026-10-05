@@ -6,9 +6,7 @@ using System;
 using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
-using IERIC.SumariosIERIC.Domain.Entities;
 using IERIC.SumariosIERIC.Domain.SeedWork;
-using IERIC.SumariosIERIC.Infrastructure.EntityConfigurations;
 using IERIC.SumariosIERIC.Services.CursosService.Domain.SeedWork;
 using System.Linq;
 using System.Security.Claims;
@@ -23,7 +21,6 @@ namespace IERIC.SumariosIERIC.Infrastructure
     {
         public const string DEFAULT_SCHEMA = "dbo";
 
-        public DbSet<Empresa> Empresas { get; set; }
 
         public DbSet<QuizSesionEntity> QuizSesiones { get; set; }
 
