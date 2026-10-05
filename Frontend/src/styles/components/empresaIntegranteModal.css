@@ -141,6 +141,14 @@
   box-shadow: var(--focus-ring);
 }
 
+.empresa-integrante-modal-error {
+  display: block;
+  margin-top: 5px;
+  color: var(--color-error);
+  font-size: var(--font-caption-size);
+  line-height: 1.3;
+}
+
 .empresa-integrante-modal-sociedad {
   min-width: 0;
   grid-column: 1 / -1;
@@ -207,6 +215,16 @@
 .empresa-integrante-modal-save:active {
   border-color: var(--color-primary-pressed);
   background: var(--color-primary-pressed);
+}
+
+.empresa-integrante-modal-save:disabled,
+.empresa-integrante-modal-save:disabled:hover,
+.empresa-integrante-modal-save:disabled:active {
+  border-color: var(--color-border);
+  background: var(--color-background-disabled);
+  color: var(--color-text-disabled);
+  box-shadow: none;
+  cursor: not-allowed;
 }
 
 .empresa-integrante-modal-cancel:focus-visible,

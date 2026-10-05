@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Info, X } from "lucide-react";
 
 import SearchableSelect from "../forms/SearchableSelect.jsx";
+import { esCuitValido, formatCuit, normalizarCuit } from "../../utils/formatters.js";
 
 import "../../styles/components/empresaIntegranteModal.css";
 
@@ -11,11 +12,63 @@ const DATOS_INICIALES = {
   tipoSociedadId: "",
 };
 
-export default function EmpresaIntegranteModal({ initialData = null, tiposSociedad = [], onClose, onSave }) {
+export default function EmpresaIntegranteModal({
+  initialData = null,
+  tiposSociedad = [],
+  cuitEmpresaPrincipal = "",
+  cuitsExistentes = [],
+  onClose,
+  onSave,
+}) {
   const [datos, setDatos] = useState({
     ...DATOS_INICIALES,
     ...(initialData ?? {}),
+    cuit: formatCuit(initialData?.cuit ?? ""),
   });
+
+  const cuitNormalizado = normalizarCuit(datos.cuit);
+
+  const cuitCompleto = cuitNormalizado.length === 11;
+
+  const cuitValido = esCuitValido(cuitNormalizado);
+
+  const coincideConEmpresaPrincipal = cuitCompleto && cuitNormalizado === normalizarCuit(cuitEmpresaPrincipal);
+
+  const cuitRepetido = cuitCompleto && cuitsExistentes.some((cuitExistente) => normalizarCuit(cuitExistente) === cuitNormalizado);
+
+  const razonSocialValida = datos.razonSocial.trim().length > 0 && datos.razonSocial.trim().length <= 150;
+
+  const tipoSociedadId = Number(datos.tipoSociedadId);
+
+  const tipoSociedadValido = Number.isInteger(tipoSociedadId) && tipoSociedadId > 0;
+
+  const formularioValido = cuitValido && !coincideConEmpresaPrincipal && !cuitRepetido && razonSocialValida && tipoSociedadValido;
+
+  const obtenerErrorCuit = () => {
+    if (!datos.cuit) {
+      return "";
+    }
+
+    if (!cuitCompleto) {
+      return "El CUIT debe contener 11 números.";
+    }
+
+    if (!cuitValido) {
+      return "El CUIT ingresado no es válido.";
+    }
+
+    if (coincideConEmpresaPrincipal) {
+      return "La empresa principal no puede agregarse como integrante.";
+    }
+
+    if (cuitRepetido) {
+      return "La empresa integrante ya fue agregada.";
+    }
+
+    return "";
+  };
+
+  const errorCuit = obtenerErrorCuit();
 
   const actualizarValor = (campo, value) => {
     setDatos((prev) => ({
@@ -25,15 +78,15 @@ export default function EmpresaIntegranteModal({ initialData = null, tiposSocied
   };
 
   const actualizarCampo = (event) => {
-    actualizarValor(event.target.name, event.target.value);
+    const { name, value } = event.target;
+
+    actualizarValor(name, name === "cuit" ? formatCuit(value) : value);
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const camposCompletos = [datos.cuit, datos.razonSocial, datos.tipoSociedadId].every((value) => String(value).trim().length > 0);
-
-    if (!camposCompletos) {
+    if (!formularioValido) {
       return;
     }
 
@@ -41,6 +94,8 @@ export default function EmpresaIntegranteModal({ initialData = null, tiposSocied
 
     onSave?.({
       ...datos,
+      cuit: formatCuit(datos.cuit),
+      razonSocial: datos.razonSocial.trim(),
       tipoSociedad: tipoSociedadSeleccionado?.label ?? "",
     });
   };
@@ -90,9 +145,18 @@ export default function EmpresaIntegranteModal({ initialData = null, tiposSocied
                   name="cuit"
                   value={datos.cuit}
                   placeholder="XX-XXXXXXXX-X"
+                  inputMode="numeric"
+                  maxLength={13}
+                  aria-invalid={Boolean(errorCuit)}
                   required
                   onChange={actualizarCampo}
                 />
+
+                {errorCuit && (
+                  <span className="empresa-integrante-modal-error" role="alert">
+                    {errorCuit}
+                  </span>
+                )}
               </div>
 
               <div className="empresa-integrante-modal-field">
@@ -108,6 +172,7 @@ export default function EmpresaIntegranteModal({ initialData = null, tiposSocied
                   name="razonSocial"
                   value={datos.razonSocial}
                   placeholder="Razón social"
+                  maxLength={150}
                   required
                   onChange={actualizarCampo}
                 />
@@ -132,7 +197,7 @@ export default function EmpresaIntegranteModal({ initialData = null, tiposSocied
               Cancelar
             </button>
 
-            <button type="submit" className="empresa-integrante-modal-save">
+            <button type="submit" className="empresa-integrante-modal-save" disabled={!formularioValido}>
               Guardar
             </button>
           </footer>

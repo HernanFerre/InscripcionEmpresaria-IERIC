@@ -10,6 +10,7 @@ import { UBICAR_EMPRESAS_INTEGRANTES_AL_FINAL } from "../../config/featureFlags.
 import { LOCALIDADES_MOCK } from "../../mocks/InscripcionCatalogosMock.js";
 
 import { obtenerCatalogosEmpresa } from "../../services/DatosMaestrosService.js";
+import { guardarEmpresaSolicitud } from "../../services/InscripcionService.js";
 
 import "../../styles/stepEmpresa.css";
 
@@ -36,8 +37,6 @@ const CATALOGOS_INICIALES = {
   tiposSociedad: [],
 };
 
-const PERMITIR_CONTINUAR_MOCK = true;
-
 /*
  * Identificadores provenientes del catálogo de tipos de sociedad:
  * 8  = U.T.E.
@@ -55,12 +54,52 @@ function telefonoEsValido(telefono) {
     return true;
   }
 
+  const caracteresValidos = /^[\d+()\-\s]+$/.test(telefono);
   const soloNumeros = telefono.replace(/\D/g, "");
 
-  return soloNumeros.length >= 8 && soloNumeros.length <= 15;
+  return caracteresValidos && soloNumeros.length >= 8 && soloNumeros.length <= 15;
 }
 
-export default function StepEmpresa({ token, initialData = null, onNext }) {
+function cuitEsValido(cuit) {
+  const cuitNormalizado = String(cuit ?? "").replace(/\D/g, "");
+
+  if (cuitNormalizado.length !== 11) {
+    return false;
+  }
+
+  const multiplicadores = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+
+  const suma = multiplicadores.reduce((acumulado, multiplicador, indice) => acumulado + Number(cuitNormalizado[indice]) * multiplicador, 0);
+
+  const resto = suma % 11;
+  const digitoVerificador = resto === 0 ? 0 : resto === 1 ? 9 : 11 - resto;
+
+  return digitoVerificador === Number(cuitNormalizado[10]);
+}
+
+function pisoEsValido(piso) {
+  const valor = String(piso ?? "").trim();
+
+  if (!valor) {
+    return true;
+  }
+
+  if (!/^\d+$/.test(valor)) {
+    return false;
+  }
+
+  const numeroPiso = Number(valor);
+
+  return Number.isInteger(numeroPiso) && numeroPiso >= 0 && numeroPiso <= 255;
+}
+
+function identificadorEsValido(valor) {
+  const identificador = Number(valor);
+
+  return Number.isInteger(identificador) && identificador > 0;
+}
+
+export default function StepEmpresa({ token, cuit, initialData = null, onNext }) {
   const [datos, setDatos] = useState({
     ...DATOS_INICIALES,
     ...(initialData ?? {}),
@@ -76,6 +115,10 @@ export default function StepEmpresa({ token, initialData = null, onNext }) {
   const [modalEmpresaIntegranteAbierto, setModalEmpresaIntegranteAbierto] = useState(false);
 
   const [empresaIntegranteSeleccionada, setEmpresaIntegranteSeleccionada] = useState(null);
+
+  const [guardando, setGuardando] = useState(false);
+
+  const [errorGuardado, setErrorGuardado] = useState("");
 
   useEffect(() => {
     let componenteActivo = true;
@@ -116,6 +159,8 @@ export default function StepEmpresa({ token, initialData = null, onNext }) {
   const mostrarEmpresasIntegrantes = TIPOS_SOCIEDAD_CON_INTEGRANTES.includes(String(datos.tipoSociedadId ?? ""));
 
   const actualizarValor = (campo, value) => {
+    setErrorGuardado("");
+
     setDatos((prev) => ({
       ...prev,
       [campo]: value,
@@ -142,6 +187,8 @@ export default function StepEmpresa({ token, initialData = null, onNext }) {
   };
 
   const guardarEmpresaIntegrante = (empresa) => {
+    setErrorGuardado("");
+
     setDatos((prev) => {
       const empresasActuales = prev.empresasIntegrantes ?? [];
       const empresaSeleccionadaId = empresaIntegranteSeleccionada?.id;
@@ -176,15 +223,37 @@ export default function StepEmpresa({ token, initialData = null, onNext }) {
   };
 
   const eliminarEmpresaIntegrante = (empresaId) => {
+    setErrorGuardado("");
+
     setDatos((prev) => ({
       ...prev,
       empresasIntegrantes: (prev.empresasIntegrantes ?? []).filter((empresa) => empresa.id !== empresaId),
     }));
   };
 
-  const correoValido = datos.email.trim().length > 0 && emailEsValido(datos.email);
+  const cuitNormalizado = String(cuit ?? "").replace(/\D/g, "");
+
+  const cuitValido = cuitEsValido(cuitNormalizado);
+
+  const correoValido = datos.email.trim().length > 0 && datos.email.trim().length <= 254 && emailEsValido(datos.email);
 
   const telefonoValido = telefonoEsValido(datos.telefono);
+
+  const numeroValido = /^\d{1,20}$/.test(datos.numero.trim());
+
+  const pisoValido = pisoEsValido(datos.piso);
+
+  const localidadSeleccionada = LOCALIDADES_MOCK.find((localidad) => String(localidad.value) === String(datos.localidadId));
+
+  const integrantesValidas = (datos.empresasIntegrantes ?? []).every(
+    (empresa) =>
+      cuitEsValido(empresa.cuit) &&
+      String(empresa.razonSocial ?? "").trim().length > 0 &&
+      String(empresa.razonSocial ?? "").trim().length <= 150 &&
+      identificadorEsValido(empresa.tipoSociedadId),
+  );
+
+  const empresasIntegrantesValidas = !mostrarEmpresasIntegrantes || ((datos.empresasIntegrantes ?? []).length > 0 && integrantesValidas);
 
   const camposObligatoriosCompletos = [
     datos.razonSocial,
@@ -199,16 +268,77 @@ export default function StepEmpresa({ token, initialData = null, onNext }) {
     datos.email,
   ].every((value) => String(value).trim().length > 0);
 
-  const formularioValido = camposObligatoriosCompletos && correoValido && telefonoValido;
+  const longitudesValidas =
+    datos.razonSocial.trim().length <= 150 &&
+    datos.calle.trim().length <= 150 &&
+    datos.departamento.trim().length <= 20 &&
+    datos.codigoPostal.trim().length <= 10 &&
+    datos.provincia.trim().length <= 100;
 
-  const handleSubmit = (event) => {
+  const catalogosValidos =
+    identificadorEsValido(datos.actividadId) && identificadorEsValido(datos.caracter) && identificadorEsValido(datos.tipoSociedadId);
+
+  const formularioValido =
+    cuitValido &&
+    camposObligatoriosCompletos &&
+    longitudesValidas &&
+    catalogosValidos &&
+    numeroValido &&
+    pisoValido &&
+    Boolean(localidadSeleccionada) &&
+    correoValido &&
+    telefonoValido &&
+    empresasIntegrantesValidas &&
+    !cargandoCatalogos &&
+    !errorCatalogos;
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!PERMITIR_CONTINUAR_MOCK && !formularioValido) {
+    if (!formularioValido || guardando) {
       return;
     }
 
-    onNext?.(datos);
+    const empresasIntegrantes = mostrarEmpresasIntegrantes ? (datos.empresasIntegrantes ?? []) : [];
+
+    const request = {
+      cuit: cuitNormalizado,
+      razonSocial: datos.razonSocial.trim(),
+      actividadId: Number(datos.actividadId),
+      caracterId: Number(datos.caracter),
+      tipoSociedadId: Number(datos.tipoSociedadId),
+      calle: datos.calle.trim(),
+      numero: datos.numero.trim(),
+      piso: datos.piso.trim() ? Number(datos.piso) : null,
+      departamentoOficina: datos.departamento.trim() || null,
+      codigoPostal: datos.codigoPostal.trim(),
+      provincia: datos.provincia.trim(),
+      localidad: localidadSeleccionada.label.trim(),
+      correo: datos.email.trim(),
+      telefono: datos.telefono.trim() || null,
+      empresasIntegrantes: empresasIntegrantes.map((empresa) => ({
+        cuit: String(empresa.cuit ?? "").replace(/\D/g, ""),
+        razonSocial: String(empresa.razonSocial ?? "").trim(),
+        tipoSociedadId: Number(empresa.tipoSociedadId),
+      })),
+    };
+
+    setGuardando(true);
+    setErrorGuardado("");
+
+    try {
+      const resultado = await guardarEmpresaSolicitud(request, token);
+
+      onNext?.({
+        ...datos,
+        empresasIntegrantes,
+        solicitudId: resultado?.solicitudId ?? resultado?.SolicitudId ?? null,
+      });
+    } catch (error) {
+      setErrorGuardado(error.message || "No fue posible guardar la información de la empresa.");
+    } finally {
+      setGuardando(false);
+    }
   };
 
   const bloqueEmpresasIntegrantes = mostrarEmpresasIntegrantes ? (
@@ -240,6 +370,7 @@ export default function StepEmpresa({ token, initialData = null, onNext }) {
                 name="razonSocial"
                 value={datos.razonSocial}
                 placeholder="Nombre de la organización"
+                maxLength={150}
                 required
                 onChange={actualizarCampo}
               />
@@ -311,6 +442,7 @@ export default function StepEmpresa({ token, initialData = null, onNext }) {
                 name="calle"
                 value={datos.calle}
                 placeholder="Calle"
+                maxLength={150}
                 required
                 onChange={actualizarCampo}
               />
@@ -324,14 +456,18 @@ export default function StepEmpresa({ token, initialData = null, onNext }) {
 
               <input
                 id="numero"
-                className="empresa-input"
+                className={["empresa-input", datos.numero && !numeroValido ? "has-error" : ""].filter(Boolean).join(" ")}
                 type="text"
                 name="numero"
                 value={datos.numero}
                 placeholder="Número"
+                inputMode="numeric"
+                maxLength={20}
                 required
                 onChange={actualizarCampo}
               />
+
+              {datos.numero && !numeroValido && <span className="empresa-field-error">Ingrese solamente números.</span>}
             </div>
 
             <div className="empresa-col-2">
@@ -341,13 +477,17 @@ export default function StepEmpresa({ token, initialData = null, onNext }) {
 
               <input
                 id="piso"
-                className="empresa-input"
+                className={["empresa-input", !pisoValido ? "has-error" : ""].filter(Boolean).join(" ")}
                 type="text"
                 name="piso"
                 value={datos.piso}
                 placeholder="Piso"
+                inputMode="numeric"
+                maxLength={3}
                 onChange={actualizarCampo}
               />
+
+              {!pisoValido && <span className="empresa-field-error">Ingrese un número entre 0 y 255.</span>}
             </div>
 
             <div className="empresa-col-2">
@@ -362,6 +502,7 @@ export default function StepEmpresa({ token, initialData = null, onNext }) {
                 name="departamento"
                 value={datos.departamento}
                 placeholder="Depto./Oficina"
+                maxLength={20}
                 onChange={actualizarCampo}
               />
             </div>
@@ -379,6 +520,7 @@ export default function StepEmpresa({ token, initialData = null, onNext }) {
                 name="codigoPostal"
                 value={datos.codigoPostal}
                 placeholder="Código postal"
+                maxLength={10}
                 required
                 onChange={actualizarCampo}
               />
@@ -397,6 +539,7 @@ export default function StepEmpresa({ token, initialData = null, onNext }) {
                 name="provincia"
                 value={datos.provincia}
                 placeholder="Provincia"
+                maxLength={100}
                 required
                 onChange={actualizarCampo}
               />
@@ -433,6 +576,7 @@ export default function StepEmpresa({ token, initialData = null, onNext }) {
                 name="email"
                 value={datos.email}
                 placeholder="Correo electrónico"
+                maxLength={254}
                 required
                 onChange={actualizarCampo}
               />
@@ -452,6 +596,7 @@ export default function StepEmpresa({ token, initialData = null, onNext }) {
                 name="telefono"
                 value={datos.telefono}
                 placeholder="Teléfono"
+                maxLength={30}
                 onChange={actualizarCampo}
               />
 
@@ -462,20 +607,40 @@ export default function StepEmpresa({ token, initialData = null, onNext }) {
 
         {UBICAR_EMPRESAS_INTEGRANTES_AL_FINAL && bloqueEmpresasIntegrantes}
 
+        {mostrarEmpresasIntegrantes && (datos.empresasIntegrantes ?? []).length === 0 && (
+          <span className="empresa-field-error" role="alert">
+            Debe agregar al menos una empresa integrante.
+          </span>
+        )}
+
+        {!cuitValido && (
+          <span className="empresa-field-error" role="alert">
+            No se encontró un CUIT principal válido para guardar la solicitud.
+          </span>
+        )}
+
         <div className="empresa-required-note" role="note">
           <Info size={15} aria-hidden="true" />
 
           <span>Los campos marcados con * son obligatorios</span>
         </div>
 
+        {errorGuardado && (
+          <span className="empresa-field-error" role="alert">
+            {errorGuardado}
+          </span>
+        )}
+
         <div className="empresa-form-actions">
           <button type="button" className="empresa-back-button" disabled>
             Volver
           </button>
 
-          <button type="submit" className="next-step-button" disabled={!PERMITIR_CONTINUAR_MOCK && !formularioValido}>
-            Continuar
-          </button>
+          {formularioValido && (
+            <button type="submit" className="next-step-button" disabled={guardando}>
+              {guardando ? "Guardando..." : "Continuar"}
+            </button>
+          )}
         </div>
       </form>
 

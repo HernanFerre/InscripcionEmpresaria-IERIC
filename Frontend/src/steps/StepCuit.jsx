@@ -5,7 +5,7 @@ import "../styles/stepCuit.css";
 
 import { crearQuiz, validarCuit } from "../services/InscripcionService.js";
 
-import { formatCuit } from "../utils/formatters.js";
+import { esCuitValido, formatCuit, normalizarCuit } from "../utils/formatters.js";
 
 import SkipValidationButton from "../components/common/SkipValidationButton.jsx"; // Luego sacar
 
@@ -107,9 +107,9 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
   };
 
   const handleSaltearValidacion = () => {
-    const cuitIngresado = String(cuit).replace(/\D/g, "");
+    const cuitIngresado = normalizarCuit(cuit);
 
-    const cuitDemo = cuitIngresado.length === 11 ? cuitIngresado : "30123456789";
+    const cuitDemo = esCuitValido(cuitIngresado) ? cuitIngresado : "30123456781";
 
     onNext({
       cuit: cuitDemo,
