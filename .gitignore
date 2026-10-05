@@ -293,6 +293,7 @@ Frontend/.vite/
 Frontend/.env
 Frontend/.env.local
 Frontend/.env.development.local
+Frontend/.env.preproduccion.local
 Frontend/.env.production.local
 
 # Logs
