@@ -7,11 +7,16 @@ const DATOS_INICIALES = {
   opcion: "etapa-inspeccion",
   fechaNotificacion: "",
   numeroRequerimiento: "",
+  fechaActa: "",
+  numeroActa: "",
   motivoCargaManual: "",
 };
 
-export default function StepDeclaracionJurada({ onBack, onNext }) {
-  const [datos, setDatos] = useState(DATOS_INICIALES);
+export default function StepDeclaracionJurada({ initialData = null, onBack, onNext }) {
+  const [datos, setDatos] = useState({
+    ...DATOS_INICIALES,
+    ...(initialData ?? {}),
+  });
 
   const actualizarValor = (campo, value) => {
     setDatos((prev) => ({
@@ -20,9 +25,15 @@ export default function StepDeclaracionJurada({ onBack, onNext }) {
     }));
   };
 
+  const obtenerClaseOpcion = (opcion) =>
+    ["declaracion-option", datos.opcion === opcion ? "selected" : "", datos.opcion === opcion ? "declaracion-option-detailed" : ""]
+      .filter(Boolean)
+      .join(" ");
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    onNext?.();
+
+    onNext?.(datos);
   };
 
   return (
@@ -42,7 +53,7 @@ export default function StepDeclaracionJurada({ onBack, onNext }) {
       </p>
 
       <div className="declaracion-options">
-        <label className={`declaracion-option ${datos.opcion === "sin-notificacion" ? "selected" : ""}`}>
+        <label className={obtenerClaseOpcion("sin-notificacion")}>
           <input
             type="radio"
             name="declaracion-jurada"
@@ -51,12 +62,20 @@ export default function StepDeclaracionJurada({ onBack, onNext }) {
             onChange={(event) => actualizarValor("opcion", event.target.value)}
           />
 
-          <span>
-            <strong>1.</strong> No haber recibido notificación de Inducción/Requerimiento o habérsele labrado Acta de Inspección.
-          </span>
+          {datos.opcion === "sin-notificacion" ? (
+            <span>
+              <strong>1. No haber recibido notificación de Inducción/Requerimiento o habérsele labrado Acta de Inspección</strong> por el
+              sector Fiscalizaciones del Instituto de Estadística y Registro de la Industria de la Construcción (art. 3°, inc. 1°
+              Resoluciones Conjuntas citadas y art. 2°, inc. 1° de su Reglamentación).
+            </span>
+          ) : (
+            <span>
+              <strong>1. No haber recibido notificación de Inducción/Requerimiento o habérsele labrado Acta de Inspección.</strong>
+            </span>
+          )}
         </label>
 
-        <label className={`declaracion-option ${datos.opcion === "etapa-induccion" ? "selected" : ""}`}>
+        <label className={obtenerClaseOpcion("etapa-induccion")}>
           <input
             type="radio"
             name="declaracion-jurada"
@@ -65,12 +84,42 @@ export default function StepDeclaracionJurada({ onBack, onNext }) {
             onChange={(event) => actualizarValor("opcion", event.target.value)}
           />
 
-          <span>
-            <strong>2.</strong> Haber sido notificado y encontrarse en la etapa de inducción.
-          </span>
+          {datos.opcion === "etapa-induccion" ? (
+            <span>
+              <strong>2.</strong> Haber sido notificado con fecha{" "}
+              <input
+                className="declaracion-inline-input declaracion-date-input"
+                type="date"
+                value={datos.fechaNotificacion}
+                aria-label="Fecha de notificación"
+                required
+                onChange={(event) => actualizarValor("fechaNotificacion", event.target.value)}
+                onClick={(event) => event.stopPropagation()}
+              />{" "}
+              por el sector Fiscalizaciones del Instituto de Estadística y Registro de la Industria de la Construcción de la Inducción a la
+              Regularización/Requerimiento N°{" "}
+              <input
+                className="declaracion-inline-input declaracion-number-input"
+                type="text"
+                inputMode="numeric"
+                value={datos.numeroRequerimiento}
+                placeholder="Número"
+                aria-label="Número de requerimiento"
+                required
+                onChange={(event) => actualizarValor("numeroRequerimiento", event.target.value.replace(/\D/g, ""))}
+                onClick={(event) => event.stopPropagation()}
+              />{" "}
+              y <strong>encontrarse en la etapa de inducción</strong> dentro del plazo de quince (15) días hábiles previsto para efectivizar
+              el pago de la multa reducida (art. 3°, inc. 1° Resoluciones Conjuntas citadas y art. 2°, inc. 1° de su Reglamentación).
+            </span>
+          ) : (
+            <span>
+              <strong>2. Haber sido notificado y encontrarse en la etapa de inducción.</strong>
+            </span>
+          )}
         </label>
 
-        <label className={`declaracion-option ${datos.opcion === "etapa-inspeccion" ? "selected declaracion-option-detailed" : ""}`}>
+        <label className={obtenerClaseOpcion("etapa-inspeccion")}>
           <input
             type="radio"
             name="declaracion-jurada"
@@ -87,6 +136,7 @@ export default function StepDeclaracionJurada({ onBack, onNext }) {
                 type="date"
                 value={datos.fechaNotificacion}
                 aria-label="Fecha de notificación"
+                required
                 onChange={(event) => actualizarValor("fechaNotificacion", event.target.value)}
                 onClick={(event) => event.stopPropagation()}
               />{" "}
@@ -99,21 +149,22 @@ export default function StepDeclaracionJurada({ onBack, onNext }) {
                 value={datos.numeroRequerimiento}
                 placeholder="Número"
                 aria-label="Número de requerimiento"
+                required
                 onChange={(event) => actualizarValor("numeroRequerimiento", event.target.value.replace(/\D/g, ""))}
                 onClick={(event) => event.stopPropagation()}
               />{" "}
               y <strong>encontrarse en la etapa de inspección</strong> dentro del plazo de quince (15) días hábiles previsto para
-              efectivizar el pago de la multa reducida (art. 3°, inc. 2° de las Resoluciones Conjuntas citadas y art. 2°, inc. 2° de su
+              efectivizar el pago de la multa reducida (art. 3°, inc. 2° Resoluciones Conjuntas citadas y art. 2°, inc. 2° de su
               Reglamentación).
             </span>
           ) : (
             <span>
-              <strong>3.</strong> Haber sido notificado y encontrarse en la etapa de inspección.
+              <strong>3. Haber sido notificado y encontrarse en la etapa de inspección.</strong>
             </span>
           )}
         </label>
 
-        <label className={`declaracion-option ${datos.opcion === "acta-inspeccion" ? "selected" : ""}`}>
+        <label className={obtenerClaseOpcion("acta-inspeccion")}>
           <input
             type="radio"
             name="declaracion-jurada"
@@ -122,9 +173,37 @@ export default function StepDeclaracionJurada({ onBack, onNext }) {
             onChange={(event) => actualizarValor("opcion", event.target.value)}
           />
 
-          <span>
-            <strong>4.</strong> Habérsele labrado Acta de Inspección/Infracción.
-          </span>
+          {datos.opcion === "acta-inspeccion" ? (
+            <span>
+              <strong>4.</strong> Haber sido notificado con fecha{" "}
+              <input
+                className="declaracion-inline-input declaracion-date-input"
+                type="date"
+                value={datos.fechaActa}
+                aria-label="Fecha del acta"
+                required
+                onChange={(event) => actualizarValor("fechaActa", event.target.value)}
+                onClick={(event) => event.stopPropagation()}
+              />{" "}
+              el Acta de Inspección/Infracción N°{" "}
+              <input
+                className="declaracion-inline-input declaracion-number-input"
+                type="text"
+                inputMode="numeric"
+                value={datos.numeroActa}
+                placeholder="Número"
+                aria-label="Número de acta"
+                required
+                onChange={(event) => actualizarValor("numeroActa", event.target.value.replace(/\D/g, ""))}
+                onClick={(event) => event.stopPropagation()}
+              />{" "}
+              (art. 3°, inc. 3° de las Resoluciones Conjuntas citadas y art. 2°, inc. 3° de su Reglamentación).
+            </span>
+          ) : (
+            <span>
+              <strong>4. Habérsele labrado Acta de Inspección/Infracción.</strong>
+            </span>
+          )}
         </label>
       </div>
 

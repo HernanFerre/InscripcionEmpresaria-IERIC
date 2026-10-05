@@ -6,7 +6,13 @@ import RepresentanteModal from "../../components/modals/RepresentanteModal.jsx";
 
 import "../../styles/stepRepresentantes.css";
 
-const TIPOS_SOCIEDAD_CON_INTEGRANTES = ["ut", "ute", "consorcio-cooperacion"];
+/*
+ * Identificadores provenientes del catálogo de tipos de sociedad:
+ * 8  = U.T.E.
+ * 26 = Consorcio de cooperación
+ * 28 = U.T.
+ */
+const TIPOS_SOCIEDAD_CON_INTEGRANTES = ["8", "26", "28"];
 
 export default function StepRepresentantes({
   tipoSociedadId = "",
@@ -21,7 +27,7 @@ export default function StepRepresentantes({
 
   const [representanteSeleccionado, setRepresentanteSeleccionado] = useState(null);
 
-  const esEmpresaConIntegrantes = TIPOS_SOCIEDAD_CON_INTEGRANTES.includes(tipoSociedadId);
+  const esEmpresaConIntegrantes = TIPOS_SOCIEDAD_CON_INTEGRANTES.includes(String(tipoSociedadId ?? ""));
 
   const hayEmpresasIntegrantes = empresasIntegrantes.length > 0;
 

@@ -3,8 +3,6 @@ import { Info, X } from "lucide-react";
 
 import SearchableSelect from "../forms/SearchableSelect.jsx";
 
-import { TIPOS_SOCIEDAD_MOCK } from "../../mocks/InscripcionCatalogosMock.js";
-
 import "../../styles/components/empresaIntegranteModal.css";
 
 const DATOS_INICIALES = {
@@ -13,7 +11,7 @@ const DATOS_INICIALES = {
   tipoSociedadId: "",
 };
 
-export default function EmpresaIntegranteModal({ initialData = null, onClose, onSave }) {
+export default function EmpresaIntegranteModal({ initialData = null, tiposSociedad = [], onClose, onSave }) {
   const [datos, setDatos] = useState({
     ...DATOS_INICIALES,
     ...(initialData ?? {}),
@@ -39,7 +37,7 @@ export default function EmpresaIntegranteModal({ initialData = null, onClose, on
       return;
     }
 
-    const tipoSociedadSeleccionado = TIPOS_SOCIEDAD_MOCK.find((tipoSociedad) => tipoSociedad.value === datos.tipoSociedadId);
+    const tipoSociedadSeleccionado = tiposSociedad.find((tipoSociedad) => String(tipoSociedad.value) === String(datos.tipoSociedadId));
 
     onSave?.({
       ...datos,
@@ -120,7 +118,7 @@ export default function EmpresaIntegranteModal({ initialData = null, onClose, on
                   id="tipo-sociedad-integrante"
                   label="Tipo de sociedad"
                   value={datos.tipoSociedadId}
-                  options={TIPOS_SOCIEDAD_MOCK}
+                  options={tiposSociedad}
                   placeholder="Busque y seleccione el tipo de sociedad"
                   required
                   onChange={(value) => actualizarValor("tipoSociedadId", value)}

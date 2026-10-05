@@ -52,7 +52,7 @@ export async function obtenerActividadesConstruccion(token) {
   return actividades.map((actividad) => ({
     value: String(actividad.idActividad),
 
-    label: [actividad.idActividad, actividad.codigoActividadAFIP, actividad.descripcion]
+    label: [actividad.codigoActividadAFIP, actividad.descripcion]
       .filter((value) => value !== null && value !== undefined && String(value).trim())
       .join(" - "),
 
@@ -70,9 +70,7 @@ export async function obtenerCaracteresEmpresa(token) {
   return caracteres.map((caracter) => ({
     value: String(caracter.idCaracter),
 
-    label: [caracter.idCaracter, caracter.descripcion]
-      .filter((value) => value !== null && value !== undefined && String(value).trim())
-      .join(" - "),
+    label: String(caracter.descripcion ?? "").trim(),
 
     idCaracter: caracter.idCaracter,
 
@@ -86,9 +84,7 @@ export async function obtenerTiposSociedad(token) {
   return tiposSociedad.map((tipoSociedad) => ({
     value: String(tipoSociedad.idTipoSociedad),
 
-    label: [tipoSociedad.idTipoSociedad, tipoSociedad.descripcion]
-      .filter((value) => value !== null && value !== undefined && String(value).trim())
-      .join(" - "),
+    label: String(tipoSociedad.descripcion ?? "").trim(),
 
     idTipoSociedad: tipoSociedad.idTipoSociedad,
 
