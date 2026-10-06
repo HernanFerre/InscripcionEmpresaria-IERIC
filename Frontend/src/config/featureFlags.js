@@ -5,3 +5,5 @@ export const INICIAR_EN_INSCRIPCION = false;
 export const UBICAR_EMPRESAS_INTEGRANTES_AL_FINAL = true;
 
 export const PERMITIR_SALTEAR_VALIDACIONES = true;
+
+export const USAR_TOKEN_BACKEND_DESARROLLO = true;

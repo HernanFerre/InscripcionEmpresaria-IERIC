@@ -1,0 +1,214 @@
+---- CONSULTA EMPRESAS COMUNES ---
+
+USE [SolicitudInscripcionEmpresariaDigital];
+GO
+
+DECLARE @Cuit BIGINT = 30123456781;
+
+-- 1. Empresa guardada
+SELECT *
+FROM dbo.Empresa
+WHERE Cuit = @Cuit;
+
+-- 2. Solicitud vinculada con la empresa
+SELECT *
+FROM dbo.SolicitudInscripcionDigitalEmpresaria
+WHERE Idempresa = @Cuit
+ORDER BY Id DESC;
+
+-- 3. Empresas integrantes vinculadas
+SELECT *
+FROM dbo.EmpresasCuit
+WHERE IdEmpresa = @Cuit;
+
+---------------------------------------
+
+SELECT
+    S.Id AS SolicitudId,
+    S.UsuarioId,
+    S.fa AS FechaSolicitud,
+    E.*
+FROM dbo.SolicitudInscripcionDigitalEmpresaria AS S
+INNER JOIN dbo.Empresa AS E
+    ON E.Cuit = S.Idempresa
+WHERE E.Cuit = 30123456781;
+
+
+//////////////////////////////////////
+--------------------------------------------------------
+///////////////////////////////////////
+
+---LIMPIEZA DE REGISTRO EMPRESA NORMAL---
+
+
+USE [SolicitudInscripcionEmpresariaDigital];
+GO
+
+DECLARE @Cuit BIGINT = 30123456781;
+
+BEGIN TRANSACTION;
+
+DELETE FROM dbo.EmpresasCuit
+WHERE IdEmpresa = @Cuit
+   OR IdEmpresaIntegrante = @Cuit;
+
+DELETE FROM dbo.SolicitudInscripcionDigitalEmpresaria
+WHERE Idempresa = @Cuit;
+
+DELETE FROM dbo.Empresa
+WHERE Cuit = @Cuit;
+
+COMMIT TRANSACTION;
+
+//////////////////////////////////////
+----------------------------------------------------
+///////////////////////////////////////---
+
+---- CONSULTA UTES ---
+
+USE [SolicitudInscripcionEmpresariaDigital];
+GO
+
+DECLARE @CuitPrincipal BIGINT = 30123456781;
+
+-- 1. Empresa principal y todas sus integrantes
+SELECT
+    CASE
+        WHEN E.Cuit = @CuitPrincipal THEN 'PRINCIPAL'
+        ELSE 'INTEGRANTE'
+    END AS TipoEmpresa,
+    E.*
+FROM dbo.Empresa AS E
+WHERE E.Cuit = @CuitPrincipal
+   OR E.Cuit IN
+   (
+       SELECT EC.IdEmpresaIntegrante
+       FROM dbo.EmpresasCuit AS EC
+       WHERE EC.IdEmpresa = @CuitPrincipal
+   )
+ORDER BY
+    CASE WHEN E.Cuit = @CuitPrincipal THEN 0 ELSE 1 END,
+    E.Cuit;
+
+-- 2. Relaciones de la UTE con sus integrantes
+SELECT
+    EC.IdEmpresa AS CuitPrincipal,
+    EP.RazonSocial AS EmpresaPrincipal,
+    EC.IdEmpresaIntegrante AS CuitIntegrante,
+    EI.RazonSocial AS EmpresaIntegrante,
+    EI.IdTipoSoc AS TipoSociedadIntegrante
+FROM dbo.EmpresasCuit AS EC
+INNER JOIN dbo.Empresa AS EP
+    ON EP.Cuit = EC.IdEmpresa
+INNER JOIN dbo.Empresa AS EI
+    ON EI.Cuit = EC.IdEmpresaIntegrante
+WHERE EC.IdEmpresa = @CuitPrincipal
+ORDER BY EC.IdEmpresaIntegrante;
+
+-- 3. Solicitud generada
+SELECT
+    S.*
+FROM dbo.SolicitudInscripcionDigitalEmpresaria AS S
+WHERE S.Idempresa = @CuitPrincipal
+ORDER BY S.Id DESC;
+
+//////////////////////////////////////////////////////////////
+------------------------------------------------------------------
+///////////////////////////////////////////////////////////////
+
+---LIMPIAR CONSULTA UTES---
+
+USE [SolicitudInscripcionEmpresariaDigital];
+GO
+
+SET NOCOUNT ON;
+SET XACT_ABORT ON;
+
+DECLARE @RelacionesEliminadas INT;
+DECLARE @SolicitudesEliminadas INT;
+DECLARE @EmpresasEliminadas INT;
+
+BEGIN TRY
+    BEGIN TRANSACTION;
+
+    --------------------------------------------------------
+    -- 1. Eliminar todas las relaciones de UTE
+    --------------------------------------------------------
+    DELETE FROM dbo.EmpresasCuit;
+
+    SET @RelacionesEliminadas = @@ROWCOUNT;
+
+    --------------------------------------------------------
+    -- 2. Eliminar todas las solicitudes
+    --------------------------------------------------------
+    DELETE FROM dbo.SolicitudInscripcionDigitalEmpresaria;
+
+    SET @SolicitudesEliminadas = @@ROWCOUNT;
+
+    --------------------------------------------------------
+    -- 3. Eliminar todas las empresas
+    -- Incluye empresas comunes, UTE e integrantes
+    --------------------------------------------------------
+    DELETE FROM dbo.Empresa;
+
+    SET @EmpresasEliminadas = @@ROWCOUNT;
+
+    --------------------------------------------------------
+    -- 4. Reiniciar el contador de Solicitud
+    -- La próxima solicitud volverá a comenzar desde Id 1
+    --------------------------------------------------------
+    IF EXISTS
+    (
+        SELECT 1
+        FROM sys.identity_columns
+        WHERE object_id =
+            OBJECT_ID('dbo.SolicitudInscripcionDigitalEmpresaria')
+    )
+    BEGIN
+        DBCC CHECKIDENT
+        (
+            'dbo.SolicitudInscripcionDigitalEmpresaria',
+            RESEED,
+            0
+        ) WITH NO_INFOMSGS;
+    END;
+
+    COMMIT TRANSACTION;
+
+    --------------------------------------------------------
+    -- Resultado de la limpieza
+    --------------------------------------------------------
+    SELECT
+        @RelacionesEliminadas AS RelacionesEliminadas,
+        @SolicitudesEliminadas AS SolicitudesEliminadas,
+        @EmpresasEliminadas AS EmpresasEliminadas;
+
+    --------------------------------------------------------
+    -- Verificación: los tres resultados deben quedar en 0
+    --------------------------------------------------------
+    SELECT
+        'Empresa' AS Tabla,
+        COUNT(*) AS RegistrosRestantes
+    FROM dbo.Empresa
+
+    UNION ALL
+
+    SELECT
+        'EmpresasCuit',
+        COUNT(*)
+    FROM dbo.EmpresasCuit
+
+    UNION ALL
+
+    SELECT
+        'Solicitud',
+        COUNT(*)
+    FROM dbo.SolicitudInscripcionDigitalEmpresaria;
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0
+        ROLLBACK TRANSACTION;
+
+    THROW;
+END CATCH;

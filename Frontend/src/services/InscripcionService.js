@@ -2,6 +2,8 @@ import { ESCENARIO_INFORMACION_DUMMY, opcionesInformacionDummy } from "../mocks/
 
 import { delay } from "../utils/delay";
 
+import { USAR_TOKEN_BACKEND_DESARROLLO } from "../config/featureFlags.js";
+
 const INSCRIPCION_API_URL = (import.meta.env.VITE_INSCRIPCION_API_URL || "").replace(/\/+$/, "");
 
 const EMPRESAS_ESTADO_SERVIDOR = (import.meta.env.VITE_EMPRESAS_ESTADO_SERVIDOR || "").replace(/\/+$/, "");
@@ -244,7 +246,9 @@ export async function guardarEmpresaSolicitud(datosEmpresa, token) {
     throw new Error("No se informaron los datos de la empresa.");
   }
 
-  const response = await fetch(`${INSCRIPCION_API_URL}/v1/solicitudes/empresa`, {
+  const rutaGuardarEmpresa = USAR_TOKEN_BACKEND_DESARROLLO ? "/v1/desarrollo/solicitudes/empresa" : "/v1/solicitudes/empresa";
+
+  const response = await fetch(`${INSCRIPCION_API_URL}${rutaGuardarEmpresa}`, {
     method: "POST",
     headers: crearHeadersAutorizados(token),
     body: JSON.stringify(datosEmpresa),
