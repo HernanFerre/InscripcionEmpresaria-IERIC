@@ -12,7 +12,7 @@ function crearHeadersAutorizados(token) {
   return headers;
 }
 
-async function consultarCatalogo(endpoint, nombreCatalogo, token) {
+async function consultarCatalogo(endpoint, nombreCatalogo, token, { aceptarObjetoUnico = false } = {}) {
   if (!INSCRIPCION_API_URL) {
     throw new Error("No se configuró VITE_INSCRIPCION_API_URL.");
   }
@@ -39,11 +39,13 @@ async function consultarCatalogo(endpoint, nombreCatalogo, token) {
     );
   }
 
-  if (!Array.isArray(data)) {
+  const elementos = Array.isArray(data) ? data : aceptarObjetoUnico && data && typeof data === "object" ? [data] : null;
+
+  if (!elementos) {
     throw new Error(`El servicio de ${nombreCatalogo} devolvió un formato inválido.`);
   }
 
-  return data;
+  return elementos;
 }
 
 export async function obtenerActividadesConstruccion(token) {
@@ -89,6 +91,61 @@ export async function obtenerTiposSociedad(token) {
     idTipoSociedad: tipoSociedad.idTipoSociedad,
 
     descripcion: tipoSociedad.descripcion,
+  }));
+}
+
+export async function obtenerTiposRepresentantes(tipoSociedad, token) {
+  const tipoSociedadNormalizado = Number(tipoSociedad);
+
+  if (!Number.isInteger(tipoSociedadNormalizado) || tipoSociedadNormalizado <= 0) {
+    throw new Error("Debe indicar un tipo de sociedad válido.");
+  }
+
+  const tiposRepresentantes = await consultarCatalogo(
+    "/v1/datos-maestros/tipos-representantes" + `?tipoSociedad=${encodeURIComponent(tipoSociedadNormalizado)}`,
+    "los tipos de representantes",
+    token,
+  );
+
+  return tiposRepresentantes.map((tipoRepresentante) => ({
+    value: String(tipoRepresentante.idTipoRepresentante),
+
+    label: String(tipoRepresentante.descripcion ?? "").trim(),
+
+    idTipoRepresentante: tipoRepresentante.idTipoRepresentante,
+
+    descripcion: tipoRepresentante.descripcion,
+  }));
+}
+
+export async function obtenerLocalidadesPorCodigoPostal(codigoPostal, token) {
+  const codigoPostalNormalizado = String(codigoPostal ?? "").trim();
+
+  if (!codigoPostalNormalizado) {
+    throw new Error("Debe indicar un código postal.");
+  }
+
+  const localidades = await consultarCatalogo(
+    "/v1/datos-maestros/localidades" + `?codigoPostal=${encodeURIComponent(codigoPostalNormalizado)}`,
+    "las localidades",
+    token,
+    {
+      aceptarObjetoUnico: true,
+    },
+  );
+
+  return localidades.map((localidad) => ({
+    value: String(localidad.idLocalidad),
+
+    label: String(localidad.descripcionLocalidad ?? "").trim(),
+
+    idLocalidad: localidad.idLocalidad,
+
+    descripcionLocalidad: localidad.descripcionLocalidad,
+
+    idProvincia: localidad.idProvincia,
+
+    descripcionProvincia: localidad.descripcionProvincia,
   }));
 }
 

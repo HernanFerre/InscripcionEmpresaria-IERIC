@@ -24,9 +24,9 @@ namespace IERIC.SumariosIERIC.Application.Inscripcion.Models
 
         public string CodigoPostal { get; set; }
 
-        public string Provincia { get; set; }
+        public int? IdProvincia { get; set; }
 
-        public string Localidad { get; set; }
+        public int? IdLocalidad { get; set; }
 
         public string Correo { get; set; }
 

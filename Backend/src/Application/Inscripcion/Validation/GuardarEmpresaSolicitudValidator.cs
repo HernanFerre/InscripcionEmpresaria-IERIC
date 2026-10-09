@@ -80,16 +80,14 @@ namespace IERIC.SumariosIERIC.Application.Inscripcion.Validation
                 10
             );
 
-            ValidarTextoObligatorio(
-                request.Provincia,
-                "provincia",
-                100
+            ValidarIdentificador(
+                request.IdProvincia.GetValueOrDefault(),
+                "provincia"
             );
 
-            ValidarTextoObligatorio(
-                request.Localidad,
-                "localidad",
-                150
+            ValidarIdentificador(
+                request.IdLocalidad.GetValueOrDefault(),
+                "localidad"
             );
 
             ValidarCorreo(

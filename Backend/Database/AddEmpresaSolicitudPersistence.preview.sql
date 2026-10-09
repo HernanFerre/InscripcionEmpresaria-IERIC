@@ -24,8 +24,8 @@ CREATE TABLE [dbo].[Empresa] (
     [Piso] tinyint NULL,
     [DeptoOficina] varchar(20) NULL,
     [CodigoPostal] varchar(10) NOT NULL DEFAULT (''),
-    [Provincia] varchar(100) NOT NULL DEFAULT (''),
-    [Localidad] varchar(150) NOT NULL DEFAULT (''),
+    [IdProvincia] int NULL,
+    [IdLocalidad] int NULL,
     [Correo] varchar(254) NOT NULL DEFAULT (''),
     [Telefono] varchar(30) NULL,
     [IdActividadsolicitud] int NOT NULL DEFAULT (''),
@@ -63,7 +63,7 @@ CREATE UNIQUE INDEX [UX_Empresa_Cuit] ON [dbo].[Empresa] ([Cuit]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20261009150438_AddEmpresaSolicitudPersistence', N'7.0.3');
+VALUES (N'20261009180234_AddEmpresaSolicitudPersistence', N'7.0.3');
 GO
 
 COMMIT;

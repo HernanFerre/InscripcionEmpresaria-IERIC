@@ -25,13 +25,17 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
 
         public byte? Piso { get; private set; }
 
-        public string DepartamentoOficina { get; private set; }
+        public string DepartamentoOficina
+        {
+            get;
+            private set;
+        }
 
         public string CodigoPostal { get; private set; }
 
-        public string Provincia { get; private set; }
+        public int? IdProvincia { get; private set; }
 
-        public string Localidad { get; private set; }
+        public int? IdLocalidad { get; private set; }
 
         public string Correo { get; private set; }
 
@@ -43,8 +47,8 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
             !string.IsNullOrWhiteSpace(Calle) &&
             !string.IsNullOrWhiteSpace(Numero) &&
             !string.IsNullOrWhiteSpace(CodigoPostal) &&
-            !string.IsNullOrWhiteSpace(Provincia) &&
-            !string.IsNullOrWhiteSpace(Localidad) &&
+            IdProvincia.GetValueOrDefault() > 0 &&
+            IdLocalidad.GetValueOrDefault() > 0 &&
             !string.IsNullOrWhiteSpace(Correo);
 
         private Empresa()
@@ -57,9 +61,10 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
             int tipoSociedadId
         )
         {
-            Cuit = cuit ?? throw new SumariosDomainException(
-                "La empresa debe tener un CUIT."
-            );
+            Cuit = cuit ??
+                throw new SumariosDomainException(
+                    "La empresa debe tener un CUIT."
+                );
 
             RazonSocial = NormalizarObligatorio(
                 razonSocial,
@@ -99,8 +104,8 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
             byte? piso,
             string departamentoOficina,
             string codigoPostal,
-            string provincia,
-            string localidad,
+            int idProvincia,
+            int idLocalidad,
             string correo,
             string telefono
         )
@@ -119,8 +124,8 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
                 piso,
                 departamentoOficina,
                 codigoPostal,
-                provincia,
-                localidad,
+                idProvincia,
+                idLocalidad,
                 correo,
                 telefono
             );
@@ -136,8 +141,8 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
             byte? piso,
             string departamentoOficina,
             string codigoPostal,
-            string provincia,
-            string localidad,
+            int idProvincia,
+            int idLocalidad,
             string correo,
             string telefono
         )
@@ -152,11 +157,22 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
                 "carácter de la empresa"
             );
 
-            string correoNormalizado = NormalizarObligatorio(
-                correo,
-                "correo electrónico",
-                254
+            ValidarIdentificadorCatalogo(
+                idProvincia,
+                "provincia"
             );
+
+            ValidarIdentificadorCatalogo(
+                idLocalidad,
+                "localidad"
+            );
+
+            string correoNormalizado =
+                NormalizarObligatorio(
+                    correo,
+                    "correo electrónico",
+                    254
+                );
 
             try
             {
@@ -165,14 +181,26 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
             catch (ArgumentException)
             {
                 throw new SumariosDomainException(
-                    "El correo electrónico de la empresa no es válido."
+                    "El correo electrónico de la empresa " +
+                    "no es válido."
                 );
             }
 
             ActividadId = actividadId;
             CaracterId = caracterId;
-            Calle = NormalizarObligatorio(calle, "calle", 150);
-            Numero = NormalizarObligatorio(numero, "número", 20);
+
+            Calle = NormalizarObligatorio(
+                calle,
+                "calle",
+                150
+            );
+
+            Numero = NormalizarObligatorio(
+                numero,
+                "número",
+                20
+            );
+
             Piso = piso;
 
             DepartamentoOficina = NormalizarOpcional(
@@ -187,18 +215,8 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
                 10
             );
 
-            Provincia = NormalizarObligatorio(
-                provincia,
-                "provincia",
-                100
-            );
-
-            Localidad = NormalizarObligatorio(
-                localidad,
-                "localidad",
-                150
-            );
-
+            IdProvincia = idProvincia;
+            IdLocalidad = idLocalidad;
             Correo = correoNormalizado;
 
             Telefono = NormalizarOpcional(
@@ -213,14 +231,16 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
             if (id <= 0)
             {
                 throw new SumariosDomainException(
-                    "El identificador de la empresa no es válido."
+                    "El identificador de la empresa " +
+                    "no es válido."
                 );
             }
 
             if (Id != 0)
             {
                 throw new SumariosDomainException(
-                    "La empresa ya tiene un identificador asignado."
+                    "La empresa ya tiene un identificador " +
+                    "asignado."
                 );
             }
 
@@ -235,7 +255,8 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
             if (identificador <= 0)
             {
                 throw new SumariosDomainException(
-                    $"El identificador de {nombreCampo} no es válido."
+                    $"El identificador de {nombreCampo} " +
+                    "no es válido."
                 );
             }
         }
@@ -255,10 +276,14 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
 
             string valorNormalizado = valor.Trim();
 
-            if (valorNormalizado.Length > longitudMaxima)
+            if (
+                valorNormalizado.Length >
+                longitudMaxima
+            )
             {
                 throw new SumariosDomainException(
-                    $"El campo {nombreCampo} supera la longitud permitida."
+                    $"El campo {nombreCampo} supera " +
+                    "la longitud permitida."
                 );
             }
 
@@ -278,7 +303,10 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
 
             string valorNormalizado = valor.Trim();
 
-            if (valorNormalizado.Length > longitudMaxima)
+            if (
+                valorNormalizado.Length >
+                longitudMaxima
+            )
             {
                 throw new SumariosDomainException(
                     $"El campo {nombreCampo} supera " +

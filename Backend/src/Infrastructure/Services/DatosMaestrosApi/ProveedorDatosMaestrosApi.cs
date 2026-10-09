@@ -53,7 +53,60 @@ namespace IERIC.SumariosIERIC.Infrastructure.Services.DatosMaestrosApi
             )
         {
             return ObtenerAsync(
-                "datos-maestros/tipos-sociedad",
+                "datos-maestros/tipos/sociedades",
+                cancellationToken
+            );
+        }
+
+        public Task<string>
+            ObtenerTiposRepresentantesAsync(
+                int tipoSociedad,
+                CancellationToken cancellationToken = default
+            )
+        {
+            if (tipoSociedad <= 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(tipoSociedad),
+                    "Debe indicar un tipo de sociedad válido."
+                );
+            }
+
+            string ruta =
+                "datos-maestros/tipos/representantes" +
+                $"?tipoSociedad={tipoSociedad}";
+
+            return ObtenerAsync(
+                ruta,
+                cancellationToken
+            );
+        }
+
+        public Task<string>
+            ObtenerLocalidadesAsync(
+                string codigoPostal,
+                CancellationToken cancellationToken = default
+            )
+        {
+            if (string.IsNullOrWhiteSpace(codigoPostal))
+            {
+                throw new ArgumentException(
+                    "Debe indicar el código postal.",
+                    nameof(codigoPostal)
+                );
+            }
+
+            string codigoPostalNormalizado =
+                codigoPostal.Trim();
+
+            string ruta =
+                "datos-maestros/localidades?codigoPostal=" +
+                Uri.EscapeDataString(
+                    codigoPostalNormalizado
+                );
+
+            return ObtenerAsync(
+                ruta,
                 cancellationToken
             );
         }
@@ -95,9 +148,15 @@ namespace IERIC.SumariosIERIC.Infrastructure.Services.DatosMaestrosApi
 
                 if (!respuesta.IsSuccessStatusCode)
                 {
+                    string detalle =
+                        await respuesta.Content.ReadAsStringAsync(
+                            cancellationToken
+                        );
+
                     throw new HttpRequestException(
                         "No fue posible consultar Datos Maestros. " +
-                        $"Código HTTP: {(int)respuesta.StatusCode}."
+                        $"Código HTTP: {(int)respuesta.StatusCode}. " +
+                        $"Detalle: {detalle}"
                     );
                 }
 

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(SumariosContext))]
-    [Migration("20261009150438_AddEmpresaSolicitudPersistence")]
+    [Migration("20261009180234_AddEmpresaSolicitudPersistence")]
     partial class AddEmpresaSolicitudPersistence
     {
         /// <inheritdoc />
@@ -105,6 +105,14 @@ namespace Infrastructure.Migrations
                         .HasColumnOrder(21)
                         .HasDefaultValueSql("''");
 
+                    b.Property<int?>("IdLocalidad")
+                        .HasColumnType("int")
+                        .HasColumnOrder(17);
+
+                    b.Property<int?>("IdProvincia")
+                        .HasColumnType("int")
+                        .HasColumnOrder(16);
+
                     b.Property<int>("IdTipoSoc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -114,14 +122,6 @@ namespace Infrastructure.Migrations
                     b.Property<int>("LegacyId")
                         .HasColumnType("int")
                         .HasColumnOrder(5);
-
-                    b.Property<string>("Localidad")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(150)
-                        .HasColumnType("varchar(150)")
-                        .HasColumnOrder(17)
-                        .HasDefaultValueSql("''");
 
                     b.Property<string>("Numero")
                         .IsRequired()
@@ -134,14 +134,6 @@ namespace Infrastructure.Migrations
                     b.Property<byte?>("Piso")
                         .HasColumnType("tinyint")
                         .HasColumnOrder(13);
-
-                    b.Property<string>("Provincia")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
-                        .HasColumnOrder(16)
-                        .HasDefaultValueSql("''");
 
                     b.Property<string>("RazonSocial")
                         .HasMaxLength(150)

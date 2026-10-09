@@ -7,9 +7,8 @@ import EmpresaIntegranteModal from "../../components/modals/EmpresaIntegranteMod
 
 import { UBICAR_EMPRESAS_INTEGRANTES_AL_FINAL } from "../../config/featureFlags.js";
 
-import { LOCALIDADES_MOCK } from "../../mocks/InscripcionCatalogosMock.js";
+import { obtenerCatalogosEmpresa, obtenerLocalidadesPorCodigoPostal } from "../../services/DatosMaestrosService.js";
 
-import { obtenerCatalogosEmpresa } from "../../services/DatosMaestrosService.js";
 import { guardarEmpresaSolicitud } from "../../services/InscripcionService.js";
 
 import "../../styles/stepEmpresa.css";
@@ -25,8 +24,10 @@ const DATOS_INICIALES = {
   piso: "",
   departamento: "",
   codigoPostal: "",
+  provinciaId: "",
   provincia: "",
   localidadId: "",
+  localidad: "",
   email: "",
   telefono: "",
 };
@@ -38,7 +39,7 @@ const CATALOGOS_INICIALES = {
 };
 
 /*
- * Identificadores provenientes del catálogo de tipos de sociedad:
+ * Identificadores provenientes del catálogo:
  * 8  = U.T.E.
  * 26 = Consorcio de cooperación
  * 28 = U.T.
@@ -55,6 +56,7 @@ function telefonoEsValido(telefono) {
   }
 
   const caracteresValidos = /^[\d+()\-\s]+$/.test(telefono);
+
   const soloNumeros = telefono.replace(/\D/g, "");
 
   return caracteresValidos && soloNumeros.length >= 8 && soloNumeros.length <= 15;
@@ -72,6 +74,7 @@ function cuitEsValido(cuit) {
   const suma = multiplicadores.reduce((acumulado, multiplicador, indice) => acumulado + Number(cuitNormalizado[indice]) * multiplicador, 0);
 
   const resto = suma % 11;
+
   const digitoVerificador = resto === 0 ? 0 : resto === 1 ? 9 : 11 - resto;
 
   return digitoVerificador === Number(cuitNormalizado[10]);
@@ -99,18 +102,53 @@ function identificadorEsValido(valor) {
   return Number.isInteger(identificador) && identificador > 0;
 }
 
+function crearLocalidadesIniciales(initialData) {
+  const localidadId = initialData?.localidadId ?? initialData?.idLocalidad ?? "";
+
+  const localidad = initialData?.localidad ?? initialData?.descripcionLocalidad ?? "";
+
+  const provinciaId = initialData?.provinciaId ?? initialData?.idProvincia ?? "";
+
+  const provincia = initialData?.provincia ?? initialData?.descripcionProvincia ?? "";
+
+  if (!identificadorEsValido(localidadId) || !String(localidad).trim()) {
+    return [];
+  }
+
+  return [
+    {
+      value: String(localidadId),
+      label: String(localidad).trim(),
+      idLocalidad: Number(localidadId),
+      descripcionLocalidad: String(localidad).trim(),
+      idProvincia: identificadorEsValido(provinciaId) ? Number(provinciaId) : null,
+      descripcionProvincia: String(provincia).trim(),
+    },
+  ];
+}
+
 export default function StepEmpresa({ token, cuit, initialData = null, onNext }) {
-  const [datos, setDatos] = useState({
+  const [datos, setDatos] = useState(() => ({
     ...DATOS_INICIALES,
     ...(initialData ?? {}),
+    provinciaId: initialData?.provinciaId ?? initialData?.idProvincia ?? "",
+    provincia: initialData?.provincia ?? initialData?.descripcionProvincia ?? "",
+    localidadId: initialData?.localidadId ?? initialData?.idLocalidad ?? "",
+    localidad: initialData?.localidad ?? initialData?.descripcionLocalidad ?? "",
     empresasIntegrantes: initialData?.empresasIntegrantes ?? [],
-  });
+  }));
 
   const [catalogos, setCatalogos] = useState(CATALOGOS_INICIALES);
 
+  const [localidades, setLocalidades] = useState(() => crearLocalidadesIniciales(initialData));
+
   const [cargandoCatalogos, setCargandoCatalogos] = useState(true);
 
+  const [cargandoLocalidades, setCargandoLocalidades] = useState(false);
+
   const [errorCatalogos, setErrorCatalogos] = useState("");
+
+  const [errorLocalidades, setErrorLocalidades] = useState("");
 
   const [modalEmpresaIntegranteAbierto, setModalEmpresaIntegranteAbierto] = useState(false);
 
@@ -141,7 +179,8 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
         }
 
         setCatalogos(CATALOGOS_INICIALES);
-        setErrorCatalogos(error.message || "No fue posible obtener los datos necesarios para completar la empresa.");
+
+        setErrorCatalogos(error.message || "No fue posible obtener los datos " + "necesarios para completar la empresa.");
       } finally {
         if (componenteActivo) {
           setCargandoCatalogos(false);
@@ -171,6 +210,114 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
     actualizarValor(event.target.name, event.target.value);
   };
 
+  const actualizarCodigoPostal = (event) => {
+    const codigoPostal = event.target.value;
+
+    setErrorGuardado("");
+    setErrorLocalidades("");
+    setLocalidades([]);
+
+    setDatos((prev) => ({
+      ...prev,
+      codigoPostal,
+      provinciaId: "",
+      provincia: "",
+      localidadId: "",
+      localidad: "",
+    }));
+  };
+
+  const consultarLocalidades = async () => {
+    const codigoPostal = datos.codigoPostal.trim();
+
+    if (!codigoPostal) {
+      setLocalidades([]);
+      setErrorLocalidades("Ingrese un código postal.");
+
+      setDatos((prev) => ({
+        ...prev,
+        provinciaId: "",
+        provincia: "",
+        localidadId: "",
+        localidad: "",
+      }));
+
+      return;
+    }
+
+    setCargandoLocalidades(true);
+    setErrorLocalidades("");
+    setErrorGuardado("");
+
+    try {
+      const localidadesObtenidas = await obtenerLocalidadesPorCodigoPostal(codigoPostal, token);
+
+      if (localidadesObtenidas.length === 0) {
+        setLocalidades([]);
+
+        setDatos((prev) => ({
+          ...prev,
+          provinciaId: "",
+          provincia: "",
+          localidadId: "",
+          localidad: "",
+        }));
+
+        setErrorLocalidades("No se encontraron localidades para " + "el código postal ingresado.");
+
+        return;
+      }
+
+      setLocalidades(localidadesObtenidas);
+
+      const localidadActual = localidadesObtenidas.find((localidad) => String(localidad.value) === String(datos.localidadId));
+
+      const localidadAutomatica = localidadActual ?? (localidadesObtenidas.length === 1 ? localidadesObtenidas[0] : null);
+
+      const provinciasEncontradas = [
+        ...new Set(localidadesObtenidas.map((localidad) => String(localidad.idProvincia ?? "")).filter(Boolean)),
+      ];
+
+      const referenciaProvincia = localidadAutomatica ?? (provinciasEncontradas.length === 1 ? localidadesObtenidas[0] : null);
+
+      setDatos((prev) => ({
+        ...prev,
+        provinciaId: referenciaProvincia?.idProvincia != null ? String(referenciaProvincia.idProvincia) : "",
+        provincia: String(referenciaProvincia?.descripcionProvincia ?? "").trim(),
+        localidadId: localidadAutomatica?.value ?? "",
+        localidad: String(localidadAutomatica?.descripcionLocalidad ?? localidadAutomatica?.label ?? "").trim(),
+      }));
+    } catch (error) {
+      setLocalidades([]);
+
+      setDatos((prev) => ({
+        ...prev,
+        provinciaId: "",
+        provincia: "",
+        localidadId: "",
+        localidad: "",
+      }));
+
+      setErrorLocalidades(error.message || "No fue posible obtener las localidades.");
+    } finally {
+      setCargandoLocalidades(false);
+    }
+  };
+
+  const seleccionarLocalidad = (value) => {
+    const localidadSeleccionada = localidades.find((localidad) => String(localidad.value) === String(value));
+
+    setErrorGuardado("");
+
+    setDatos((prev) => ({
+      ...prev,
+      localidadId: value,
+      localidad: String(localidadSeleccionada?.descripcionLocalidad ?? localidadSeleccionada?.label ?? "").trim(),
+      provinciaId: localidadSeleccionada?.idProvincia != null ? String(localidadSeleccionada.idProvincia) : "",
+      provincia: String(localidadSeleccionada?.descripcionProvincia ?? "").trim(),
+    }));
+  };
+
   const abrirNuevaEmpresaIntegrante = () => {
     setEmpresaIntegranteSeleccionada(null);
     setModalEmpresaIntegranteAbierto(true);
@@ -191,6 +338,7 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
 
     setDatos((prev) => {
       const empresasActuales = prev.empresasIntegrantes ?? [];
+
       const empresaSeleccionadaId = empresaIntegranteSeleccionada?.id;
 
       if (empresaSeleccionadaId) {
@@ -213,7 +361,7 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
           ...empresasActuales,
           {
             ...empresa,
-            id: `empresa-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            id: `empresa-${Date.now()}-` + Math.random().toString(36).slice(2, 8),
           },
         ],
       };
@@ -243,7 +391,7 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
 
   const pisoValido = pisoEsValido(datos.piso);
 
-  const localidadSeleccionada = LOCALIDADES_MOCK.find((localidad) => String(localidad.value) === String(datos.localidadId));
+  const localidadSeleccionada = localidades.find((localidad) => String(localidad.value) === String(datos.localidadId));
 
   const integrantesValidas = (datos.empresasIntegrantes ?? []).every(
     (empresa) =>
@@ -263,7 +411,7 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
     datos.calle,
     datos.numero,
     datos.codigoPostal,
-    datos.provincia,
+    datos.provinciaId,
     datos.localidadId,
     datos.email,
   ].every((value) => String(value).trim().length > 0);
@@ -272,11 +420,14 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
     datos.razonSocial.trim().length <= 150 &&
     datos.calle.trim().length <= 150 &&
     datos.departamento.trim().length <= 20 &&
-    datos.codigoPostal.trim().length <= 10 &&
-    datos.provincia.trim().length <= 100;
+    datos.codigoPostal.trim().length <= 10;
 
   const catalogosValidos =
-    identificadorEsValido(datos.actividadId) && identificadorEsValido(datos.caracter) && identificadorEsValido(datos.tipoSociedadId);
+    identificadorEsValido(datos.actividadId) &&
+    identificadorEsValido(datos.caracter) &&
+    identificadorEsValido(datos.tipoSociedadId) &&
+    identificadorEsValido(datos.provinciaId) &&
+    identificadorEsValido(datos.localidadId);
 
   const formularioValido =
     cuitValido &&
@@ -290,7 +441,9 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
     telefonoValido &&
     empresasIntegrantesValidas &&
     !cargandoCatalogos &&
-    !errorCatalogos;
+    !errorCatalogos &&
+    !cargandoLocalidades &&
+    !errorLocalidades;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -312,8 +465,8 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
       piso: datos.piso.trim() ? Number(datos.piso) : null,
       departamentoOficina: datos.departamento.trim() || null,
       codigoPostal: datos.codigoPostal.trim(),
-      provincia: datos.provincia.trim(),
-      localidad: localidadSeleccionada.label.trim(),
+      idProvincia: Number(datos.provinciaId),
+      idLocalidad: Number(datos.localidadId),
       correo: datos.email.trim(),
       telefono: datos.telefono.trim() || null,
       empresasIntegrantes: empresasIntegrantes.map((empresa) => ({
@@ -349,26 +502,23 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
 
         return {
           ...empresa,
-
           id: empresaIntegranteId !== null ? String(empresaIntegranteId) : empresa.id,
-
           empresaId: empresaIntegranteId !== null ? Number(empresaIntegranteId) : null,
-
           legacyId: Number(legacyId),
         };
       });
 
       onNext?.({
         ...datos,
-
+        idProvincia: Number(datos.provinciaId),
+        idLocalidad: Number(datos.localidadId),
+        localidad: datos.localidad || localidadSeleccionada?.label || "",
         empresaId: empresaId !== null ? Number(empresaId) : null,
-
         empresasIntegrantes: empresasIntegrantesConId,
-
         solicitudId: solicitudId !== null ? Number(solicitudId) : null,
       });
     } catch (error) {
-      setErrorGuardado(error.message || "No fue posible guardar la información de la empresa.");
+      setErrorGuardado(error.message || "No fue posible guardar la " + "información de la empresa.");
     } finally {
       setGuardando(false);
     }
@@ -555,7 +705,8 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
                 placeholder="Código postal"
                 maxLength={10}
                 required
-                onChange={actualizarCampo}
+                onChange={actualizarCodigoPostal}
+                onBlur={consultarLocalidades}
               />
             </div>
 
@@ -571,10 +722,9 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
                 type="text"
                 name="provincia"
                 value={datos.provincia}
-                placeholder="Provincia"
-                maxLength={100}
-                required
-                onChange={actualizarCampo}
+                placeholder={cargandoLocalidades ? "Consultando..." : "Provincia"}
+                readOnly
+                aria-readonly="true"
               />
             </div>
 
@@ -583,11 +733,24 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
                 id="localidad"
                 label="Localidad"
                 value={datos.localidadId}
-                options={LOCALIDADES_MOCK}
-                placeholder="Localidad"
+                options={localidades}
+                placeholder={
+                  cargandoLocalidades
+                    ? "Consultando localidades..."
+                    : !datos.codigoPostal.trim()
+                      ? "Ingrese primero el código postal"
+                      : "Localidad"
+                }
                 required
-                onChange={(value) => actualizarValor("localidadId", value)}
+                disabled={!datos.codigoPostal.trim() || cargandoLocalidades || Boolean(errorLocalidades)}
+                onChange={seleccionarLocalidad}
               />
+
+              {errorLocalidades && (
+                <span className="empresa-field-error" role="alert">
+                  {errorLocalidades}
+                </span>
+              )}
             </div>
           </div>
         </section>

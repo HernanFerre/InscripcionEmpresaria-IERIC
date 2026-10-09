@@ -120,19 +120,15 @@ namespace IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.Configurati
                 .HasDefaultValueSql("''")
                 .IsRequired();
 
-            builder.Property(x => x.Provincia)
-                .HasColumnType("varchar(100)")
-                .HasMaxLength(100)
+            builder.Property(x => x.IdProvincia)
+                .HasColumnType("int")
                 .HasColumnOrder(16)
-                .HasDefaultValueSql("''")
-                .IsRequired();
+                .IsRequired(false);
 
-            builder.Property(x => x.Localidad)
-                .HasColumnType("varchar(150)")
-                .HasMaxLength(150)
+            builder.Property(x => x.IdLocalidad)
+                .HasColumnType("int")
                 .HasColumnOrder(17)
-                .HasDefaultValueSql("''")
-                .IsRequired();
+                .IsRequired(false);
 
             builder.Property(x => x.Correo)
                 .HasColumnType("varchar(254)")

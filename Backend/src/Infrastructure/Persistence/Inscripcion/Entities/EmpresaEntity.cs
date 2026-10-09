@@ -36,9 +36,9 @@ namespace IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion
 
         public string CodigoPostal { get; set; }
 
-        public string Provincia { get; set; }
+        public int? IdProvincia { get; set; }
 
-        public string Localidad { get; set; }
+        public int? IdLocalidad { get; set; }
 
         public string Correo { get; set; }
 

@@ -16,5 +16,15 @@ namespace IERIC.SumariosIERIC.Domain.Services
         Task<string> ObtenerTiposSociedadAsync(
             CancellationToken cancellationToken = default
         );
+
+        Task<string> ObtenerTiposRepresentantesAsync(
+            int tipoSociedad,
+            CancellationToken cancellationToken = default
+        );
+
+        Task<string> ObtenerLocalidadesAsync(
+            string codigoPostal,
+            CancellationToken cancellationToken = default
+        );
     }
 }

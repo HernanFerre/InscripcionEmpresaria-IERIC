@@ -242,13 +242,11 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
                     empresa.CodigoPostal ??
                     string.Empty,
 
-                Provincia =
-                    empresa.Provincia ??
-                    string.Empty,
+                IdProvincia =
+                    empresa.IdProvincia,
 
-                Localidad =
-                    empresa.Localidad ??
-                    string.Empty,
+                IdLocalidad =
+                    empresa.IdLocalidad,
 
                 Correo =
                     empresa.Correo ??

@@ -82,8 +82,8 @@ namespace IERIC.SumariosIERIC.Application.Commands
                         command.Request.Piso,
                         command.Request.DepartamentoOficina,
                         command.Request.CodigoPostal,
-                        command.Request.Provincia,
-                        command.Request.Localidad,
+                        command.Request.IdProvincia.Value,
+                        command.Request.IdLocalidad.Value,
                         command.Request.Correo,
                         command.Request.Telefono
                     );
