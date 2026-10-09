@@ -24,9 +24,12 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.EmpresaEntity", b =>
                 {
-                    b.Property<long>("Cuit")
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnOrder(2);
+                        .HasColumnOrder(0);
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<bool>("Activo")
                         .HasColumnType("bit")
@@ -56,11 +59,13 @@ namespace Infrastructure.Migrations
                         .HasColumnOrder(18)
                         .HasDefaultValueSql("''");
 
+                    b.Property<long>("Cuit")
+                        .HasColumnType("bigint")
+                        .HasColumnOrder(2);
+
                     b.Property<bool>("DDJJ")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
-                        .HasColumnOrder(23)
-                        .HasDefaultValueSql("''");
+                        .HasColumnOrder(23);
 
                     b.Property<string>("DeptoOficina")
                         .HasMaxLength(20)
@@ -84,10 +89,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("datetime2(7)")
                         .HasColumnName("fm")
                         .HasColumnOrder(9);
-
-                    b.Property<long>("Id")
-                        .HasColumnType("bigint")
-                        .HasColumnOrder(0);
 
                     b.Property<int>("IdActividadsolicitud")
                         .ValueGeneratedOnAdd()
@@ -161,10 +162,14 @@ namespace Infrastructure.Migrations
                         .HasColumnName("um")
                         .HasColumnOrder(10);
 
-                    b.HasKey("Cuit")
+                    b.HasKey("Id")
                         .HasName("PK_Empresa");
 
-                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Cuit"));
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"));
+
+                    b.HasIndex("Cuit")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Empresa_Cuit");
 
                     b.ToTable("Empresa", "dbo");
                 });
@@ -414,7 +419,14 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("IdEmpresa")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
-                        .HasConstraintName("FK_EmpresasCuit_Empresa");
+                        .HasConstraintName("FK_EmpresasCuit_EmpresaPrincipal");
+
+                    b.HasOne("IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.EmpresaEntity", null)
+                        .WithMany()
+                        .HasForeignKey("IdEmpresaIntegrante")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("FK_EmpresasCuit_EmpresaIntegrante");
                 });
 
             modelBuilder.Entity("IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.SolicitudInscripcionEntity", b =>

@@ -34,7 +34,8 @@ namespace IERIC.SumariosIERIC.Application.Inscripcion.Models
 
         public List<EmpresaIntegranteRequest>
             EmpresasIntegrantes
-        { get; set; } = new List<EmpresaIntegranteRequest>();
+        { get; set; } =
+            new List<EmpresaIntegranteRequest>();
     }
 
     public class EmpresaIntegranteRequest
@@ -50,8 +51,28 @@ namespace IERIC.SumariosIERIC.Application.Inscripcion.Models
     {
         public long SolicitudId { get; set; }
 
+        public long EmpresaId { get; set; }
+
         public string CuitEmpresa { get; set; }
 
         public int CantidadEmpresasIntegrantes { get; set; }
+
+        public List<EmpresaIntegranteGuardadaResponse>
+            EmpresasIntegrantes
+        { get; set; } =
+            new List<EmpresaIntegranteGuardadaResponse>();
+    }
+
+    public class EmpresaIntegranteGuardadaResponse
+    {
+        public long EmpresaId { get; set; }
+
+        public string Cuit { get; set; }
+
+        public string RazonSocial { get; set; }
+
+        public int TipoSociedadId { get; set; }
+
+        public int LegacyId { get; set; }
     }
 }

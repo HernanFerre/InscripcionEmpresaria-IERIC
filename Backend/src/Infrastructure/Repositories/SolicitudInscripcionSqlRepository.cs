@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using IERIC.SumariosIERIC.Domain.Entities.Inscripcion;
 using IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace IERIC.SumariosIERIC.Infrastructure.Repositories
 {
@@ -34,15 +37,31 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
 
             DateTime fechaActual = DateTime.Now;
 
+            bool tieneEmpresasIntegrantes =
+                solicitud.EmpresasIntegrantes.Count > 0;
+
+            int legacyIdEmpresaPrincipal =
+                tieneEmpresasIntegrantes
+                    ? 1
+                    : 0;
+
             EmpresaEntity empresaPrincipalEntity =
                 CrearEmpresaEntity(
                     solicitud.EmpresaPrincipal,
-                    fechaActual
+                    fechaActual,
+                    legacyIdEmpresaPrincipal
                 );
 
-            _context.Empresas.Add(
-                empresaPrincipalEntity
-            );
+            List<(
+                EmpresaIntegrante Relacion,
+                EmpresaEntity Entidad
+            )> empresasIntegrantes =
+                new List<(
+                    EmpresaIntegrante Relacion,
+                    EmpresaEntity Entidad
+                )>();
+
+            int legacyIdIntegrante = 2;
 
             foreach (
                 EmpresaIntegrante relacion
@@ -52,84 +71,152 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
                 EmpresaEntity integranteEntity =
                     CrearEmpresaEntity(
                         relacion.Integrante,
-                        fechaActual
+                        fechaActual,
+                        legacyIdIntegrante
                     );
 
-                _context.Empresas.Add(
-                    integranteEntity
+                empresasIntegrantes.Add(
+                    (
+                        relacion,
+                        integranteEntity
+                    )
                 );
 
-                _context.EmpresasCuit.Add(
-                    new EmpresaIntegranteEntity
-                    {
-                        IdEmpresa =
-                            relacion
-                                .CuitEmpresaPrincipal
-                                .ToInt64(),
-
-                        IdEmpresaIntegrante =
-                            relacion
-                                .CuitEmpresaIntegrante
-                                .ToInt64()
-                    }
-                );
+                legacyIdIntegrante++;
             }
 
-            SolicitudInscripcionEntity solicitudEntity =
-                new SolicitudInscripcionEntity
+            await using IDbContextTransaction transaction =
+                await _context.Database
+                    .BeginTransactionAsync();
+
+            try
+            {
+                /*
+                 * Primero se guardan las empresas para que
+                 * SQL Server genere sus identificadores.
+                 */
+                _context.Empresas.Add(
+                    empresaPrincipalEntity
+                );
+
+                foreach (
+                    var empresaIntegrante
+                    in empresasIntegrantes
+                )
                 {
-                    Idempresa =
-                        solicitud
-                            .EmpresaPrincipal
-                            .Cuit
-                            .ToInt64(),
+                    _context.Empresas.Add(
+                        empresaIntegrante.Entidad
+                    );
+                }
 
-                    UsuarioId = solicitud.UsuarioId,
-                    Comentarios = solicitud.Comentarios,
-                    Ua = null,
-                    Um = null,
-                    Fa = fechaActual,
-                    Fm = fechaActual
-                };
+                await _context.SaveChangesAsync();
 
-            _context.SolicitudesInscripcion.Add(
-                solicitudEntity
-            );
+                /*
+                 * Con los Id ya generados se crean las relaciones
+                 * de la UTE utilizando Empresa.Id y no el CUIT.
+                 */
+                foreach (
+                    var empresaIntegrante
+                    in empresasIntegrantes
+                )
+                {
+                    _context.EmpresasCuit.Add(
+                        new EmpresaIntegranteEntity
+                        {
+                            IdEmpresa =
+                                empresaPrincipalEntity.Id,
 
-            /*
-             * Un único SaveChangesAsync hace que EF Core
-             * guarde la empresa, sus integrantes, las relaciones
-             * y la solicitud dentro de una misma transacción.
-             */
-            await _context.SaveChangesAsync();
+                            IdEmpresaIntegrante =
+                                empresaIntegrante
+                                    .Entidad
+                                    .Id
+                        }
+                    );
+                }
 
-            solicitud.AsignarId(
-                solicitudEntity.Id
-            );
+                SolicitudInscripcionEntity solicitudEntity =
+                    new SolicitudInscripcionEntity
+                    {
+                        Idempresa =
+                            empresaPrincipalEntity.Id,
+
+                        UsuarioId =
+                            solicitud.UsuarioId,
+
+                        Comentarios =
+                            solicitud.Comentarios,
+
+                        Ua = null,
+                        Um = null,
+                        Fa = fechaActual,
+                        Fm = fechaActual
+                    };
+
+                _context.SolicitudesInscripcion.Add(
+                    solicitudEntity
+                );
+
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                /*
+                 * Los identificadores se asignan al dominio
+                 * solamente después de confirmar la transacción.
+                 */
+                solicitud.EmpresaPrincipal.AsignarId(
+                    empresaPrincipalEntity.Id
+                );
+
+                foreach (
+                    var empresaIntegrante
+                    in empresasIntegrantes
+                )
+                {
+                    empresaIntegrante
+                        .Relacion
+                        .Integrante
+                        .AsignarId(
+                            empresaIntegrante
+                                .Entidad
+                                .Id
+                        );
+                }
+
+                solicitud.AsignarId(
+                    solicitudEntity.Id
+                );
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+
+                throw;
+            }
         }
 
         private static EmpresaEntity CrearEmpresaEntity(
             Empresa empresa,
-            DateTime fechaActual
+            DateTime fechaActual,
+            int legacyId
         )
         {
             return new EmpresaEntity
             {
-                /*
-                 * El esquema recibido exige Id, pero no lo define
-                 * como PK, Identity ni recibe ese dato desde la UI.
-                 */
-                Id = 0,
+                RazonSocial =
+                    empresa.RazonSocial,
 
-                RazonSocial = empresa.RazonSocial,
-                Cuit = empresa.Cuit.ToInt64(),
+                Cuit =
+                    empresa.Cuit.ToInt64(),
 
                 EsCooperativa =
                     empresa.TipoSociedadId == 10 ||
                     empresa.TipoSociedadId == 23,
 
                 EstadoActivo = true,
-                LegacyId = 0,
+
+                LegacyId = legacyId,
+
                 Activo = true,
 
                 Fa = fechaActual,
@@ -145,7 +232,8 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
                     empresa.Numero ??
                     string.Empty,
 
-                Piso = empresa.Piso,
+                Piso =
+                    empresa.Piso,
 
                 DeptoOficina =
                     empresa.DepartamentoOficina,
@@ -166,7 +254,8 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
                     empresa.Correo ??
                     string.Empty,
 
-                Telefono = empresa.Telefono,
+                Telefono =
+                    empresa.Telefono,
 
                 IdActividadsolicitud =
                     empresa.ActividadId ?? 0,

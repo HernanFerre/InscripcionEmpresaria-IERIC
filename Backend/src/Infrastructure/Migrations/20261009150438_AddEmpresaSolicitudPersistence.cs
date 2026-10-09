@@ -26,7 +26,8 @@ namespace Infrastructure.Migrations
                 schema: "dbo",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     RazonSocial = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: true),
                     Cuit = table.Column<long>(type: "bigint", nullable: false),
                     EsCooperativa = table.Column<bool>(type: "bit", nullable: false),
@@ -49,11 +50,11 @@ namespace Infrastructure.Migrations
                     IdActividadsolicitud = table.Column<int>(type: "int", nullable: false, defaultValueSql: "''"),
                     IdCaracter = table.Column<int>(type: "int", nullable: false, defaultValueSql: "''"),
                     IdTipoSoc = table.Column<int>(type: "int", nullable: false, defaultValueSql: "''"),
-                    DDJJ = table.Column<bool>(type: "bit", nullable: false, defaultValueSql: "''")
+                    DDJJ = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Empresa", x => x.Cuit)
+                    table.PrimaryKey("PK_Empresa", x => x.Id)
                         .Annotation("SqlServer:Clustered", true);
                 });
 
@@ -70,11 +71,17 @@ namespace Infrastructure.Migrations
                     table.PrimaryKey("PK_EmpresasCuit", x => new { x.IdEmpresa, x.IdEmpresaIntegrante })
                         .Annotation("SqlServer:Clustered", true);
                     table.ForeignKey(
-                        name: "FK_EmpresasCuit_Empresa",
+                        name: "FK_EmpresasCuit_EmpresaIntegrante",
+                        column: x => x.IdEmpresaIntegrante,
+                        principalSchema: "dbo",
+                        principalTable: "Empresa",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_EmpresasCuit_EmpresaPrincipal",
                         column: x => x.IdEmpresa,
                         principalSchema: "dbo",
                         principalTable: "Empresa",
-                        principalColumn: "Cuit");
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -101,8 +108,15 @@ namespace Infrastructure.Migrations
                         column: x => x.Idempresa,
                         principalSchema: "dbo",
                         principalTable: "Empresa",
-                        principalColumn: "Cuit");
+                        principalColumn: "Id");
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "UX_Empresa_Cuit",
+                schema: "dbo",
+                table: "Empresa",
+                column: "Cuit",
+                unique: true);
         }
 
         /// <inheritdoc />

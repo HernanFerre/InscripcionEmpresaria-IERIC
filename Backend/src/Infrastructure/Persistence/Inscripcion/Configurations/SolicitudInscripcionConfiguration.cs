@@ -61,7 +61,6 @@ namespace IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.Configurati
             builder.HasOne<EmpresaEntity>()
                 .WithMany()
                 .HasForeignKey(x => x.Idempresa)
-                .HasPrincipalKey(x => x.Cuit)
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName(
                     "FK_SolInscEmprDig_Empresa"

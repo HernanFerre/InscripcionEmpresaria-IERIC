@@ -16,14 +16,14 @@ namespace IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.Configurati
                 "dbo"
             );
 
-            builder.HasKey(x => x.Cuit)
+            builder.HasKey(x => x.Id)
                 .HasName("PK_Empresa")
                 .IsClustered();
 
             builder.Property(x => x.Id)
                 .HasColumnType("bigint")
                 .HasColumnOrder(0)
-                .ValueGeneratedNever()
+                .UseIdentityColumn(1, 1)
                 .IsRequired();
 
             builder.Property(x => x.RazonSocial)
@@ -37,6 +37,10 @@ namespace IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.Configurati
                 .HasColumnOrder(2)
                 .ValueGeneratedNever()
                 .IsRequired();
+
+            builder.HasIndex(x => x.Cuit)
+                .IsUnique()
+                .HasDatabaseName("UX_Empresa_Cuit");
 
             builder.Property(x => x.EsCooperativa)
                 .HasColumnType("bit")
@@ -164,7 +168,6 @@ namespace IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.Configurati
             builder.Property(x => x.DDJJ)
                 .HasColumnType("bit")
                 .HasColumnOrder(23)
-                .HasDefaultValueSql("''")
                 .IsRequired();
         }
     }

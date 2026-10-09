@@ -8,7 +8,7 @@ DROP INDEX [IX_QuizRespuestaOpcion_QuizRespuestaId_QuizDesafioId] ON [dbo].[Quiz
 GO
 
 CREATE TABLE [dbo].[Empresa] (
-    [Id] bigint NOT NULL,
+    [Id] bigint NOT NULL IDENTITY,
     [RazonSocial] varchar(150) NULL,
     [Cuit] bigint NOT NULL,
     [EsCooperativa] bit NOT NULL,
@@ -31,8 +31,8 @@ CREATE TABLE [dbo].[Empresa] (
     [IdActividadsolicitud] int NOT NULL DEFAULT (''),
     [IdCaracter] int NOT NULL DEFAULT (''),
     [IdTipoSoc] int NOT NULL DEFAULT (''),
-    [DDJJ] bit NOT NULL DEFAULT (''),
-    CONSTRAINT [PK_Empresa] PRIMARY KEY CLUSTERED ([Cuit])
+    [DDJJ] bit NOT NULL,
+    CONSTRAINT [PK_Empresa] PRIMARY KEY CLUSTERED ([Id])
 );
 GO
 
@@ -40,7 +40,8 @@ CREATE TABLE [dbo].[EmpresasCuit] (
     [IdEmpresa] bigint NOT NULL,
     [IdEmpresaIntegrante] bigint NOT NULL,
     CONSTRAINT [PK_EmpresasCuit] PRIMARY KEY CLUSTERED ([IdEmpresa], [IdEmpresaIntegrante]),
-    CONSTRAINT [FK_EmpresasCuit_Empresa] FOREIGN KEY ([IdEmpresa]) REFERENCES [dbo].[Empresa] ([Cuit])
+    CONSTRAINT [FK_EmpresasCuit_EmpresaIntegrante] FOREIGN KEY ([IdEmpresaIntegrante]) REFERENCES [dbo].[Empresa] ([Id]),
+    CONSTRAINT [FK_EmpresasCuit_EmpresaPrincipal] FOREIGN KEY ([IdEmpresa]) REFERENCES [dbo].[Empresa] ([Id])
 );
 GO
 
@@ -54,12 +55,15 @@ CREATE TABLE [dbo].[SolicitudInscripcionDigitalEmpresaria] (
     [fa] datetime NULL,
     [fm] datetime NULL,
     CONSTRAINT [PK_SolInscEmprDig] PRIMARY KEY CLUSTERED ([Id]),
-    CONSTRAINT [FK_SolInscEmprDig_Empresa] FOREIGN KEY ([Idempresa]) REFERENCES [dbo].[Empresa] ([Cuit])
+    CONSTRAINT [FK_SolInscEmprDig_Empresa] FOREIGN KEY ([Idempresa]) REFERENCES [dbo].[Empresa] ([Id])
 );
 GO
 
+CREATE UNIQUE INDEX [UX_Empresa_Cuit] ON [dbo].[Empresa] ([Cuit]);
+GO
+
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20261005154257_AddEmpresaSolicitudPersistence', N'7.0.3');
+VALUES (N'20261009150438_AddEmpresaSolicitudPersistence', N'7.0.3');
 GO
 
 COMMIT;

@@ -123,15 +123,71 @@ namespace IERIC.SumariosIERIC.Application.Commands
                         solicitud
                     );
 
-                return new GuardarEmpresaSolicitudResponse
+                GuardarEmpresaSolicitudResponse response =
+                    new GuardarEmpresaSolicitudResponse
+                    {
+                        SolicitudId =
+                            solicitud.Id,
+
+                        EmpresaId =
+                            solicitud
+                                .EmpresaPrincipal
+                                .Id,
+
+                        CuitEmpresa =
+                            solicitud
+                                .EmpresaPrincipal
+                                .Cuit
+                                .ToInt64()
+                                .ToString(),
+
+                        CantidadEmpresasIntegrantes =
+                            solicitud
+                                .EmpresasIntegrantes
+                                .Count
+                    };
+
+                int legacyIdIntegrante = 2;
+
+                foreach (
+                    EmpresaIntegrante relacion
+                    in solicitud.EmpresasIntegrantes
+                )
                 {
-                    SolicitudId = solicitud.Id,
-                    CuitEmpresa = cuitPrincipal.ToString(),
-                    CantidadEmpresasIntegrantes =
-                        command.Request
-                            .EmpresasIntegrantes
-                            .Count
-                };
+                    response.EmpresasIntegrantes.Add(
+                        new EmpresaIntegranteGuardadaResponse
+                        {
+                            EmpresaId =
+                                relacion
+                                    .Integrante
+                                    .Id,
+
+                            Cuit =
+                                relacion
+                                    .Integrante
+                                    .Cuit
+                                    .ToInt64()
+                                    .ToString(),
+
+                            RazonSocial =
+                                relacion
+                                    .Integrante
+                                    .RazonSocial,
+
+                            TipoSociedadId =
+                                relacion
+                                    .Integrante
+                                    .TipoSociedadId,
+
+                            LegacyId =
+                                legacyIdIntegrante
+                        }
+                    );
+
+                    legacyIdIntegrante++;
+                }
+
+                return response;
             }
             catch (InvalidException)
             {

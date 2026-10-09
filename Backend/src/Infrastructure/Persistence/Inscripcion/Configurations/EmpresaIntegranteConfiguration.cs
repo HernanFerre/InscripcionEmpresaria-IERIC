@@ -36,10 +36,17 @@ namespace IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.Configurati
             builder.HasOne<EmpresaEntity>()
                 .WithMany()
                 .HasForeignKey(x => x.IdEmpresa)
-                .HasPrincipalKey(x => x.Cuit)
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName(
-                    "FK_EmpresasCuit_Empresa"
+                    "FK_EmpresasCuit_EmpresaPrincipal"
+                );
+
+            builder.HasOne<EmpresaEntity>()
+                .WithMany()
+                .HasForeignKey(x => x.IdEmpresaIntegrante)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName(
+                    "FK_EmpresasCuit_EmpresaIntegrante"
                 );
         }
     }

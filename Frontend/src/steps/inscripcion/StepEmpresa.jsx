@@ -329,10 +329,43 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
     try {
       const resultado = await guardarEmpresaSolicitud(request, token);
 
+      const solicitudId = resultado?.solicitudId ?? resultado?.SolicitudId ?? null;
+
+      const empresaId = resultado?.empresaId ?? resultado?.EmpresaId ?? null;
+
+      const integrantesGuardadas = resultado?.empresasIntegrantes ?? resultado?.EmpresasIntegrantes ?? [];
+
+      const empresasIntegrantesConId = empresasIntegrantes.map((empresa, index) => {
+        const cuitIntegrante = String(empresa.cuit ?? "").replace(/\D/g, "");
+
+        const integranteGuardada =
+          integrantesGuardadas.find(
+            (integrante) => String(integrante.cuit ?? integrante.Cuit ?? "").replace(/\D/g, "") === cuitIntegrante,
+          ) ?? integrantesGuardadas[index];
+
+        const empresaIntegranteId = integranteGuardada?.empresaId ?? integranteGuardada?.EmpresaId ?? null;
+
+        const legacyId = integranteGuardada?.legacyId ?? integranteGuardada?.LegacyId ?? index + 2;
+
+        return {
+          ...empresa,
+
+          id: empresaIntegranteId !== null ? String(empresaIntegranteId) : empresa.id,
+
+          empresaId: empresaIntegranteId !== null ? Number(empresaIntegranteId) : null,
+
+          legacyId: Number(legacyId),
+        };
+      });
+
       onNext?.({
         ...datos,
-        empresasIntegrantes,
-        solicitudId: resultado?.solicitudId ?? resultado?.SolicitudId ?? null,
+
+        empresaId: empresaId !== null ? Number(empresaId) : null,
+
+        empresasIntegrantes: empresasIntegrantesConId,
+
+        solicitudId: solicitudId !== null ? Number(solicitudId) : null,
       });
     } catch (error) {
       setErrorGuardado(error.message || "No fue posible guardar la información de la empresa.");
