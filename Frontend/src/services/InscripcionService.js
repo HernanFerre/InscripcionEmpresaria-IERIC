@@ -256,3 +256,35 @@ export async function guardarEmpresaSolicitud(datosEmpresa, token) {
 
   return procesarRespuestaApi(response);
 }
+
+export async function guardarRepresentantesSolicitud(solicitudId, representantes, token) {
+  if (!INSCRIPCION_API_URL) {
+    throw new Error("No se configuró VITE_INSCRIPCION_API_URL.");
+  }
+
+  const id = Number(solicitudId);
+
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    throw new Error("No se encontró una solicitud válida para guardar los representantes.");
+  }
+
+  if (!Array.isArray(representantes)) {
+    throw new Error("La información de representantes no es válida.");
+  }
+
+  const rutaBase = USAR_TOKEN_BACKEND_DESARROLLO ? "/v1/desarrollo/solicitudes" : "/v1/solicitudes";
+
+  const response = await fetch(`${INSCRIPCION_API_URL}${rutaBase}/${id}/representantes`, {
+    method: "PUT",
+    headers: crearHeadersAutorizados(token),
+    body: JSON.stringify({ representantes }),
+  });
+
+  const resultado = await procesarRespuestaApi(response);
+
+  if (!Array.isArray(resultado?.representantes ?? resultado?.Representantes)) {
+    throw new Error("El servicio no confirmó el guardado de los representantes. Intente nuevamente.");
+  }
+
+  return resultado;
+}

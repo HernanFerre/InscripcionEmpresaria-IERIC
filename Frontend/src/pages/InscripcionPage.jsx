@@ -141,7 +141,15 @@ export default function InscripcionPage() {
     setInscripcionStep("empresa");
   };
 
-  const handleContinuarANomina = () => {
+  const handleContinuarANomina = (representantesGuardados) => {
+    setFormData((prev) => ({
+      ...prev,
+      datosInscripcion: {
+        ...prev.datosInscripcion,
+        representantes: representantesGuardados,
+      },
+    }));
+
     setInscripcionStep("nomina");
   };
 
@@ -247,6 +255,9 @@ export default function InscripcionPage() {
 
                     {inscripcionStep === "representantes" && (
                       <StepRepresentantes
+                        token={token}
+                        solicitudId={formData.datosInscripcion.empresa?.solicitudId ?? null}
+                        empresaId={formData.datosInscripcion.empresa?.empresaId ?? null}
                         tipoSociedadId={formData.datosInscripcion.empresa?.tipoSociedadId ?? ""}
                         empresasIntegrantes={formData.datosInscripcion.empresa?.empresasIntegrantes ?? []}
                         representantes={formData.datosInscripcion.representantes}

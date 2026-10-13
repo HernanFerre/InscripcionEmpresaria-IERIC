@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ArrowUp, ChevronLeft, ChevronRight, Info, Pencil, Plus, Trash2 } from "lucide-react";
 
 import RepresentanteModal from "../../components/modals/RepresentanteModal.jsx";
+import { guardarRepresentantesSolicitud } from "../../services/InscripcionService.js";
 
 import "../../styles/stepRepresentantes.css";
 
@@ -15,6 +16,9 @@ import "../../styles/stepRepresentantes.css";
 const TIPOS_SOCIEDAD_CON_INTEGRANTES = ["8", "26", "28"];
 
 export default function StepRepresentantes({
+  token,
+  solicitudId = null,
+  empresaId = null,
   tipoSociedadId = "",
   empresasIntegrantes = [],
   representantes = [],
@@ -27,30 +31,37 @@ export default function StepRepresentantes({
 
   const [representanteSeleccionado, setRepresentanteSeleccionado] = useState(null);
 
+  const [guardando, setGuardando] = useState(false);
+  const [errorGuardado, setErrorGuardado] = useState("");
+
   const esEmpresaConIntegrantes = TIPOS_SOCIEDAD_CON_INTEGRANTES.includes(String(tipoSociedadId ?? ""));
 
   const hayEmpresasIntegrantes = empresasIntegrantes.length > 0;
 
   const hayRepresentantes = representantes.length > 0;
 
-  const puedeAgregarRepresentante = !esEmpresaConIntegrantes || hayEmpresasIntegrantes;
+  const puedeAgregarRepresentante = esEmpresaConIntegrantes ? hayEmpresasIntegrantes : Number(empresaId) > 0;
 
   const obtenerNombreEmpresa = (representante) => {
-    const empresaActual = empresasIntegrantes.find((empresa) => empresa.id === representante.empresaId);
+    const empresaActual = empresasIntegrantes.find(
+      (empresa) => String(empresa.empresaId ?? empresa.id) === String(representante.empresaId),
+    );
 
     return empresaActual?.razonSocial || representante.empresaNombre || "—";
   };
 
   const abrirNuevoRepresentante = () => {
-    if (!puedeAgregarRepresentante) {
+    if (!puedeAgregarRepresentante || guardando) {
       return;
     }
 
+    setErrorGuardado("");
     setRepresentanteSeleccionado(null);
     setModalAbierto(true);
   };
 
   const abrirEdicionRepresentante = (representante) => {
+    setErrorGuardado("");
     setRepresentanteSeleccionado(representante);
     setModalAbierto(true);
   };
@@ -61,8 +72,63 @@ export default function StepRepresentantes({
   };
 
   const guardarRepresentante = (datosRepresentante) => {
+    setErrorGuardado("");
     onSave?.(datosRepresentante);
     cerrarModal();
+  };
+
+  const eliminarRepresentante = (id) => {
+    setErrorGuardado("");
+    onDelete?.(id);
+  };
+
+  const continuar = async () => {
+    if (guardando) return;
+
+    const request = representantes.map((representante) => ({
+      empresaId: Number(representante.empresaId),
+      apellido: String(representante.apellido ?? "").trim(),
+      nombre: String(representante.nombre ?? "").trim(),
+      cuil: String(representante.cuil ?? "").replace(/[\s-]/g, ""),
+      tipoRepresentanteId: Number(representante.tipoRepresentanteId ?? representante.cargoId),
+      correo: String(representante.email ?? "").trim(),
+      telefono: String(representante.telefono ?? "").trim(),
+    }));
+
+    setGuardando(true);
+    setErrorGuardado("");
+
+    try {
+      const resultado = await guardarRepresentantesSolicitud(solicitudId, request, token);
+      const guardados = resultado.representantes ?? resultado.Representantes;
+
+      if (guardados.length !== representantes.length) {
+        throw new Error("El servicio no confirmó todos los representantes. Intente nuevamente.");
+      }
+
+      const representantesConId = representantes.map((representante) => {
+        const cuil = String(representante.cuil ?? "").replace(/[\s-]/g, "");
+
+        const guardado = guardados.find(
+          (item) =>
+            Number(item.empresaId ?? item.EmpresaId) === Number(representante.empresaId) && String(item.cuil ?? item.Cuil ?? "") === cuil,
+        );
+
+        const representanteId = Number(guardado?.representanteId ?? guardado?.RepresentanteId);
+
+        if (!Number.isSafeInteger(representanteId) || representanteId <= 0) {
+          throw new Error("El servicio no confirmó el identificador de un representante. Intente nuevamente.");
+        }
+
+        return { ...representante, representanteId };
+      });
+
+      onNext?.(representantesConId);
+    } catch (error) {
+      setErrorGuardado(error.message || "No fue posible guardar los representantes.");
+    } finally {
+      setGuardando(false);
+    }
   };
 
   return (
@@ -77,7 +143,7 @@ export default function StepRepresentantes({
         <button
           type="button"
           className="representantes-add-button"
-          disabled={!puedeAgregarRepresentante}
+          disabled={!puedeAgregarRepresentante || guardando}
           title={puedeAgregarRepresentante ? undefined : "Primero debe cargar una empresa integrante"}
           onClick={abrirNuevoRepresentante}
         >
@@ -153,6 +219,7 @@ export default function StepRepresentantes({
                       <button
                         type="button"
                         className="representantes-edit-button"
+                        disabled={guardando}
                         aria-label={`Editar a ${representante.nombre} ${representante.apellido}`}
                         onClick={() => abrirEdicionRepresentante(representante)}
                       >
@@ -162,8 +229,9 @@ export default function StepRepresentantes({
                       <button
                         type="button"
                         className="representantes-delete-button"
+                        disabled={guardando}
                         aria-label={`Eliminar a ${representante.nombre} ${representante.apellido}`}
-                        onClick={() => onDelete?.(representante.id)}
+                        onClick={() => eliminarRepresentante(representante.id)}
                       >
                         <Trash2 size={18} aria-hidden="true" />
                       </button>
@@ -201,20 +269,29 @@ export default function StepRepresentantes({
       </div>
 
       <div className="representantes-footer-actions">
-        <button type="button" className="representantes-back-button" onClick={onBack}>
+        <button type="button" className="representantes-back-button" disabled={guardando} onClick={onBack}>
           Volver
         </button>
 
-        <button type="button" className="next-step-button" onClick={() => onNext?.(representantes)}>
-          Continuar
+        <button type="button" className="next-step-button" disabled={guardando || modalAbierto} onClick={continuar}>
+          {guardando ? "Guardando..." : "Continuar"}
         </button>
       </div>
+
+      {errorGuardado && (
+        <div className="empresa-field-error" role="alert">
+          {errorGuardado}
+        </div>
+      )}
 
       {modalAbierto && (
         <RepresentanteModal
           key={representanteSeleccionado?.id ?? "nuevo-representante"}
+          token={token}
           initialData={representanteSeleccionado}
           requiereEmpresaIntegrante={esEmpresaConIntegrantes}
+          empresaIdPrincipal={empresaId}
+          tipoSociedadIdPrincipal={tipoSociedadId}
           empresasIntegrantes={empresasIntegrantes}
           onClose={cerrarModal}
           onSave={guardarRepresentante}

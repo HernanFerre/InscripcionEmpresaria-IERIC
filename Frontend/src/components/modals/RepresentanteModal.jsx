@@ -1,21 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Info, X } from "lucide-react";
 
 import SearchableSelect from "../forms/SearchableSelect.jsx";
+import { obtenerTiposRepresentantes } from "../../services/DatosMaestrosService.js";
 
 import "../../styles/components/representanteModal.css";
-
-const CARGOS_REPRESENTANTE_MOCK = [
-  { value: "presidente", label: "Presidente" },
-  { value: "vicepresidente", label: "Vicepresidente" },
-  { value: "director", label: "Director" },
-  { value: "socio-gerente", label: "Socio gerente" },
-  { value: "apoderado", label: "Apoderado" },
-  {
-    value: "representante-legal",
-    label: "Representante legal",
-  },
-];
 
 const DATOS_INICIALES = {
   empresaId: "",
@@ -28,21 +17,98 @@ const DATOS_INICIALES = {
 };
 
 export default function RepresentanteModal({
+  token,
   initialData = null,
   requiereEmpresaIntegrante = false,
+  empresaIdPrincipal = null,
+  tipoSociedadIdPrincipal = "",
   empresasIntegrantes = [],
   onClose,
   onSave,
 }) {
-  const [datos, setDatos] = useState({
+  const [datos, setDatos] = useState(() => ({
     ...DATOS_INICIALES,
     ...(initialData ?? {}),
+    empresaId: requiereEmpresaIntegrante ? String(initialData?.empresaId ?? "") : String(empresaIdPrincipal ?? ""),
+    cargoId: String(initialData?.cargoId ?? initialData?.tipoRepresentanteId ?? ""),
+  }));
+
+  const [catalogoCargos, setCatalogoCargos] = useState({
+    tipoSociedadId: "",
+    opciones: [],
+    cargando: false,
+    error: "",
   });
 
   const opcionesEmpresas = empresasIntegrantes.map((empresa) => ({
-    value: empresa.id,
+    value: String(empresa.empresaId ?? empresa.id ?? ""),
     label: empresa.razonSocial,
   }));
+
+  const empresaSeleccionada = empresasIntegrantes.find(
+    (empresa) => String(empresa.empresaId ?? empresa.id ?? "") === String(datos.empresaId),
+  );
+
+  const tipoSociedadParaCargo = String((requiereEmpresaIntegrante ? empresaSeleccionada?.tipoSociedadId : tipoSociedadIdPrincipal) ?? "");
+
+  const catalogoActual = catalogoCargos.tipoSociedadId === tipoSociedadParaCargo;
+
+  const cargos = catalogoActual ? catalogoCargos.opciones : [];
+
+  const cargandoCargos = Boolean(tipoSociedadParaCargo) && (!catalogoActual || catalogoCargos.cargando);
+
+  const errorCargos = catalogoActual ? catalogoCargos.error : "";
+
+  const cargoSeleccionado = cargos.find((cargo) => cargo.value === String(datos.cargoId));
+
+  const empresaIdValido = Number.isSafeInteger(Number(datos.empresaId)) && Number(datos.empresaId) > 0;
+
+  useEffect(() => {
+    let activo = true;
+
+    if (!tipoSociedadParaCargo) {
+      return () => {
+        activo = false;
+      };
+    }
+
+    const cargarCargos = async () => {
+      setCatalogoCargos({
+        tipoSociedadId: tipoSociedadParaCargo,
+        opciones: [],
+        cargando: true,
+        error: "",
+      });
+
+      try {
+        const opciones = await obtenerTiposRepresentantes(tipoSociedadParaCargo, token);
+
+        if (activo) {
+          setCatalogoCargos({
+            tipoSociedadId: tipoSociedadParaCargo,
+            opciones,
+            cargando: false,
+            error: opciones.length ? "" : "No hay cargos disponibles para el tipo de sociedad seleccionado.",
+          });
+        }
+      } catch (error) {
+        if (activo) {
+          setCatalogoCargos({
+            tipoSociedadId: tipoSociedadParaCargo,
+            opciones: [],
+            cargando: false,
+            error: error.message || "No fue posible obtener los cargos disponibles.",
+          });
+        }
+      }
+    };
+
+    cargarCargos();
+
+    return () => {
+      activo = false;
+    };
+  }, [tipoSociedadParaCargo, token]);
 
   const actualizarValor = (campo, value) => {
     setDatos((prev) => ({
@@ -53,6 +119,14 @@ export default function RepresentanteModal({
 
   const actualizarCampo = (event) => {
     actualizarValor(event.target.name, event.target.value);
+  };
+
+  const actualizarEmpresa = (empresaId) => {
+    setDatos((prev) => ({
+      ...prev,
+      empresaId: String(empresaId),
+      cargoId: "",
+    }));
   };
 
   const handleSubmit = (event) => {
@@ -66,20 +140,23 @@ export default function RepresentanteModal({
 
     const camposObligatoriosCompletos = camposObligatorios.every((value) => String(value).trim().length > 0);
 
-    if (!camposObligatoriosCompletos) {
+    if (!camposObligatoriosCompletos || cargandoCargos || errorCargos || !empresaIdValido || !cargoSeleccionado) {
       return;
     }
 
-    const cargoSeleccionado = CARGOS_REPRESENTANTE_MOCK.find((cargo) => cargo.value === datos.cargoId);
+    const tipoRepresentanteId = Number(cargoSeleccionado.idTipoRepresentante ?? cargoSeleccionado.value);
 
-    const empresaSeleccionada = empresasIntegrantes.find((empresa) => empresa.id === datos.empresaId);
+    if (!Number.isSafeInteger(tipoRepresentanteId) || tipoRepresentanteId <= 0) {
+      return;
+    }
 
     onSave?.({
       ...datos,
-      empresaId: requiereEmpresaIntegrante ? datos.empresaId : "",
+      empresaId: Number(datos.empresaId),
       empresaNombre: requiereEmpresaIntegrante ? (empresaSeleccionada?.razonSocial ?? "") : "",
       cargo: cargoSeleccionado?.label ?? "",
-      firmaAutorizada: false,
+      cargoId: String(tipoRepresentanteId),
+      tipoRepresentanteId,
     });
   };
 
@@ -126,7 +203,7 @@ export default function RepresentanteModal({
                     options={opcionesEmpresas}
                     placeholder="Seleccione la empresa integrante"
                     required
-                    onChange={(value) => actualizarValor("empresaId", value)}
+                    onChange={actualizarEmpresa}
                   />
                 </div>
               )}
@@ -145,6 +222,7 @@ export default function RepresentanteModal({
                   value={datos.apellido}
                   placeholder="Apellido"
                   required
+                  maxLength={100}
                   onChange={actualizarCampo}
                 />
               </div>
@@ -163,6 +241,7 @@ export default function RepresentanteModal({
                   value={datos.nombre}
                   placeholder="Nombre"
                   required
+                  maxLength={100}
                   onChange={actualizarCampo}
                 />
               </div>
@@ -190,9 +269,17 @@ export default function RepresentanteModal({
                   id="cargo-representante"
                   label="Cargo"
                   value={datos.cargoId}
-                  options={CARGOS_REPRESENTANTE_MOCK}
-                  placeholder="Busque y seleccione el cargo"
+                  options={cargos}
+                  placeholder={
+                    !tipoSociedadParaCargo
+                      ? "Seleccione primero la empresa"
+                      : cargandoCargos
+                        ? "Cargando cargos..."
+                        : "Busque y seleccione el cargo"
+                  }
                   required
+                  disabled={!tipoSociedadParaCargo || cargandoCargos || Boolean(errorCargos)}
+                  error={errorCargos}
                   onChange={(value) => actualizarValor("cargoId", value)}
                 />
               </div>
@@ -211,6 +298,7 @@ export default function RepresentanteModal({
                   value={datos.email}
                   placeholder="Correo electrónico"
                   required
+                  maxLength={254}
                   onChange={actualizarCampo}
                 />
               </div>
@@ -229,6 +317,7 @@ export default function RepresentanteModal({
                   value={datos.telefono}
                   placeholder="Teléfono"
                   required
+                  maxLength={30}
                   onChange={actualizarCampo}
                 />
               </div>
@@ -240,7 +329,11 @@ export default function RepresentanteModal({
               Cancelar
             </button>
 
-            <button type="submit" className="representante-modal-save">
+            <button
+              type="submit"
+              className="representante-modal-save"
+              disabled={cargandoCargos || Boolean(errorCargos) || !empresaIdValido || !cargoSeleccionado}
+            >
               Guardar
             </button>
           </footer>
