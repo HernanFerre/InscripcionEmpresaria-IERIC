@@ -68,10 +68,8 @@ namespace IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.Configurati
                 .HasColumnOrder(7)
                 .IsRequired();
 
-            builder.Property(x => x.Ua)
-                .HasColumnName("ua")
-                .HasColumnType("varchar(23)")
-                .HasMaxLength(23)
+            builder.Property(x => x.IdUsuarioAlta)
+                .HasColumnType("uniqueidentifier")
                 .HasColumnOrder(8)
                 .IsRequired(false);
 

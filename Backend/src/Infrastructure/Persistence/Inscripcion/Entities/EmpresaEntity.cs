@@ -20,7 +20,7 @@ namespace IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion
 
         public DateTime Fa { get; set; }
 
-        public string Ua { get; set; }
+        public Guid? IdUsuarioAlta { get; set; }
 
         public DateTime Fm { get; set; }
 

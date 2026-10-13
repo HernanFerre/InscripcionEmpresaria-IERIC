@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using IERIC.SumariosIERIC.Domain.Entities.Inscripcion;
+using IERIC.SumariosIERIC.Domain.Exceptions;
 using IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -49,7 +52,8 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
                 CrearEmpresaEntity(
                     solicitud.EmpresaPrincipal,
                     fechaActual,
-                    legacyIdEmpresaPrincipal
+                    legacyIdEmpresaPrincipal,
+                    solicitud.IdUsuarioAlta
                 );
 
             List<(
@@ -72,7 +76,8 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
                     CrearEmpresaEntity(
                         relacion.Integrante,
                         fechaActual,
-                        legacyIdIntegrante
+                        legacyIdIntegrante,
+                        solicitud.IdUsuarioAlta
                     );
 
                 empresasIntegrantes.Add(
@@ -189,6 +194,333 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
             catch
             {
                 await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task GuardarRepresentantesAsync(
+            long solicitudId,
+            Guid idUsuarioAlta,
+            IReadOnlyCollection<Representante> representantes,
+            CancellationToken cancellationToken = default
+        )
+        {
+            if (solicitudId <= 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(solicitudId)
+                );
+            }
+
+            if (idUsuarioAlta == Guid.Empty)
+            {
+                throw new ArgumentException(
+                    "El usuario de la solicitud no es válido.",
+                    nameof(idUsuarioAlta)
+                );
+            }
+
+            if (representantes == null)
+            {
+                throw new ArgumentNullException(
+                    nameof(representantes)
+                );
+            }
+
+            SolicitudInscripcionEntity solicitudEntity =
+                await _context.SolicitudesInscripcion
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(
+                        solicitud =>
+                            solicitud.Id == solicitudId &&
+                            solicitud.IdUsuarioAlta ==
+                                idUsuarioAlta,
+                        cancellationToken
+                    );
+
+            if (solicitudEntity == null)
+            {
+                throw new SumariosDomainException(
+                    "No se encontró la solicitud indicada " +
+                    "para el usuario autenticado."
+                );
+            }
+
+            List<long> empresasIntegrantes =
+                await _context.EmpresasCuit
+                    .AsNoTracking()
+                    .Where(
+                        relacion =>
+                            relacion.IdEmpresa ==
+                            solicitudEntity.Idempresa
+                    )
+                    .Select(
+                        relacion =>
+                            relacion.IdEmpresaIntegrante
+                    )
+                    .ToListAsync(cancellationToken);
+
+            HashSet<long> empresasPermitidas =
+                empresasIntegrantes.Count > 0
+                    ? new HashSet<long>(
+                        empresasIntegrantes
+                    )
+                    : new HashSet<long>
+                    {
+                        solicitudEntity.Idempresa
+                    };
+
+            foreach (
+                Representante representante
+                in representantes
+            )
+            {
+                if (
+                    !empresasPermitidas.Contains(
+                        representante.EmpresaId
+                    )
+                )
+                {
+                    throw new SumariosDomainException(
+                        "La empresa seleccionada para un " +
+                        "representante no pertenece a la solicitud."
+                    );
+                }
+            }
+
+            await using IDbContextTransaction transaction =
+                await _context.Database
+                    .BeginTransactionAsync(
+                        cancellationToken
+                    );
+
+            try
+            {
+                List<SolicitudRepresentanteEntity>
+                    relacionesActuales =
+                        await _context
+                            .SolicitudesRepresentantes
+                            .Where(
+                                relacion =>
+                                    relacion.IdSolicitud ==
+                                    solicitudId
+                            )
+                            .ToListAsync(
+                                cancellationToken
+                            );
+
+                List<long> empresasSolicitadas =
+                    representantes
+                        .Select(
+                            representante =>
+                                representante.EmpresaId
+                        )
+                        .Distinct()
+                        .ToList();
+
+                List<long> cuilesSolicitados =
+                    representantes
+                        .Select(
+                            representante =>
+                                representante.Cuil
+                                    .ToInt64()
+                        )
+                        .Distinct()
+                        .ToList();
+
+                List<RepresentanteEntity>
+                    representantesExistentes =
+                        empresasSolicitadas.Count == 0
+                            ? new List<RepresentanteEntity>()
+                            : await _context.Representantes
+                                .Where(
+                                    representante =>
+                                        empresasSolicitadas
+                                            .Contains(
+                                                representante
+                                                    .IdEmpresa
+                                            ) &&
+                                        cuilesSolicitados
+                                            .Contains(
+                                                representante
+                                                    .Cuil
+                                            )
+                                )
+                                .ToListAsync(
+                                    cancellationToken
+                                );
+
+                List<(
+                    Representante Dominio,
+                    RepresentanteEntity Entidad
+                )> representantesGuardados =
+                    new List<(
+                        Representante Dominio,
+                        RepresentanteEntity Entidad
+                    )>();
+
+                foreach (
+                    Representante representante
+                    in representantes
+                )
+                {
+                    long cuil =
+                        representante.Cuil.ToInt64();
+
+                    RepresentanteEntity representanteEntity =
+                        representantesExistentes
+                            .FirstOrDefault(
+                                existente =>
+                                    existente.IdEmpresa ==
+                                        representante
+                                            .EmpresaId &&
+                                    existente.Cuil == cuil
+                            );
+
+                    if (representanteEntity == null)
+                    {
+                        representanteEntity =
+                            new RepresentanteEntity
+                            {
+                                IdEmpresa =
+                                    representante
+                                        .EmpresaId,
+
+                                Cuil = cuil
+                            };
+
+                        _context.Representantes.Add(
+                            representanteEntity
+                        );
+
+                        representantesExistentes.Add(
+                            representanteEntity
+                        );
+                    }
+
+                    representanteEntity.Apellido =
+                        representante.Apellido;
+
+                    representanteEntity.Nombre =
+                        representante.Nombre;
+
+                    representanteEntity
+                        .IdTipoRepresentante =
+                            representante
+                                .TipoRepresentanteId;
+
+                    representanteEntity.Correo =
+                        representante.Correo;
+
+                    representanteEntity.Telefono =
+                        representante.Telefono;
+
+                    representantesGuardados.Add(
+                        (
+                            representante,
+                            representanteEntity
+                        )
+                    );
+                }
+
+                await _context.SaveChangesAsync(
+                    cancellationToken
+                );
+
+                HashSet<long> identificadoresDeseados =
+                    representantesGuardados
+                        .Select(
+                            item => item.Entidad.Id
+                        )
+                        .ToHashSet();
+
+                List<SolicitudRepresentanteEntity>
+                    relacionesAEliminar =
+                        relacionesActuales
+                            .Where(
+                                relacion =>
+                                    !identificadoresDeseados
+                                        .Contains(
+                                            relacion
+                                                .IdRepresentante
+                                        )
+                            )
+                            .ToList();
+
+                _context
+                    .SolicitudesRepresentantes
+                    .RemoveRange(
+                        relacionesAEliminar
+                    );
+
+                HashSet<long> identificadoresRelacionados =
+                    relacionesActuales
+                        .Select(
+                            relacion =>
+                                relacion.IdRepresentante
+                        )
+                        .ToHashSet();
+
+                foreach (
+                    var representanteGuardado
+                    in representantesGuardados
+                )
+                {
+                    if (
+                        identificadoresRelacionados
+                            .Contains(
+                                representanteGuardado
+                                    .Entidad
+                                    .Id
+                            )
+                    )
+                    {
+                        continue;
+                    }
+
+                    _context
+                        .SolicitudesRepresentantes
+                        .Add(
+                            new SolicitudRepresentanteEntity
+                            {
+                                IdSolicitud =
+                                    solicitudId,
+
+                                IdRepresentante =
+                                    representanteGuardado
+                                        .Entidad
+                                        .Id
+                            }
+                        );
+                }
+
+                await _context.SaveChangesAsync(
+                    cancellationToken
+                );
+
+                await transaction.CommitAsync(
+                    cancellationToken
+                );
+
+                foreach (
+                    var representanteGuardado
+                    in representantesGuardados
+                )
+                {
+                    representanteGuardado
+                        .Dominio
+                        .AsignarId(
+                            representanteGuardado
+                                .Entidad
+                                .Id
+                        );
+                }
+            }
+            catch
+            {
+                await transaction.RollbackAsync(
+                    cancellationToken
+                );
 
                 throw;
             }
@@ -197,7 +529,8 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
         private static EmpresaEntity CrearEmpresaEntity(
             Empresa empresa,
             DateTime fechaActual,
-            int legacyId
+            int legacyId,
+            Guid idUsuarioAlta
         )
         {
             return new EmpresaEntity
@@ -219,7 +552,7 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
                 Activo = true,
 
                 Fa = fechaActual,
-                Ua = null,
+                IdUsuarioAlta = idUsuarioAlta,
                 Fm = fechaActual,
                 Um = null,
 
