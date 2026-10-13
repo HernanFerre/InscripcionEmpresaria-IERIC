@@ -103,10 +103,10 @@ namespace IERIC.SumariosIERIC.Application
                 );
             }
 
-            string usuarioId =
-                ObtenerUsuarioId(tokenRecibido);
+            string idUsuarioAlta =
+                ObtenerIdUsuarioAlta(tokenRecibido);
 
-            if (string.IsNullOrWhiteSpace(usuarioId))
+            if (string.IsNullOrWhiteSpace(idUsuarioAlta))
             {
                 return Unauthorized(
                     new
@@ -121,7 +121,7 @@ namespace IERIC.SumariosIERIC.Application
             GuardarEmpresaSolicitudCommand command =
                 new GuardarEmpresaSolicitudCommand(
                     request,
-                    usuarioId
+                    idUsuarioAlta
                 );
 
             GuardarEmpresaSolicitudResponse resultado =
@@ -180,7 +180,7 @@ namespace IERIC.SumariosIERIC.Application
                 );
         }
 
-        private static string ObtenerUsuarioId(
+        private static string ObtenerIdUsuarioAlta(
             string token
         )
         {
@@ -210,11 +210,11 @@ namespace IERIC.SumariosIERIC.Application
                     if (
                         Guid.TryParse(
                             valor?.Trim(),
-                            out Guid usuarioId
+                            out Guid idUsuarioAlta
                         )
                     )
                     {
-                        return usuarioId.ToString();
+                        return idUsuarioAlta.ToString();
                     }
                 }
 

@@ -50,10 +50,10 @@ namespace IERIC.SumariosIERIC.Application
                 );
             }
 
-            string usuarioId =
-                ObtenerUsuarioId();
+            string idUsuarioAlta =
+                ObtenerIdUsuarioAlta();
 
-            if (string.IsNullOrWhiteSpace(usuarioId))
+            if (string.IsNullOrWhiteSpace(idUsuarioAlta))
             {
                 return Unauthorized(
                     new
@@ -68,7 +68,7 @@ namespace IERIC.SumariosIERIC.Application
             GuardarEmpresaSolicitudCommand command =
                 new GuardarEmpresaSolicitudCommand(
                     request,
-                    usuarioId
+                    idUsuarioAlta
                 );
 
             GuardarEmpresaSolicitudResponse resultado =
@@ -81,7 +81,7 @@ namespace IERIC.SumariosIERIC.Application
             );
         }
 
-        private string ObtenerUsuarioId()
+        private string ObtenerIdUsuarioAlta()
         {
             return
                 User.FindFirstValue(

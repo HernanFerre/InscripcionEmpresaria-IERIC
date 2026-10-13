@@ -8,11 +8,9 @@ namespace IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion
 
         public long Idempresa { get; set; }
 
-        public Guid UsuarioId { get; set; }
+        public Guid IdUsuarioAlta { get; set; }
 
         public string Comentarios { get; set; }
-
-        public string Ua { get; set; }
 
         public string Um { get; set; }
 

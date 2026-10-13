@@ -28,18 +28,12 @@ namespace IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.Configurati
                 .HasColumnType("bigint")
                 .IsRequired();
 
-            builder.Property(x => x.UsuarioId)
+            builder.Property(x => x.IdUsuarioAlta)
                 .HasColumnType("uniqueidentifier")
                 .IsRequired();
 
             builder.Property(x => x.Comentarios)
                 .HasColumnType("nvarchar(max)")
-                .IsRequired(false);
-
-            builder.Property(x => x.Ua)
-                .HasColumnName("ua")
-                .HasColumnType("varchar(23)")
-                .HasMaxLength(23)
                 .IsRequired(false);
 
             builder.Property(x => x.Um)

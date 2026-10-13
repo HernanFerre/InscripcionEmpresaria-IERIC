@@ -50,8 +50,8 @@ namespace IERIC.SumariosIERIC.Application.Commands
 
             if (
                 !Guid.TryParse(
-                    command.UsuarioId?.Trim(),
-                    out Guid usuarioId
+                    command.IdUsuarioAlta?.Trim(),
+                    out Guid idUsuarioAlta
                 )
             )
             {
@@ -90,7 +90,7 @@ namespace IERIC.SumariosIERIC.Application.Commands
 
                 SolicitudInscripcion solicitud =
                     SolicitudInscripcion.Crear(
-                        usuarioId,
+                        idUsuarioAlta,
                         empresaPrincipal
                     );
 

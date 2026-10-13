@@ -201,21 +201,16 @@ namespace Infrastructure.Migrations
                         .HasColumnType("datetime")
                         .HasColumnName("fm");
 
+                    b.Property<Guid>("IdUsuarioAlta")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<long>("Idempresa")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("Ua")
-                        .HasMaxLength(23)
-                        .HasColumnType("varchar(23)")
-                        .HasColumnName("ua");
 
                     b.Property<string>("Um")
                         .HasMaxLength(23)
                         .HasColumnType("varchar(23)")
                         .HasColumnName("um");
-
-                    b.Property<Guid>("UsuarioId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id")
                         .HasName("PK_SolInscEmprDig");

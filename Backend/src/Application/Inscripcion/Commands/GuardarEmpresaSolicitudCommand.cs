@@ -9,16 +9,16 @@ namespace IERIC.SumariosIERIC.Application.Commands
         public GuardarEmpresaSolicitudRequest Request
         { get; }
 
-        public string UsuarioId
+        public string IdUsuarioAlta
         { get; }
 
         public GuardarEmpresaSolicitudCommand(
             GuardarEmpresaSolicitudRequest request,
-            string usuarioId
+            string idUsuarioAlta
         )
         {
             Request = request;
-            UsuarioId = usuarioId;
+            IdUsuarioAlta = idUsuarioAlta;
         }
     }
 }

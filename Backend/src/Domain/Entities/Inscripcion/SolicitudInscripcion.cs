@@ -15,7 +15,7 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
 
         public long Id { get; private set; }
 
-        public Guid UsuarioId { get; private set; }
+        public Guid IdUsuarioAlta { get; private set; }
 
         public Empresa EmpresaPrincipal { get; private set; }
 
@@ -30,12 +30,12 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
         }
 
         private SolicitudInscripcion(
-            Guid usuarioId,
+            Guid idUsuarioAlta,
             Empresa empresaPrincipal,
             string comentarios
         )
         {
-            if (usuarioId == Guid.Empty)
+            if (idUsuarioAlta == Guid.Empty)
             {
                 throw new SumariosDomainException(
                     "La solicitud debe estar asociada a un usuario."
@@ -57,19 +57,20 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
                 );
             }
 
-            UsuarioId = usuarioId;
+
+            IdUsuarioAlta = idUsuarioAlta;
             EmpresaPrincipal = empresaPrincipal;
             Comentarios = NormalizarComentarios(comentarios);
         }
 
         public static SolicitudInscripcion Crear(
-            Guid usuarioId,
+            Guid IdUsuarioAlta,
             Empresa empresaPrincipal,
             string comentarios = null
         )
         {
             return new SolicitudInscripcion(
-                usuarioId,
+                IdUsuarioAlta,
                 empresaPrincipal,
                 comentarios
             );

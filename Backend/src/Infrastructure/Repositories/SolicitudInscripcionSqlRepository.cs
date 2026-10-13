@@ -140,13 +140,12 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
                         Idempresa =
                             empresaPrincipalEntity.Id,
 
-                        UsuarioId =
-                            solicitud.UsuarioId,
+                        IdUsuarioAlta =
+                            solicitud.IdUsuarioAlta,
 
                         Comentarios =
                             solicitud.Comentarios,
 
-                        Ua = null,
                         Um = null,
                         Fa = fechaActual,
                         Fm = fechaActual
