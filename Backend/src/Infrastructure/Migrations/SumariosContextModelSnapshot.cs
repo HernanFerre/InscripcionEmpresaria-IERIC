@@ -116,6 +116,10 @@ namespace Infrastructure.Migrations
                         .HasColumnOrder(22)
                         .HasDefaultValueSql("''");
 
+                    b.Property<Guid?>("IdUsuarioAlta")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnOrder(8);
+
                     b.Property<int>("LegacyId")
                         .HasColumnType("int")
                         .HasColumnOrder(5);
@@ -141,12 +145,6 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)")
                         .HasColumnOrder(19);
-
-                    b.Property<string>("Ua")
-                        .HasMaxLength(23)
-                        .HasColumnType("varchar(23)")
-                        .HasColumnName("ua")
-                        .HasColumnOrder(8);
 
                     b.Property<string>("Um")
                         .HasMaxLength(23)
@@ -180,6 +178,55 @@ namespace Infrastructure.Migrations
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("IdEmpresa", "IdEmpresaIntegrante"));
 
                     b.ToTable("EmpresasCuit", "dbo");
+                });
+
+            modelBuilder.Entity("IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.RepresentanteEntity", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Apellido")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Correo")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("varchar(254)");
+
+                    b.Property<long>("Cuil")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("IdEmpresa")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("IdTipoRepresentante")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.HasKey("Id")
+                        .HasName("PK_Representante");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"));
+
+                    b.HasIndex("IdEmpresa", "Cuil")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Representante_Empresa_Cuil");
+
+                    b.ToTable("Representante", "dbo");
                 });
 
             modelBuilder.Entity("IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.SolicitudInscripcionEntity", b =>
@@ -218,6 +265,22 @@ namespace Infrastructure.Migrations
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"));
 
                     b.ToTable("SolicitudInscripcionDigitalEmpresaria", "dbo");
+                });
+
+            modelBuilder.Entity("IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.SolicitudRepresentanteEntity", b =>
+                {
+                    b.Property<long>("IdSolicitud")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("IdRepresentante")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("IdSolicitud", "IdRepresentante")
+                        .HasName("PK_SolicitudRepresentante");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("IdSolicitud", "IdRepresentante"));
+
+                    b.ToTable("SolicitudRepresentante", "dbo");
                 });
 
             modelBuilder.Entity("IERIC.SumariosIERIC.Infrastructure.Persistence.Quiz.QuizCuilVinculadoEntity", b =>
@@ -416,6 +479,16 @@ namespace Infrastructure.Migrations
                         .HasConstraintName("FK_EmpresasCuit_EmpresaIntegrante");
                 });
 
+            modelBuilder.Entity("IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.RepresentanteEntity", b =>
+                {
+                    b.HasOne("IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.EmpresaEntity", null)
+                        .WithMany()
+                        .HasForeignKey("IdEmpresa")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("FK_Representante_Empresa");
+                });
+
             modelBuilder.Entity("IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.SolicitudInscripcionEntity", b =>
                 {
                     b.HasOne("IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.EmpresaEntity", null)
@@ -424,6 +497,23 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("FK_SolInscEmprDig_Empresa");
+                });
+
+            modelBuilder.Entity("IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.SolicitudRepresentanteEntity", b =>
+                {
+                    b.HasOne("IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.RepresentanteEntity", null)
+                        .WithMany()
+                        .HasForeignKey("IdRepresentante")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("FK_SolicitudRepresentante_Representante");
+
+                    b.HasOne("IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.SolicitudInscripcionEntity", null)
+                        .WithMany()
+                        .HasForeignKey("IdSolicitud")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("FK_SolicitudRepresentante_Solicitud");
                 });
 
             modelBuilder.Entity("IERIC.SumariosIERIC.Infrastructure.Persistence.Quiz.QuizCuilVinculadoEntity", b =>

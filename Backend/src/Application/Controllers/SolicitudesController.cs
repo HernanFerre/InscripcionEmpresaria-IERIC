@@ -1,5 +1,6 @@
 using System;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using IERIC.SumariosIERIC.Application.Commands;
 using IERIC.SumariosIERIC.Application.Inscripcion.Models;
@@ -79,6 +80,59 @@ namespace IERIC.SumariosIERIC.Application
             return Ok(
                 resultado
             );
+        }
+
+        [HttpPut("{solicitudId:long}/representantes")]
+        public async Task<
+            ActionResult<GuardarRepresentantesSolicitudResponse>
+        > GuardarRepresentantesAsync(
+            long solicitudId,
+            [FromBody]
+            GuardarRepresentantesSolicitudRequest request,
+            CancellationToken cancellationToken
+        )
+        {
+            if (request == null)
+            {
+                return BadRequest(
+                    new
+                    {
+                        mensaje =
+                            "La solicitud de representantes " +
+                            "no puede estar vacía."
+                    }
+                );
+            }
+
+            string idUsuarioAlta =
+                ObtenerIdUsuarioAlta();
+
+            if (string.IsNullOrWhiteSpace(idUsuarioAlta))
+            {
+                return Unauthorized(
+                    new
+                    {
+                        mensaje =
+                            "No fue posible identificar " +
+                            "al usuario autenticado."
+                    }
+                );
+            }
+
+            GuardarRepresentantesSolicitudCommand command =
+                new GuardarRepresentantesSolicitudCommand(
+                    solicitudId,
+                    request,
+                    idUsuarioAlta
+                );
+
+            GuardarRepresentantesSolicitudResponse resultado =
+                await _mediator.Send(
+                    command,
+                    cancellationToken
+                );
+
+            return Ok(resultado);
         }
 
         private string ObtenerIdUsuarioAlta()

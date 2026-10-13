@@ -133,6 +133,93 @@ namespace IERIC.SumariosIERIC.Application
             return Ok(resultado);
         }
 
+        [HttpPut("{solicitudId:long}/representantes")]
+        public async Task<
+            ActionResult<GuardarRepresentantesSolicitudResponse>
+        > GuardarRepresentantesAsync(
+            long solicitudId,
+            [FromBody]
+            GuardarRepresentantesSolicitudRequest request,
+            CancellationToken cancellationToken
+        )
+        {
+            if (!_environment.IsDevelopment())
+            {
+                return NotFound();
+            }
+
+            if (request == null)
+            {
+                return BadRequest(
+                    new
+                    {
+                        mensaje =
+                            "La solicitud de representantes " +
+                            "no puede estar vacía."
+                    }
+                );
+            }
+
+            string tokenRecibido = ObtenerBearerToken();
+
+            if (string.IsNullOrWhiteSpace(tokenRecibido))
+            {
+                return Unauthorized(
+                    new
+                    {
+                        mensaje =
+                            "No se recibió el token de desarrollo."
+                    }
+                );
+            }
+
+            string tokenEsperado =
+                await _proveedorToken.ObtenerTokenAsync(
+                    cancellationToken
+                );
+
+            if (!TokensCoinciden(tokenRecibido, tokenEsperado))
+            {
+                return Unauthorized(
+                    new
+                    {
+                        mensaje =
+                            "El token de desarrollo no es válido."
+                    }
+                );
+            }
+
+            string idUsuarioAlta =
+                ObtenerIdUsuarioAlta(tokenRecibido);
+
+            if (string.IsNullOrWhiteSpace(idUsuarioAlta))
+            {
+                return Unauthorized(
+                    new
+                    {
+                        mensaje =
+                            "No fue posible identificar " +
+                            "al usuario autenticado."
+                    }
+                );
+            }
+
+            GuardarRepresentantesSolicitudCommand command =
+                new GuardarRepresentantesSolicitudCommand(
+                    solicitudId,
+                    request,
+                    idUsuarioAlta
+                );
+
+            GuardarRepresentantesSolicitudResponse resultado =
+                await _mediator.Send(
+                    command,
+                    cancellationToken
+                );
+
+            return Ok(resultado);
+        }
+
         private string ObtenerBearerToken()
         {
             if (
