@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using IERIC.SumariosIERIC.Domain.Entities.Inscripcion;
@@ -15,15 +16,23 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
         : ISolicitudInscripcionRepository
     {
         private readonly SumariosContext _context;
+        private readonly IPrincipal _principal;
 
         public SolicitudInscripcionSqlRepository(
-            SumariosContext context
+            SumariosContext context,
+            IPrincipal principal
         )
         {
             _context =
                 context ??
                 throw new ArgumentNullException(
                     nameof(context)
+                );
+
+            _principal =
+                principal ??
+                throw new ArgumentNullException(
+                    nameof(principal)
                 );
         }
 
@@ -140,7 +149,6 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
                 foreach (EmpresaIntegrante relacion in solicitud.EmpresasIntegrantes)
                 {
                     long cuitIntegrante = relacion.Integrante.Cuit.ToInt64();
-
                     EmpresaEntity integrante = integrantesExistentes
                         .FirstOrDefault(empresa => empresa.Cuit == cuitIntegrante);
 
@@ -259,6 +267,7 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
 
                     if (huboCambios)
                     {
+                        solicitudEntity.Um = ObtenerUsuarioModificacion();
                         solicitudEntity.Fm = fechaActual;
                     }
                 }
@@ -326,7 +335,6 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
 
             SolicitudInscripcionEntity solicitudEntity =
                 await _context.SolicitudesInscripcion
-                    .AsNoTracking()
                     .SingleOrDefaultAsync(
                         solicitud =>
                             solicitud.Id == solicitudId &&
@@ -520,9 +528,14 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
                     );
                 }
 
-                await _context.SaveChangesAsync(
-                    cancellationToken
-                );
+                bool huboCambios = _context.ChangeTracker.HasChanges();
+
+                if (huboCambios)
+                {
+                    await _context.SaveChangesAsync(
+                        cancellationToken
+                    );
+                }
 
                 HashSet<long> identificadoresDeseados =
                     representantesGuardados
@@ -591,9 +604,17 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
                         );
                 }
 
-                await _context.SaveChangesAsync(
-                    cancellationToken
-                );
+                huboCambios |= _context.ChangeTracker.HasChanges();
+
+                if (huboCambios)
+                {
+                    solicitudEntity.Um = ObtenerUsuarioModificacion();
+                    solicitudEntity.Fm = DateTime.Now;
+
+                    await _context.SaveChangesAsync(
+                        cancellationToken
+                    );
+                }
 
                 await transaction.CommitAsync(
                     cancellationToken
@@ -623,6 +644,29 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
             }
         }
 
+        private string ObtenerUsuarioModificacion()
+        {
+            string usuario = _principal.Identity?.Name?.Trim();
+
+            if (string.IsNullOrWhiteSpace(usuario))
+            {
+                throw new SumariosDomainException(
+                    "No fue posible obtener el nombre del usuario autenticado " +
+                    "para registrar la modificación."
+                );
+            }
+
+            if (usuario.Length > 254)
+            {
+                throw new SumariosDomainException(
+                    "El nombre de usuario supera los 254 caracteres permitidos " +
+                    "para registrar la modificación."
+                );
+            }
+
+            return usuario;
+        }
+
         private bool ActualizarEmpresaEntity(
             EmpresaEntity entidad,
             Empresa empresa,
@@ -632,9 +676,7 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
         {
             entidad.RazonSocial = empresa.RazonSocial;
             entidad.IdTipoSoc = empresa.TipoSociedadId;
-            entidad.EsCooperativa =
-                empresa.TipoSociedadId == 10 ||
-                empresa.TipoSociedadId == 23;
+            entidad.EsCooperativa = empresa.TipoSociedadId == 10 || empresa.TipoSociedadId == 23;
             entidad.LegacyId = legacyId;
 
             // Las integrantes solo aportan CUIT, razón social y tipo de sociedad.
@@ -660,6 +702,7 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
                 return false;
             }
 
+            entidad.Um = ObtenerUsuarioModificacion();
             entidad.Fm = fechaActual;
             return true;
         }

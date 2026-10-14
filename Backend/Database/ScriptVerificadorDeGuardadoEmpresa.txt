@@ -147,3 +147,80 @@ ORDER BY SR.IdSolicitud DESC, SR.IdRepresentante;
 ------------------------------------------------------------------
 ///////////////////////////////////////////////////////////////
 
+BORRADO TOTAL
+USE [SolicitudInscripcionEmpresariaDigital];
+GO
+
+SET NOCOUNT ON;
+SET XACT_ABORT ON;
+
+BEGIN TRY
+    BEGIN TRANSACTION;
+
+    -- Inscripción y representantes.
+    DELETE FROM dbo.SolicitudRepresentante;
+    DELETE FROM dbo.Representante;
+    DELETE FROM dbo.EmpresasCuit;
+    DELETE FROM dbo.SolicitudInscripcionDigitalEmpresaria;
+    DELETE FROM dbo.Empresa;
+
+    -- Sesiones, preguntas y respuestas del quiz.
+    DELETE FROM dbo.QuizRespuestaOpcion;
+    DELETE FROM dbo.QuizRespuesta;
+    DELETE FROM dbo.QuizOpcion;
+    DELETE FROM dbo.QuizDesafio;
+    DELETE FROM dbo.QuizCuilVinculado;
+    DELETE FROM dbo.QuizSesion;
+
+    COMMIT TRANSACTION;
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0
+        ROLLBACK TRANSACTION;
+
+    THROW;
+END CATCH;
+
+-- Confirmación de la limpieza.
+SELECT 'Empresa' AS Tabla, COUNT(*) AS Registros
+FROM dbo.Empresa
+
+UNION ALL
+SELECT 'EmpresasCuit', COUNT(*)
+FROM dbo.EmpresasCuit
+
+UNION ALL
+SELECT 'SolicitudInscripcionDigitalEmpresaria', COUNT(*)
+FROM dbo.SolicitudInscripcionDigitalEmpresaria
+
+UNION ALL
+SELECT 'Representante', COUNT(*)
+FROM dbo.Representante
+
+UNION ALL
+SELECT 'SolicitudRepresentante', COUNT(*)
+FROM dbo.SolicitudRepresentante
+
+UNION ALL
+SELECT 'QuizSesion', COUNT(*)
+FROM dbo.QuizSesion
+
+UNION ALL
+SELECT 'QuizCuilVinculado', COUNT(*)
+FROM dbo.QuizCuilVinculado
+
+UNION ALL
+SELECT 'QuizDesafio', COUNT(*)
+FROM dbo.QuizDesafio
+
+UNION ALL
+SELECT 'QuizOpcion', COUNT(*)
+FROM dbo.QuizOpcion
+
+UNION ALL
+SELECT 'QuizRespuesta', COUNT(*)
+FROM dbo.QuizRespuesta
+
+UNION ALL
+SELECT 'QuizRespuestaOpcion', COUNT(*)
+FROM dbo.QuizRespuestaOpcion;

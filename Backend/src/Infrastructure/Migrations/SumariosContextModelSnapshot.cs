@@ -147,8 +147,8 @@ namespace Infrastructure.Migrations
                         .HasColumnOrder(19);
 
                     b.Property<string>("Um")
-                        .HasMaxLength(23)
-                        .HasColumnType("varchar(23)")
+                        .HasMaxLength(254)
+                        .HasColumnType("varchar(254)")
                         .HasColumnName("um")
                         .HasColumnOrder(10);
 
@@ -255,8 +255,8 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("Um")
-                        .HasMaxLength(23)
-                        .HasColumnType("varchar(23)")
+                        .HasMaxLength(254)
+                        .HasColumnType("varchar(254)")
                         .HasColumnName("um");
 
                     b.HasKey("Id")

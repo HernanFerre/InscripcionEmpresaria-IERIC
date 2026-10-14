@@ -118,6 +118,18 @@ namespace IERIC.SumariosIERIC.Application
                 );
             }
 
+            if (!ConfigurarUsuarioAutenticado(tokenRecibido))
+            {
+                return Unauthorized(
+                    new
+                    {
+                        mensaje =
+                            "No fue posible obtener el nombre " +
+                            "del usuario autenticado."
+                    }
+                );
+            }
+
             GuardarEmpresaSolicitudCommand command =
                 new GuardarEmpresaSolicitudCommand(
                     request,
@@ -204,6 +216,18 @@ namespace IERIC.SumariosIERIC.Application
                 );
             }
 
+            if (!ConfigurarUsuarioAutenticado(tokenRecibido))
+            {
+                return Unauthorized(
+                    new
+                    {
+                        mensaje =
+                            "No fue posible obtener el nombre " +
+                            "del usuario autenticado."
+                    }
+                );
+            }
+
             GuardarRepresentantesSolicitudCommand command =
                 new GuardarRepresentantesSolicitudCommand(
                     solicitudId,
@@ -265,6 +289,68 @@ namespace IERIC.SumariosIERIC.Application
                     recibido,
                     esperado
                 );
+        }
+
+        private bool ConfigurarUsuarioAutenticado(
+            string token
+        )
+        {
+            try
+            {
+                JwtSecurityToken jwt =
+                    new JwtSecurityTokenHandler()
+                        .ReadJwtToken(token);
+
+                string[] tiposNombreUsuario =
+                {
+                    ClaimTypes.Name,
+                    JwtRegisteredClaimNames.UniqueName,
+                    "preferred_username",
+                    "username",
+                    "userName",
+                    ClaimTypes.Email,
+                    JwtRegisteredClaimNames.Email
+                };
+
+                string nombreUsuario = null;
+
+                foreach (string tipo in tiposNombreUsuario)
+                {
+                    nombreUsuario = jwt.Claims
+                        .FirstOrDefault(claim =>
+                            claim.Type == tipo &&
+                            !string.IsNullOrWhiteSpace(claim.Value))
+                        ?.Value.Trim();
+
+                    if (!string.IsNullOrWhiteSpace(nombreUsuario))
+                    {
+                        break;
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(nombreUsuario))
+                {
+                    return false;
+                }
+
+                // El token ya fue cotejado con el proveedor de desarrollo.
+                ClaimsIdentity identidad = new ClaimsIdentity(
+                    jwt.Claims.Where(claim => claim.Type != ClaimTypes.Name),
+                    "TokenDesarrollo"
+                );
+
+                identidad.AddClaim(new Claim(
+                    ClaimTypes.Name,
+                    nombreUsuario
+                ));
+
+                HttpContext.User = new ClaimsPrincipal(identidad);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private static string ObtenerIdUsuarioAlta(

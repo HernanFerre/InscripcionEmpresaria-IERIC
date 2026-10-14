@@ -81,8 +81,8 @@ namespace IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.Configurati
 
             builder.Property(x => x.Um)
                 .HasColumnName("um")
-                .HasColumnType("varchar(23)")
-                .HasMaxLength(23)
+                .HasColumnType("varchar(254)")
+                .HasMaxLength(254)
                 .HasColumnOrder(10)
                 .IsRequired(false);
 
