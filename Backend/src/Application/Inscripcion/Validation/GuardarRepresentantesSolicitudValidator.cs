@@ -48,58 +48,72 @@ namespace IERIC.SumariosIERIC.Application.Inscripcion.Validation
                     );
                 }
 
-                if (representante.EmpresaId <= 0)
+                string identificacion =
+                    IdentificarRepresentante(representante);
+
+                try
                 {
-                    LanzarError(
-                        "Debe seleccionar la empresa del representante."
+                    if (representante.EmpresaId <= 0)
+                    {
+                        LanzarError(
+                            "Debe seleccionar la empresa del representante."
+                        );
+                    }
+
+                    long cuil = ObtenerCuilNormalizado(
+                        representante.Cuil
+                    );
+
+                    string clave =
+                        representante.EmpresaId + ":" + cuil;
+
+                    if (!representantesUnicos.Add(clave))
+                    {
+                        LanzarError(
+                            "No puede agregar dos veces el mismo representante " +
+                            "para una empresa."
+                        );
+                    }
+
+                    ValidarTextoObligatorio(
+                        representante.Apellido,
+                        "apellido",
+                        100
+                    );
+
+                    ValidarTextoObligatorio(
+                        representante.Nombre,
+                        "nombre",
+                        100
+                    );
+
+                    if (representante.TipoRepresentanteId <= 0)
+                    {
+                        LanzarError(
+                            "Debe seleccionar el cargo del representante."
+                        );
+                    }
+
+                    ValidarTextoObligatorio(
+                        representante.Correo,
+                        "correo electrónico",
+                        254
+                    );
+
+                    ValidarTextoObligatorio(
+                        representante.Telefono,
+                        "teléfono",
+                        30
                     );
                 }
-
-                long cuil = ObtenerCuilNormalizado(
-                    representante.Cuil
-                );
-
-                string clave =
-                    representante.EmpresaId + ":" + cuil;
-
-                if (!representantesUnicos.Add(clave))
+                catch (InvalidException exception)
                 {
-                    LanzarError(
-                        "No puede agregar dos veces el mismo representante " +
-                        "para una empresa."
+                    throw new InvalidException(
+                        $"{identificacion}: {exception.Message}",
+                        exception.Solution,
+                        exception
                     );
                 }
-
-                ValidarTextoObligatorio(
-                    representante.Apellido,
-                    "apellido",
-                    100
-                );
-
-                ValidarTextoObligatorio(
-                    representante.Nombre,
-                    "nombre",
-                    100
-                );
-
-                if (representante.TipoRepresentanteId <= 0)
-                {
-                    LanzarError(
-                        "Debe seleccionar el cargo del representante."
-                    );
-                }
-
-                ValidarTextoObligatorio(
-                    representante.Correo,
-                    "correo electrónico",
-                    254
-                );
-
-                ValidarTextoObligatorio(
-                    representante.Telefono,
-                    "teléfono",
-                    30
-                );
             }
         }
 
@@ -165,6 +179,34 @@ namespace IERIC.SumariosIERIC.Application.Inscripcion.Validation
             }
 
             return numeroCuil;
+        }
+
+        private static string IdentificarRepresentante(
+            RepresentanteSolicitudRequest representante
+        )
+        {
+            string nombreCompleto = string.Join(
+                " ",
+                new[]
+                {
+                    representante.Nombre,
+                    representante.Apellido
+                }
+                    .Where(valor => !string.IsNullOrWhiteSpace(valor))
+                    .Select(valor => valor.Trim())
+            );
+
+            if (string.IsNullOrWhiteSpace(nombreCompleto))
+            {
+                nombreCompleto = "Representante sin nombre";
+            }
+
+            string cuil =
+                string.IsNullOrWhiteSpace(representante.Cuil)
+                    ? "sin informar"
+                    : representante.Cuil.Trim();
+
+            return $"{nombreCompleto} (CUIL {cuil})";
         }
 
         private static void ValidarTextoObligatorio(

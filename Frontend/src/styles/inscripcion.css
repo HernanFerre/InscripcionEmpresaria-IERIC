@@ -288,6 +288,26 @@
   display: block;
 }
 
+/* Mantiene el fondo del formulario cuando el navegador autocompleta. */
+.app-shell input:is(:autofill, :-webkit-autofill):not(:disabled) {
+  color: var(--color-text);
+  -webkit-text-fill-color: var(--color-text);
+  caret-color: var(--color-text);
+  box-shadow: 0 0 0 1000px var(--color-surface) inset;
+}
+
+.app-shell input:is(:autofill, :-webkit-autofill):not(:disabled):not([role="combobox"]):focus {
+  box-shadow:
+    0 0 0 1000px var(--color-surface) inset,
+    var(--focus-ring);
+}
+
+.app-shell input.has-error:is(:autofill, :-webkit-autofill):not(:disabled):not([role="combobox"]):focus {
+  box-shadow:
+    0 0 0 1000px var(--color-surface) inset,
+    0 0 0 3px rgba(244, 67, 54, 0.14);
+}
+
 @media (max-width: 700px) {
   .topbar {
     height: auto;

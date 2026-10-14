@@ -33,163 +33,260 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
         {
             if (solicitud == null)
             {
-                throw new ArgumentNullException(
-                    nameof(solicitud)
-                );
+                throw new ArgumentNullException(nameof(solicitud));
             }
 
             DateTime fechaActual = DateTime.Now;
-
-            bool tieneEmpresasIntegrantes =
-                solicitud.EmpresasIntegrantes.Count > 0;
-
-            int legacyIdEmpresaPrincipal =
-                tieneEmpresasIntegrantes
-                    ? 1
-                    : 0;
-
-            EmpresaEntity empresaPrincipalEntity =
-                CrearEmpresaEntity(
-                    solicitud.EmpresaPrincipal,
-                    fechaActual,
-                    legacyIdEmpresaPrincipal,
-                    solicitud.IdUsuarioAlta
-                );
-
-            List<(
-                EmpresaIntegrante Relacion,
-                EmpresaEntity Entidad
-            )> empresasIntegrantes =
-                new List<(
-                    EmpresaIntegrante Relacion,
-                    EmpresaEntity Entidad
-                )>();
-
-            int legacyIdIntegrante = 2;
-
-            foreach (
-                EmpresaIntegrante relacion
-                in solicitud.EmpresasIntegrantes
-            )
-            {
-                EmpresaEntity integranteEntity =
-                    CrearEmpresaEntity(
-                        relacion.Integrante,
-                        fechaActual,
-                        legacyIdIntegrante,
-                        solicitud.IdUsuarioAlta
-                    );
-
-                empresasIntegrantes.Add(
-                    (
-                        relacion,
-                        integranteEntity
-                    )
-                );
-
-                legacyIdIntegrante++;
-            }
+            long cuitPrincipal = solicitud.EmpresaPrincipal.Cuit.ToInt64();
+            bool tieneIntegrantes = solicitud.EmpresasIntegrantes.Count > 0;
+            int legacyIdPrincipal = tieneIntegrantes ? 1 : 0;
 
             await using IDbContextTransaction transaction =
-                await _context.Database
-                    .BeginTransactionAsync();
+                await _context.Database.BeginTransactionAsync();
 
             try
             {
-                /*
-                 * Primero se guardan las empresas para que
-                 * SQL Server genere sus identificadores.
-                 */
-                _context.Empresas.Add(
-                    empresaPrincipalEntity
-                );
+                EmpresaEntity principal = await _context.Empresas
+                    .SingleOrDefaultAsync(empresa => empresa.Cuit == cuitPrincipal);
 
-                foreach (
-                    var empresaIntegrante
-                    in empresasIntegrantes
-                )
+                SolicitudInscripcionEntity solicitudEntity = null;
+                bool huboCambios = false;
+                HashSet<long> empresasConCambioDeSociedad = new HashSet<long>();
+
+                if (principal == null)
                 {
-                    _context.Empresas.Add(
-                        empresaIntegrante.Entidad
+                    principal = CrearEmpresaEntity(
+                        solicitud.EmpresaPrincipal,
+                        fechaActual,
+                        legacyIdPrincipal,
+                        solicitud.IdUsuarioAlta
                     );
+
+                    _context.Empresas.Add(principal);
+                    huboCambios = true;
                 }
-
-                await _context.SaveChangesAsync();
-
-                /*
-                 * Con los Id ya generados se crean las relaciones
-                 * de la UTE utilizando Empresa.Id y no el CUIT.
-                 */
-                foreach (
-                    var empresaIntegrante
-                    in empresasIntegrantes
-                )
+                else
                 {
-                    _context.EmpresasCuit.Add(
-                        new EmpresaIntegranteEntity
-                        {
-                            IdEmpresa =
-                                empresaPrincipalEntity.Id,
+                    solicitudEntity = await _context.SolicitudesInscripcion
+                        .SingleOrDefaultAsync(item => item.Idempresa == principal.Id);
 
-                            IdEmpresaIntegrante =
-                                empresaIntegrante
-                                    .Entidad
-                                    .Id
-                        }
-                    );
-                }
-
-                SolicitudInscripcionEntity solicitudEntity =
-                    new SolicitudInscripcionEntity
+                    if (solicitudEntity == null ||
+                        solicitudEntity.IdUsuarioAlta != solicitud.IdUsuarioAlta)
                     {
-                        Idempresa =
-                            empresaPrincipalEntity.Id,
+                        throw new SumariosDomainException(
+                            "El CUIT indicado ya está asociado a otra inscripción " +
+                            "y no puede modificarse desde esta solicitud."
+                        );
+                    }
 
-                        IdUsuarioAlta =
-                            solicitud.IdUsuarioAlta,
+                    if (principal.IdTipoSoc != solicitud.EmpresaPrincipal.TipoSociedadId)
+                    {
+                        empresasConCambioDeSociedad.Add(principal.Id);
+                    }
 
-                        Comentarios =
-                            solicitud.Comentarios,
+                    huboCambios |= ActualizarEmpresaEntity(
+                        principal,
+                        solicitud.EmpresaPrincipal,
+                        fechaActual,
+                        legacyIdPrincipal
+                    );
+                }
 
+                List<EmpresaIntegranteEntity> relacionesActuales = principal.Id > 0
+                    ? await _context.EmpresasCuit
+                        .Where(relacion => relacion.IdEmpresa == principal.Id)
+                        .ToListAsync()
+                    : new List<EmpresaIntegranteEntity>();
+
+                List<long> cuitsIntegrantes = solicitud.EmpresasIntegrantes
+                    .Select(relacion => relacion.Integrante.Cuit.ToInt64())
+                    .ToList();
+
+                List<EmpresaEntity> integrantesExistentes = cuitsIntegrantes.Count > 0
+                    ? await _context.Empresas
+                        .Where(empresa => cuitsIntegrantes.Contains(empresa.Cuit))
+                        .ToListAsync()
+                    : new List<EmpresaEntity>();
+
+                List<long> idsExistentes = integrantesExistentes
+                    .Select(empresa => empresa.Id)
+                    .ToList();
+
+                HashSet<long> integrantesDeOtraInscripcion = new HashSet<long>();
+
+                if (idsExistentes.Count > 0)
+                {
+                    List<long> empresasPrincipales = await _context.SolicitudesInscripcion
+                        .Where(item => idsExistentes.Contains(item.Idempresa))
+                        .Select(item => item.Idempresa)
+                        .ToListAsync();
+
+                    List<long> integrantesDeOtraEmpresa = await _context.EmpresasCuit
+                        .Where(relacion =>
+                            idsExistentes.Contains(relacion.IdEmpresaIntegrante) &&
+                            relacion.IdEmpresa != principal.Id)
+                        .Select(relacion => relacion.IdEmpresaIntegrante)
+                        .ToListAsync();
+
+                    integrantesDeOtraInscripcion.UnionWith(empresasPrincipales);
+                    integrantesDeOtraInscripcion.UnionWith(integrantesDeOtraEmpresa);
+                }
+
+                List<(EmpresaIntegrante Relacion, EmpresaEntity Entidad)> integrantes =
+                    new List<(EmpresaIntegrante Relacion, EmpresaEntity Entidad)>();
+
+                int legacyIdIntegrante = 2;
+
+                foreach (EmpresaIntegrante relacion in solicitud.EmpresasIntegrantes)
+                {
+                    long cuitIntegrante = relacion.Integrante.Cuit.ToInt64();
+
+                    EmpresaEntity integrante = integrantesExistentes
+                        .FirstOrDefault(empresa => empresa.Cuit == cuitIntegrante);
+
+                    if (integrante == null)
+                    {
+                        integrante = CrearEmpresaEntity(
+                            relacion.Integrante,
+                            fechaActual,
+                            legacyIdIntegrante,
+                            solicitud.IdUsuarioAlta
+                        );
+
+                        _context.Empresas.Add(integrante);
+                        huboCambios = true;
+                    }
+                    else
+                    {
+                        if (integrante.IdUsuarioAlta != solicitud.IdUsuarioAlta ||
+                            integrantesDeOtraInscripcion.Contains(integrante.Id))
+                        {
+                            throw new SumariosDomainException(
+                                $"La integrante con CUIT {cuitIntegrante} ya está " +
+                                "asociada a otra inscripción y no puede modificarse aquí."
+                            );
+                        }
+
+                        if (integrante.IdTipoSoc != relacion.Integrante.TipoSociedadId)
+                        {
+                            empresasConCambioDeSociedad.Add(integrante.Id);
+                        }
+
+                        huboCambios |= ActualizarEmpresaEntity(
+                            integrante,
+                            relacion.Integrante,
+                            fechaActual,
+                            legacyIdIntegrante
+                        );
+                    }
+
+                    integrantes.Add((relacion, integrante));
+                    legacyIdIntegrante++;
+                }
+
+                // Genera los IDs de las empresas nuevas y actualiza solo las modificadas.
+                if (_context.ChangeTracker.HasChanges())
+                {
+                    await _context.SaveChangesAsync();
+                }
+
+                HashSet<long> idsDeseados = integrantes
+                    .Select(item => item.Entidad.Id)
+                    .ToHashSet();
+
+                List<EmpresaIntegranteEntity> relacionesAEliminar = relacionesActuales
+                    .Where(relacion => !idsDeseados.Contains(relacion.IdEmpresaIntegrante))
+                    .ToList();
+
+                _context.EmpresasCuit.RemoveRange(relacionesAEliminar);
+                huboCambios |= relacionesAEliminar.Count > 0;
+
+                HashSet<long> idsRelacionados = relacionesActuales
+                    .Select(relacion => relacion.IdEmpresaIntegrante)
+                    .ToHashSet();
+
+                foreach (var integrante in integrantes)
+                {
+                    if (idsRelacionados.Contains(integrante.Entidad.Id))
+                    {
+                        continue;
+                    }
+
+                    _context.EmpresasCuit.Add(new EmpresaIntegranteEntity
+                    {
+                        IdEmpresa = principal.Id,
+                        IdEmpresaIntegrante = integrante.Entidad.Id
+                    });
+
+                    huboCambios = true;
+                }
+
+                if (solicitudEntity == null)
+                {
+                    solicitudEntity = new SolicitudInscripcionEntity
+                    {
+                        Idempresa = principal.Id,
+                        IdUsuarioAlta = solicitud.IdUsuarioAlta,
+                        Comentarios = solicitud.Comentarios,
                         Um = null,
                         Fa = fechaActual,
                         Fm = fechaActual
                     };
 
-                _context.SolicitudesInscripcion.Add(
-                    solicitudEntity
-                );
+                    _context.SolicitudesInscripcion.Add(solicitudEntity);
+                }
+                else
+                {
+                    HashSet<long> empresasPermitidas = tieneIntegrantes
+                        ? idsDeseados
+                        : new HashSet<long> { principal.Id };
 
-                await _context.SaveChangesAsync();
+                    // Desvincula los representantes de integrantes retiradas o
+                    // de empresas cuyo cambio de sociedad exige revisar el cargo.
+                    List<SolicitudRepresentanteEntity> representantesARevisar =
+                        await (
+                            from relacion in _context.SolicitudesRepresentantes
+                            join representante in _context.Representantes
+                                on relacion.IdRepresentante equals representante.Id
+                            where relacion.IdSolicitud == solicitudEntity.Id &&
+                                (!empresasPermitidas.Contains(representante.IdEmpresa) ||
+                                 empresasConCambioDeSociedad.Contains(representante.IdEmpresa))
+                            select relacion
+                        ).ToListAsync();
+
+                    _context.SolicitudesRepresentantes.RemoveRange(representantesARevisar);
+                    huboCambios |= representantesARevisar.Count > 0;
+
+                    if (huboCambios)
+                    {
+                        solicitudEntity.Fm = fechaActual;
+                    }
+                }
+
+                if (_context.ChangeTracker.HasChanges())
+                {
+                    await _context.SaveChangesAsync();
+                }
 
                 await transaction.CommitAsync();
 
-                /*
-                 * Los identificadores se asignan al dominio
-                 * solamente después de confirmar la transacción.
-                 */
-                solicitud.EmpresaPrincipal.AsignarId(
-                    empresaPrincipalEntity.Id
-                );
-
-                foreach (
-                    var empresaIntegrante
-                    in empresasIntegrantes
-                )
+                if (solicitud.EmpresaPrincipal.Id == 0)
                 {
-                    empresaIntegrante
-                        .Relacion
-                        .Integrante
-                        .AsignarId(
-                            empresaIntegrante
-                                .Entidad
-                                .Id
-                        );
+                    solicitud.EmpresaPrincipal.AsignarId(principal.Id);
                 }
 
-                solicitud.AsignarId(
-                    solicitudEntity.Id
-                );
+                foreach (var integrante in integrantes)
+                {
+                    if (integrante.Relacion.Integrante.Id == 0)
+                    {
+                        integrante.Relacion.Integrante.AsignarId(integrante.Entidad.Id);
+                    }
+                }
+
+                if (solicitud.Id == 0)
+                {
+                    solicitud.AsignarId(solicitudEntity.Id);
+                }
             }
             catch
             {
@@ -524,6 +621,47 @@ namespace IERIC.SumariosIERIC.Infrastructure.Repositories
 
                 throw;
             }
+        }
+
+        private bool ActualizarEmpresaEntity(
+            EmpresaEntity entidad,
+            Empresa empresa,
+            DateTime fechaActual,
+            int legacyId
+        )
+        {
+            entidad.RazonSocial = empresa.RazonSocial;
+            entidad.IdTipoSoc = empresa.TipoSociedadId;
+            entidad.EsCooperativa =
+                empresa.TipoSociedadId == 10 ||
+                empresa.TipoSociedadId == 23;
+            entidad.LegacyId = legacyId;
+
+            // Las integrantes solo aportan CUIT, razón social y tipo de sociedad.
+            if (empresa.TieneDatosCompletos)
+            {
+                entidad.Calle = empresa.Calle ?? string.Empty;
+                entidad.Numero = empresa.Numero ?? string.Empty;
+                entidad.Piso = empresa.Piso;
+                entidad.DeptoOficina = empresa.DepartamentoOficina;
+                entidad.CodigoPostal = empresa.CodigoPostal ?? string.Empty;
+                entidad.IdProvincia = empresa.IdProvincia;
+                entidad.IdLocalidad = empresa.IdLocalidad;
+                entidad.Correo = empresa.Correo ?? string.Empty;
+                entidad.Telefono = empresa.Telefono;
+                entidad.IdActividadsolicitud = empresa.ActividadId ?? 0;
+                entidad.IdCaracter = empresa.CaracterId ?? 0;
+            }
+
+            _context.ChangeTracker.DetectChanges();
+
+            if (_context.Entry(entidad).State != EntityState.Modified)
+            {
+                return false;
+            }
+
+            entidad.Fm = fechaActual;
+            return true;
         }
 
         private static EmpresaEntity CrearEmpresaEntity(

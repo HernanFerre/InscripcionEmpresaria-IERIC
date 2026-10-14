@@ -119,7 +119,28 @@ FROM dbo.EmpresasCuit;
 //////////////////////////////////////
 ----------------------------------------------------
 ///////////////////////////////////////---
+Consulta Empresa comun y representantes
 
+USE [SolicitudInscripcionEmpresariaDigital];
+GO
+
+SELECT @@SERVERNAME AS Servidor, DB_NAME() AS BaseActual;
+
+SELECT 'Empresa' AS TablaConsultada, E.*
+FROM dbo.Empresa AS E
+ORDER BY E.Id DESC;
+
+SELECT 'Solicitud' AS TablaConsultada, S.*
+FROM dbo.SolicitudInscripcionDigitalEmpresaria AS S
+ORDER BY S.Id DESC;
+
+SELECT 'Representante' AS TablaConsultada, R.*
+FROM dbo.Representante AS R
+ORDER BY R.Id DESC;
+
+SELECT 'SolicitudRepresentante' AS TablaConsultada, SR.*
+FROM dbo.SolicitudRepresentante AS SR
+ORDER BY SR.IdSolicitud DESC, SR.IdRepresentante;
 
 
 //////////////////////////////////////////////////////////////

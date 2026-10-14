@@ -4,6 +4,7 @@ import { ArrowUp, ChevronLeft, ChevronRight, Info, Pencil, Plus, Trash2 } from "
 
 import RepresentanteModal from "../../components/modals/RepresentanteModal.jsx";
 import { guardarRepresentantesSolicitud } from "../../services/InscripcionService.js";
+import { esCuitValido, formatCuit, normalizarCuit } from "../../utils/formatters.js";
 
 import "../../styles/stepRepresentantes.css";
 
@@ -14,6 +15,23 @@ import "../../styles/stepRepresentantes.css";
  * 28 = U.T.
  */
 const TIPOS_SOCIEDAD_CON_INTEGRANTES = ["8", "26", "28"];
+
+function formatearCuil(value) {
+  const cuil = normalizarCuit(value);
+
+  return cuil.length > 11 ? cuil : formatCuit(cuil).replace(/-/g, " ");
+}
+
+function identificarRepresentante(representante) {
+  const nombreCompleto = [representante.nombre, representante.apellido]
+    .map((value) => String(value ?? "").trim())
+    .filter(Boolean)
+    .join(" ");
+
+  const cuil = formatearCuil(representante.cuil) || "sin informar";
+
+  return `${nombreCompleto || "Representante sin nombre"} (CUIL ${cuil})`;
+}
 
 export default function StepRepresentantes({
   token,
@@ -85,21 +103,39 @@ export default function StepRepresentantes({
   const continuar = async () => {
     if (guardando) return;
 
+    setErrorGuardado("");
+
+    const representanteInvalido = representantes.find((representante) => {
+      const cuil = normalizarCuit(representante.cuil);
+
+      return cuil.startsWith("0") || !esCuitValido(cuil);
+    });
+
+    if (representanteInvalido) {
+      const cuil = normalizarCuit(representanteInvalido.cuil);
+
+      const motivo = cuil.length !== 11 ? "el CUIL debe contener 11 números" : "el CUIL no es válido";
+
+      setErrorGuardado(`${identificarRepresentante(representanteInvalido)}: ${motivo}. Edite sus datos para corregirlo.`);
+
+      return;
+    }
+
     const request = representantes.map((representante) => ({
       empresaId: Number(representante.empresaId),
       apellido: String(representante.apellido ?? "").trim(),
       nombre: String(representante.nombre ?? "").trim(),
-      cuil: String(representante.cuil ?? "").replace(/[\s-]/g, ""),
+      cuil: normalizarCuit(representante.cuil),
       tipoRepresentanteId: Number(representante.tipoRepresentanteId ?? representante.cargoId),
       correo: String(representante.email ?? "").trim(),
       telefono: String(representante.telefono ?? "").trim(),
     }));
 
     setGuardando(true);
-    setErrorGuardado("");
 
     try {
       const resultado = await guardarRepresentantesSolicitud(solicitudId, request, token);
+
       const guardados = resultado.representantes ?? resultado.Representantes;
 
       if (guardados.length !== representantes.length) {
@@ -107,20 +143,24 @@ export default function StepRepresentantes({
       }
 
       const representantesConId = representantes.map((representante) => {
-        const cuil = String(representante.cuil ?? "").replace(/[\s-]/g, "");
+        const cuil = normalizarCuit(representante.cuil);
 
         const guardado = guardados.find(
           (item) =>
-            Number(item.empresaId ?? item.EmpresaId) === Number(representante.empresaId) && String(item.cuil ?? item.Cuil ?? "") === cuil,
+            Number(item.empresaId ?? item.EmpresaId) === Number(representante.empresaId) && normalizarCuit(item.cuil ?? item.Cuil) === cuil,
         );
 
         const representanteId = Number(guardado?.representanteId ?? guardado?.RepresentanteId);
 
         if (!Number.isSafeInteger(representanteId) || representanteId <= 0) {
-          throw new Error("El servicio no confirmó el identificador de un representante. Intente nuevamente.");
+          throw new Error(`El servicio no confirmó el identificador de ${identificarRepresentante(representante)}. Intente nuevamente.`);
         }
 
-        return { ...representante, representanteId };
+        return {
+          ...representante,
+          cuil,
+          representanteId,
+        };
       });
 
       onNext?.(representantesConId);
@@ -194,7 +234,7 @@ export default function StepRepresentantes({
 
                 <td>Apellido</td>
                 <td>Nombre</td>
-                <td>XX-XXXXXXXX-X</td>
+                <td>XX XXXXXXXX X</td>
                 <td>ejemplo@correo.com</td>
                 <td>+XX XX XXXX-XXXX</td>
                 <td>Cargo</td>
@@ -207,7 +247,9 @@ export default function StepRepresentantes({
 
                 <td>{representante.apellido}</td>
                 <td>{representante.nombre}</td>
-                <td>{representante.cuil}</td>
+
+                <td title={formatearCuil(representante.cuil)}>{formatearCuil(representante.cuil)}</td>
+
                 <td>{representante.email}</td>
                 <td>{representante.telefono}</td>
 

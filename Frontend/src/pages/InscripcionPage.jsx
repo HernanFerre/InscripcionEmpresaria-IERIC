@@ -23,6 +23,27 @@ function crearIdRepresentante() {
   return `representante-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function obtenerEmpresasRepresentadas(datosEmpresa) {
+  const empresas = datosEmpresa?.empresasIntegrantes?.length ? datosEmpresa.empresasIntegrantes : datosEmpresa ? [datosEmpresa] : [];
+
+  const resultado = new Map();
+
+  for (const empresa of empresas) {
+    const empresaId = Number(empresa.empresaId ?? empresa.id);
+
+    if (!Number.isSafeInteger(empresaId) || empresaId <= 0) {
+      continue;
+    }
+
+    resultado.set(empresaId, {
+      razonSocial: String(empresa.razonSocial ?? ""),
+      tipoSociedadId: String(empresa.tipoSociedadId ?? ""),
+    });
+  }
+
+  return resultado;
+}
+
 export default function InscripcionPage() {
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -82,13 +103,40 @@ export default function InscripcionPage() {
   };
 
   const handleEmpresaCompletada = (datosEmpresa) => {
-    setFormData((prev) => ({
-      ...prev,
-      datosInscripcion: {
-        ...prev.datosInscripcion,
-        empresa: datosEmpresa,
-      },
-    }));
+    setFormData((prev) => {
+      const empresaAnterior = prev.datosInscripcion.empresa;
+      const empresasAnteriores = obtenerEmpresasRepresentadas(empresaAnterior);
+      const empresasActuales = obtenerEmpresasRepresentadas(datosEmpresa);
+      const solicitudId = Number(datosEmpresa.solicitudId);
+
+      const mismaSolicitud = Number.isSafeInteger(solicitudId) && solicitudId > 0 && solicitudId === Number(empresaAnterior?.solicitudId);
+
+      const representantesActualizados = mismaSolicitud
+        ? (prev.datosInscripcion.representantes ?? [])
+            .filter((representante) => empresasActuales.has(Number(representante.empresaId)))
+            .map((representante) => {
+              const empresaId = Number(representante.empresaId);
+              const empresaActual = empresasActuales.get(empresaId);
+              const empresaPrevia = empresasAnteriores.get(empresaId);
+              const cambioSociedad = empresaPrevia && empresaPrevia.tipoSociedadId !== empresaActual.tipoSociedadId;
+
+              return {
+                ...representante,
+                empresaNombre: empresaActual.razonSocial,
+                ...(cambioSociedad ? { cargo: "Revisar cargo", cargoId: "", tipoRepresentanteId: 0 } : {}),
+              };
+            })
+        : [];
+
+      return {
+        ...prev,
+        datosInscripcion: {
+          ...prev.datosInscripcion,
+          empresa: datosEmpresa,
+          representantes: representantesActualizados,
+        },
+      };
+    });
 
     setInscripcionStep("representantes");
   };
@@ -149,7 +197,6 @@ export default function InscripcionPage() {
         representantes: representantesGuardados,
       },
     }));
-
     setInscripcionStep("nomina");
   };
 

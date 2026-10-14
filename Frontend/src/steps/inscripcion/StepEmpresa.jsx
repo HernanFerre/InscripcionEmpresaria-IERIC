@@ -180,7 +180,7 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
 
         setCatalogos(CATALOGOS_INICIALES);
 
-        setErrorCatalogos(error.message || "No fue posible obtener los datos " + "necesarios para completar la empresa.");
+        setErrorCatalogos(error.message || "No fue posible obtener los datos necesarios para completar la empresa.");
       } finally {
         if (componenteActivo) {
           setCargandoCatalogos(false);
@@ -263,7 +263,7 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
           localidad: "",
         }));
 
-        setErrorLocalidades("No se encontraron localidades para " + "el código postal ingresado.");
+        setErrorLocalidades("No se encontraron localidades para el código postal ingresado.");
 
         return;
       }
@@ -518,7 +518,7 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
         solicitudId: solicitudId !== null ? Number(solicitudId) : null,
       });
     } catch (error) {
-      setErrorGuardado(error.message || "No fue posible guardar la " + "información de la empresa.");
+      setErrorGuardado(error.message || "No fue posible guardar la información de la empresa.");
     } finally {
       setGuardando(false);
     }
@@ -535,7 +535,7 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
 
   return (
     <>
-      <form className="empresa-step-form" noValidate onSubmit={handleSubmit}>
+      <form className="empresa-step-form" autoComplete="off" noValidate onSubmit={handleSubmit}>
         <section className="empresa-form-section">
           <h2 className="section-title empresa-section-title">Información de la empresa</h2>
 
@@ -551,6 +551,7 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
                 className="empresa-input"
                 type="text"
                 name="razonSocial"
+                autoComplete="off"
                 value={datos.razonSocial}
                 placeholder="Nombre de la organización"
                 maxLength={150}
@@ -623,6 +624,7 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
                 className="empresa-input"
                 type="text"
                 name="calle"
+                autoComplete="off"
                 value={datos.calle}
                 placeholder="Calle"
                 maxLength={150}
@@ -642,6 +644,7 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
                 className={["empresa-input", datos.numero && !numeroValido ? "has-error" : ""].filter(Boolean).join(" ")}
                 type="text"
                 name="numero"
+                autoComplete="off"
                 value={datos.numero}
                 placeholder="Número"
                 inputMode="numeric"
@@ -663,6 +666,7 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
                 className={["empresa-input", !pisoValido ? "has-error" : ""].filter(Boolean).join(" ")}
                 type="text"
                 name="piso"
+                autoComplete="off"
                 value={datos.piso}
                 placeholder="Piso"
                 inputMode="numeric"
@@ -683,6 +687,7 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
                 className="empresa-input"
                 type="text"
                 name="departamento"
+                autoComplete="off"
                 value={datos.departamento}
                 placeholder="Depto./Oficina"
                 maxLength={20}
@@ -701,6 +706,7 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
                 className="empresa-input"
                 type="text"
                 name="codigoPostal"
+                autoComplete="off"
                 value={datos.codigoPostal}
                 placeholder="Código postal"
                 maxLength={10}
@@ -721,6 +727,7 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
                 className="empresa-input"
                 type="text"
                 name="provincia"
+                autoComplete="off"
                 value={datos.provincia}
                 placeholder={cargandoLocalidades ? "Consultando..." : "Provincia"}
                 readOnly
@@ -770,6 +777,7 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
                 className={["empresa-input", datos.email && !correoValido ? "has-error" : ""].filter(Boolean).join(" ")}
                 type="email"
                 name="email"
+                autoComplete="off"
                 value={datos.email}
                 placeholder="Correo electrónico"
                 maxLength={254}
@@ -790,6 +798,7 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
                 className={["empresa-input", !telefonoValido ? "has-error" : ""].filter(Boolean).join(" ")}
                 type="tel"
                 name="telefono"
+                autoComplete="off"
                 value={datos.telefono}
                 placeholder="Teléfono"
                 maxLength={30}
