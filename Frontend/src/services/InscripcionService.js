@@ -286,3 +286,102 @@ export async function guardarRepresentantesSolicitud(solicitudId, representantes
 
   return resultado;
 }
+
+function obtenerUrlNominaSolicitud(solicitudId) {
+  if (!INSCRIPCION_API_URL) {
+    throw new Error("No se configuró VITE_INSCRIPCION_API_URL.");
+  }
+
+  const id = Number(solicitudId);
+
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    throw new Error("No se encontró una solicitud válida para la nómina.");
+  }
+
+  const rutaBase = USAR_TOKEN_BACKEND_DESARROLLO ? "/v1/desarrollo/solicitudes" : "/v1/solicitudes";
+
+  return `${INSCRIPCION_API_URL}${rutaBase}/${id}/nomina`;
+}
+
+function normalizarRespuestaNomina(resultado, solicitudId) {
+  const trabajadores = resultado?.trabajadores ?? resultado?.Trabajadores;
+  const requiereDeclaracionJurada = resultado?.requiereDeclaracionJurada ?? resultado?.RequiereDeclaracionJurada;
+  const id = Number(resultado?.solicitudId ?? resultado?.SolicitudId);
+
+  if (!Array.isArray(trabajadores) || typeof requiereDeclaracionJurada !== "boolean" || id !== Number(solicitudId)) {
+    throw new Error("El servicio no devolvió una nómina válida para esta solicitud.");
+  }
+
+  return {
+    solicitudId: id,
+    fechaInicioActividades: String(resultado.fechaInicioActividades ?? resultado.FechaInicioActividades ?? "").slice(0, 10),
+    diasDesdeInicioActividades: resultado.diasDesdeInicioActividades ?? resultado.DiasDesdeInicioActividades ?? null,
+    requiereDeclaracionJurada,
+    trabajadores: trabajadores.map((trabajador) => {
+      const trabajadorId = Number(trabajador?.trabajadorId ?? trabajador?.TrabajadorId);
+      const esManual = trabajador?.esManual ?? trabajador?.EsManual;
+      const perteneceConstruccion = trabajador?.perteneceAConstruccion ?? trabajador?.PerteneceAConstruccion;
+
+      if (
+        !Number.isSafeInteger(trabajadorId) ||
+        trabajadorId <= 0 ||
+        typeof esManual !== "boolean" ||
+        typeof perteneceConstruccion !== "boolean"
+      ) {
+        throw new Error("El servicio devolvió un trabajador con datos incompletos.");
+      }
+
+      return {
+        id: `trabajador-${trabajadorId}`,
+        trabajadorId,
+        apellidoNombre: String(trabajador.apellidoYNombre ?? trabajador.ApellidoYNombre ?? "").trim(),
+        cuil: String(trabajador.cuil ?? trabajador.Cuil ?? ""),
+        ingreso: String(trabajador.ingreso ?? trabajador.Ingreso ?? "").slice(0, 10),
+        egreso: String(trabajador.egreso ?? trabajador.Egreso ?? "").slice(0, 10),
+        perteneceConstruccion,
+        origen: esManual ? "manual" : "servicio",
+      };
+    }),
+  };
+}
+
+export async function cargarNominaSolicitud(solicitudId, token, signal) {
+  const url = obtenerUrlNominaSolicitud(solicitudId);
+
+  const response = await fetch(`${url}/cargar`, {
+    method: "POST",
+    headers: crearHeadersAutorizados(token),
+    signal,
+  });
+
+  const resultado = await procesarRespuestaApi(response);
+
+  return normalizarRespuestaNomina(resultado, solicitudId);
+}
+
+export async function guardarNominaSolicitud(solicitudId, trabajadores, token) {
+  const url = obtenerUrlNominaSolicitud(solicitudId);
+
+  if (!Array.isArray(trabajadores)) {
+    throw new Error("La información de la nómina no es válida.");
+  }
+
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: crearHeadersAutorizados(token),
+    body: JSON.stringify({
+      trabajadores: trabajadores.map((trabajador) => ({
+        trabajadorId: trabajador.trabajadorId ?? 0,
+        apellidoYNombre: trabajador.apellidoNombre,
+        cuil: String(trabajador.cuil ?? ""),
+        ingreso: trabajador.ingreso || null,
+        egreso: trabajador.egreso || null,
+        perteneceAConstruccion: trabajador.perteneceConstruccion,
+      })),
+    }),
+  });
+
+  const resultado = await procesarRespuestaApi(response);
+
+  return normalizarRespuestaNomina(resultado, solicitudId);
+}

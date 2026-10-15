@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import Topbar from "../components/layout/Topbar.jsx";
 import StepIndicator from "../components/wizard/StepIndicator.jsx";
@@ -67,6 +67,7 @@ export default function InscripcionPage() {
     datosInscripcion: {
       empresa: null,
       representantes: [],
+      nomina: null,
       declaracionJurada: null,
     },
   });
@@ -134,6 +135,8 @@ export default function InscripcionPage() {
           ...prev.datosInscripcion,
           empresa: datosEmpresa,
           representantes: representantesActualizados,
+          nomina: mismaSolicitud ? prev.datosInscripcion.nomina : null,
+          declaracionJurada: mismaSolicitud ? prev.datosInscripcion.declaracionJurada : null,
         },
       };
     });
@@ -204,8 +207,33 @@ export default function InscripcionPage() {
     setInscripcionStep("representantes");
   };
 
-  const handleContinuarADeclaracionJurada = () => {
-    setInscripcionStep("declaracion-jurada");
+  const handleNominaActualizada = useCallback((datosNomina) => {
+    setFormData((prev) => {
+      const solicitudId = Number(prev.datosInscripcion.empresa?.solicitudId);
+
+      if (
+        !Number.isSafeInteger(solicitudId) ||
+        solicitudId <= 0 ||
+        Number(datosNomina?.solicitudId) !== solicitudId ||
+        prev.datosInscripcion.nomina === datosNomina
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        datosInscripcion: {
+          ...prev.datosInscripcion,
+          nomina: datosNomina,
+        },
+      };
+    });
+  }, []);
+
+  const handleNominaCompletada = (datosNomina) => {
+    handleNominaActualizada(datosNomina);
+
+    setInscripcionStep(datosNomina.requiereDeclaracionJurada ? "declaracion-jurada" : "documentacion");
   };
 
   const handleDeclaracionJuradaCompletada = (datosDeclaracionJurada) => {
@@ -224,8 +252,8 @@ export default function InscripcionPage() {
     setInscripcionStep("nomina");
   };
 
-  const handleVolverADeclaracionJurada = () => {
-    setInscripcionStep("declaracion-jurada");
+  const handleVolverDesdeDocumentacion = () => {
+    setInscripcionStep(formData.datosInscripcion.nomina?.requiereDeclaracionJurada ? "declaracion-jurada" : "nomina");
   };
 
   const handleAuthenticated = () => {
@@ -289,7 +317,10 @@ export default function InscripcionPage() {
 
                 {faseActual === "inscripcion" && (
                   <>
-                    <InscripcionProgress currentStep={inscripcionStep} />
+                    <InscripcionProgress
+                      currentStep={inscripcionStep}
+                      mostrarDeclaracionJurada={formData.datosInscripcion.nomina?.requiereDeclaracionJurada ?? true}
+                    />
 
                     {inscripcionStep === "empresa" && (
                       <StepEmpresa
@@ -316,7 +347,15 @@ export default function InscripcionPage() {
                     )}
 
                     {inscripcionStep === "nomina" && (
-                      <StepNomina onBack={handleVolverARepresentantes} onNext={handleContinuarADeclaracionJurada} />
+                      <StepNomina
+                        key={formData.datosInscripcion.empresa?.solicitudId ?? "sin-solicitud"}
+                        token={token}
+                        solicitudId={formData.datosInscripcion.empresa?.solicitudId ?? null}
+                        nomina={formData.datosInscripcion.nomina}
+                        onChange={handleNominaActualizada}
+                        onBack={handleVolverARepresentantes}
+                        onNext={handleNominaCompletada}
+                      />
                     )}
 
                     {inscripcionStep === "declaracion-jurada" && (
@@ -327,7 +366,7 @@ export default function InscripcionPage() {
                       />
                     )}
 
-                    {inscripcionStep === "documentacion" && <StepDocumentacion onBack={handleVolverADeclaracionJurada} />}
+                    {inscripcionStep === "documentacion" && <StepDocumentacion onBack={handleVolverDesdeDocumentacion} />}
                   </>
                 )}
               </div>

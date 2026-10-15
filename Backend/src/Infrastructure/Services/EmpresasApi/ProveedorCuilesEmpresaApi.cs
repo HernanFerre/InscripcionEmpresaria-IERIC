@@ -7,14 +7,19 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using IERIC.SumariosIERIC.Domain.Entities.Inscripcion;
+using IERIC.SumariosIERIC.Domain.Exceptions;
 using IERIC.SumariosIERIC.Domain.Services;
 using IERIC.SumariosIERIC.Domain.ValueObjects.Network;
 
 namespace IERIC.SumariosIERIC.Infrastructure.Services
 {
     public sealed class ProveedorCuilesEmpresaApi
-        : IProveedorCuilesEmpresa
+        : IProveedorCuilesEmpresa,
+          IProveedorNominaEmpresa
     {
+        private const int LimiteTrabajadoresNomina = 100;
+
         private static readonly JsonSerializerOptions OpcionesJson =
             new JsonSerializerOptions(JsonSerializerDefaults.Web);
 
@@ -45,6 +50,63 @@ namespace IERIC.SumariosIERIC.Infrastructure.Services
                 Cuit cuitEmpresa,
                 int limite,
                 CancellationToken cancellationToken = default
+            )
+        {
+            List<CuilEmpresaApiResponse> resultados =
+                await ObtenerResultadosAsync(
+                    cuitEmpresa,
+                    limite,
+                    cancellationToken
+                );
+
+            return resultados
+                .Select(resultado => resultado.Cuil)
+                .Distinct()
+                .Select(numero => new Cuil(numero))
+                .ToList();
+        }
+
+        public async Task<IReadOnlyCollection<TrabajadorNomina>>
+            ObtenerNominaPorCuitAsync(
+                Cuit cuitEmpresa,
+                long solicitudId,
+                CancellationToken cancellationToken = default
+            )
+        {
+            if (solicitudId <= 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(solicitudId),
+                    "La solicitud de la nómina no es válida."
+                );
+            }
+
+            List<CuilEmpresaApiResponse> resultados =
+                await ObtenerResultadosAsync(
+                    cuitEmpresa,
+                    LimiteTrabajadoresNomina,
+                    cancellationToken
+                );
+
+            return resultados
+                .Select(resultado => CrearTrabajador(
+                    resultado,
+                    solicitudId
+                ))
+                .OrderByDescending(trabajador => trabajador.Ingreso)
+                .ThenBy(
+                    trabajador => trabajador.ApellidoYNombre,
+                    StringComparer.OrdinalIgnoreCase
+                )
+                .ThenBy(trabajador => trabajador.Cuil.ToInt64())
+                .ToList();
+        }
+
+        private async Task<List<CuilEmpresaApiResponse>>
+            ObtenerResultadosAsync(
+                Cuit cuitEmpresa,
+                int limite,
+                CancellationToken cancellationToken
             )
         {
             if (cuitEmpresa == null)
@@ -94,11 +156,6 @@ namespace IERIC.SumariosIERIC.Infrastructure.Services
                 List<CuilEmpresaApiResponse> resultados =
                     LeerResultados(contenido);
 
-                if (resultados.Count == 0)
-                {
-                    return Array.Empty<Cuil>();
-                }
-
                 if (resultados.Any(resultado => resultado == null))
                 {
                     throw new HttpRequestException(
@@ -106,13 +163,8 @@ namespace IERIC.SumariosIERIC.Infrastructure.Services
                     );
                 }
 
-                List<long> numerosCuil = resultados
-                    .Select(resultado => resultado.Cuil)
-                    .Distinct()
-                    .ToList();
-
-                bool contieneCuilInvalido = numerosCuil.Any(
-                    numero => !Cuil.EsCuilValido(numero)
+                bool contieneCuilInvalido = resultados.Any(
+                    resultado => !Cuil.EsCuilValido(resultado.Cuil)
                 );
 
                 if (contieneCuilInvalido)
@@ -122,9 +174,44 @@ namespace IERIC.SumariosIERIC.Infrastructure.Services
                     );
                 }
 
-                return numerosCuil
-                    .Select(numero => new Cuil(numero))
-                    .ToList();
+                return resultados;
+            }
+        }
+
+        private static TrabajadorNomina CrearTrabajador(
+            CuilEmpresaApiResponse resultado,
+            long solicitudId
+        )
+        {
+            string apellidoYNombre =
+                $"{resultado.Apellidos?.Trim()} {resultado.Nombres?.Trim()}"
+                    .Trim();
+
+            DateTime? egreso = resultado.FechaEgreso?.Date;
+
+            if (egreso == new DateTime(9998, 12, 31))
+            {
+                egreso = null;
+            }
+
+            try
+            {
+                return TrabajadorNomina.CrearDesdeServicio(
+                    solicitudId,
+                    apellidoYNombre,
+                    new Cuil(resultado.Cuil),
+                    resultado.FechaIngreso,
+                    egreso
+                );
+            }
+            catch (SumariosDomainException exception)
+            {
+                throw new HttpRequestException(
+                    $"El servicio de empresas devolvió datos inválidos " +
+                    $"para el trabajador con CUIL {resultado.Cuil}: " +
+                    exception.Message,
+                    exception
+                );
             }
         }
 

@@ -244,6 +244,121 @@ namespace IERIC.SumariosIERIC.Application
             return Ok(resultado);
         }
 
+        [HttpPost("{solicitudId:long}/nomina/cargar")]
+        public async Task<ActionResult<NominaSolicitudResponse>> CargarNominaAsync(
+            long solicitudId,
+            CancellationToken cancellationToken
+        )
+        {
+            var autenticacion = await ValidarAutenticacionDesarrolloAsync(
+                cancellationToken
+            );
+
+            if (autenticacion.Error != null)
+            {
+                return autenticacion.Error;
+            }
+
+            NominaSolicitudResponse resultado = await _mediator.Send(
+                new CargarNominaSolicitudCommand(
+                    solicitudId,
+                    autenticacion.IdUsuarioAlta
+                ),
+                cancellationToken
+            );
+
+            return Ok(resultado);
+        }
+
+        [HttpPut("{solicitudId:long}/nomina")]
+        public async Task<ActionResult<NominaSolicitudResponse>> GuardarNominaAsync(
+            long solicitudId,
+            [FromBody] GuardarNominaSolicitudRequest request,
+            CancellationToken cancellationToken
+        )
+        {
+            var autenticacion = await ValidarAutenticacionDesarrolloAsync(
+                cancellationToken
+            );
+
+            if (autenticacion.Error != null)
+            {
+                return autenticacion.Error;
+            }
+
+            if (request == null)
+            {
+                return BadRequest(new
+                {
+                    mensaje = "La información de la nómina no puede estar vacía."
+                });
+            }
+
+            NominaSolicitudResponse resultado = await _mediator.Send(
+                new GuardarNominaSolicitudCommand(
+                    solicitudId,
+                    request,
+                    autenticacion.IdUsuarioAlta
+                ),
+                cancellationToken
+            );
+
+            return Ok(resultado);
+        }
+
+        private async Task<(string IdUsuarioAlta, ActionResult Error)>
+            ValidarAutenticacionDesarrolloAsync(
+                CancellationToken cancellationToken
+            )
+        {
+            if (!_environment.IsDevelopment())
+            {
+                return (null, NotFound());
+            }
+
+            string tokenRecibido = ObtenerBearerToken();
+
+            if (string.IsNullOrWhiteSpace(tokenRecibido))
+            {
+                return (null, Unauthorized(new
+                {
+                    mensaje = "No se recibió el token de desarrollo."
+                }));
+            }
+
+            string tokenEsperado = await _proveedorToken.ObtenerTokenAsync(
+                cancellationToken
+            );
+
+            if (!TokensCoinciden(tokenRecibido, tokenEsperado))
+            {
+                return (null, Unauthorized(new
+                {
+                    mensaje = "El token de desarrollo no es válido."
+                }));
+            }
+
+            string idUsuarioAlta = ObtenerIdUsuarioAlta(tokenRecibido);
+
+            if (string.IsNullOrWhiteSpace(idUsuarioAlta))
+            {
+                return (null, Unauthorized(new
+                {
+                    mensaje = "No fue posible identificar al usuario autenticado."
+                }));
+            }
+
+            if (!ConfigurarUsuarioAutenticado(tokenRecibido))
+            {
+                return (null, Unauthorized(new
+                {
+                    mensaje = "No fue posible obtener el nombre del usuario autenticado."
+                }));
+            }
+
+            return (idUsuarioAlta, null);
+        }
+
         private string ObtenerBearerToken()
         {
             if (

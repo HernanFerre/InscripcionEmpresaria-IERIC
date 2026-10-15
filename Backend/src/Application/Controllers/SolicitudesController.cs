@@ -135,6 +135,70 @@ namespace IERIC.SumariosIERIC.Application
             return Ok(resultado);
         }
 
+        [HttpPost("{solicitudId:long}/nomina/cargar")]
+        public async Task<ActionResult<NominaSolicitudResponse>> CargarNominaAsync(
+            long solicitudId,
+            CancellationToken cancellationToken
+        )
+        {
+            string idUsuarioAlta = ObtenerIdUsuarioAlta();
+
+            if (string.IsNullOrWhiteSpace(idUsuarioAlta))
+            {
+                return Unauthorized(new
+                {
+                    mensaje = "No fue posible identificar al usuario autenticado."
+                });
+            }
+
+            NominaSolicitudResponse resultado = await _mediator.Send(
+                new CargarNominaSolicitudCommand(
+                    solicitudId,
+                    idUsuarioAlta
+                ),
+                cancellationToken
+            );
+
+            return Ok(resultado);
+        }
+
+        [HttpPut("{solicitudId:long}/nomina")]
+        public async Task<ActionResult<NominaSolicitudResponse>> GuardarNominaAsync(
+            long solicitudId,
+            [FromBody] GuardarNominaSolicitudRequest request,
+            CancellationToken cancellationToken
+        )
+        {
+            if (request == null)
+            {
+                return BadRequest(new
+                {
+                    mensaje = "La información de la nómina no puede estar vacía."
+                });
+            }
+
+            string idUsuarioAlta = ObtenerIdUsuarioAlta();
+
+            if (string.IsNullOrWhiteSpace(idUsuarioAlta))
+            {
+                return Unauthorized(new
+                {
+                    mensaje = "No fue posible identificar al usuario autenticado."
+                });
+            }
+
+            NominaSolicitudResponse resultado = await _mediator.Send(
+                new GuardarNominaSolicitudCommand(
+                    solicitudId,
+                    request,
+                    idUsuarioAlta
+                ),
+                cancellationToken
+            );
+
+            return Ok(resultado);
+        }
+
         private string ObtenerIdUsuarioAlta()
         {
             return

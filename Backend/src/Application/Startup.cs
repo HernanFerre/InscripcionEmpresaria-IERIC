@@ -176,6 +176,11 @@ namespace IERIC.SumariosIERIC.Application
                 SolicitudInscripcionSqlRepository
             >();
 
+            services.AddScoped<
+                INominaSolicitudRepository,
+                NominaSolicitudSqlRepository
+            >();
+
             services.AddTransient<
                 IGeneradorQuiz,
                 GeneradorQuiz
@@ -298,6 +303,20 @@ namespace IERIC.SumariosIERIC.Application
 
             services.AddHttpClient<
                 IProveedorCuilesEmpresa,
+                ProveedorCuilesEmpresaApi
+            >(
+                client =>
+                {
+                    client.BaseAddress =
+                        new Uri(empresasCuilesApiBaseUrl);
+
+                    client.Timeout =
+                        TimeSpan.FromSeconds(30);
+                }
+            );
+
+            services.AddHttpClient<
+                IProveedorNominaEmpresa,
                 ProveedorCuilesEmpresaApi
             >(
                 client =>

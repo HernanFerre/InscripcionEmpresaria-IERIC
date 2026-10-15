@@ -11,13 +11,15 @@ const INSCRIPCION_STEPS = [
   { id: "revision", label: "Revisión" },
 ];
 
-export default function InscripcionProgress({ currentStep = "empresa" }) {
-  const currentIndex = INSCRIPCION_STEPS.findIndex((step) => step.id === currentStep);
+export default function InscripcionProgress({ currentStep = "empresa", mostrarDeclaracionJurada = true }) {
+  const steps = INSCRIPCION_STEPS.filter((step) => mostrarDeclaracionJurada || step.id !== "declaracion-jurada");
+
+  const currentIndex = steps.findIndex((step) => step.id === currentStep);
 
   return (
     <nav className="inscripcion-progress" aria-label="Progreso de la inscripción">
       <ol className="inscripcion-progress-list">
-        {INSCRIPCION_STEPS.map((step, index) => {
+        {steps.map((step, index) => {
           const isActive = step.id === currentStep;
           const isCompleted = currentIndex >= 0 && index < currentIndex;
 
@@ -31,9 +33,7 @@ export default function InscripcionProgress({ currentStep = "empresa" }) {
                 {step.label}
               </span>
 
-              {index < INSCRIPCION_STEPS.length - 1 && (
-                <ChevronRight className="inscripcion-progress-separator" size={17} aria-hidden="true" />
-              )}
+              {index < steps.length - 1 && <ChevronRight className="inscripcion-progress-separator" size={17} aria-hidden="true" />}
             </li>
           );
         })}

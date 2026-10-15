@@ -283,6 +283,52 @@ namespace Infrastructure.Migrations
                     b.ToTable("SolicitudRepresentante", "dbo");
                 });
 
+            modelBuilder.Entity("IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.TrabajadorNominaEntity", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ApellidoYNombre")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Cuil")
+                        .IsRequired()
+                        .HasMaxLength(11)
+                        .HasColumnType("varchar(11)");
+
+                    b.Property<DateTime?>("Egreso")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("EsManual")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<long>("IdSolicitud")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("Ingreso")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("PerteneceAConstr")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id")
+                        .HasName("PK_TrabajadorNomina");
+
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"));
+
+                    b.HasIndex("IdSolicitud")
+                        .HasDatabaseName("IX_TrabajadorNomina_IdSolicitud");
+
+                    b.ToTable("TrabajadorNomina", "dbo");
+                });
+
             modelBuilder.Entity("IERIC.SumariosIERIC.Infrastructure.Persistence.Quiz.QuizCuilVinculadoEntity", b =>
                 {
                     b.Property<long>("QuizSesionId")
@@ -514,6 +560,16 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("FK_SolicitudRepresentante_Solicitud");
+                });
+
+            modelBuilder.Entity("IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.TrabajadorNominaEntity", b =>
+                {
+                    b.HasOne("IERIC.SumariosIERIC.Infrastructure.Persistence.Inscripcion.SolicitudInscripcionEntity", null)
+                        .WithMany()
+                        .HasForeignKey("IdSolicitud")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("FK_TrabajadorNomina_Solicitud");
                 });
 
             modelBuilder.Entity("IERIC.SumariosIERIC.Infrastructure.Persistence.Quiz.QuizCuilVinculadoEntity", b =>
