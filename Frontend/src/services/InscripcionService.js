@@ -52,7 +52,7 @@ function obtenerEstadoSolicitud(codigoEstado) {
   return "BLOQUEADA";
 }
 
-export async function validarCuit(cuit) {
+export async function validarCuit(cuit, token) {
   const cuitNormalizado = String(cuit ?? "").replace(/\D/g, "");
 
   if (cuitNormalizado.length !== 11) {
@@ -76,9 +76,7 @@ export async function validarCuit(cuit) {
 
   const response = await fetch(`${estadoApiUrl}/empresas/estado/${cuitNormalizado}`, {
     method: "GET",
-    headers: {
-      Accept: "application/json",
-    },
+    headers: crearHeadersAutorizados(token),
   });
 
   const data = await procesarRespuestaApi(response);

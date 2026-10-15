@@ -38,7 +38,7 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
     setErrorProceso("");
 
     try {
-      const resultado = await validarCuit(cuit);
+      const resultado = await validarCuit(cuit, token);
 
       if (resultado.ok) {
         setEmpresa(resultado.empresa);
