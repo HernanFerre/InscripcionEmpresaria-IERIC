@@ -129,7 +129,7 @@ export default function EmpresaIntegranteModal({
           </button>
         </header>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} autoComplete="off">
           <div className="empresa-integrante-modal-body">
             <div className="empresa-integrante-modal-grid">
               <div className="empresa-integrante-modal-field">
@@ -143,6 +143,7 @@ export default function EmpresaIntegranteModal({
                   className="empresa-integrante-modal-input"
                   type="text"
                   name="cuit"
+                  autoComplete="off"
                   value={datos.cuit}
                   placeholder="XX-XXXXXXXX-X"
                   inputMode="numeric"
@@ -170,6 +171,7 @@ export default function EmpresaIntegranteModal({
                   className="empresa-integrante-modal-input"
                   type="text"
                   name="razonSocial"
+                  autoComplete="off"
                   value={datos.razonSocial}
                   placeholder="Razón social"
                   maxLength={150}

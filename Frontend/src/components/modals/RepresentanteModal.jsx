@@ -243,7 +243,7 @@ export default function RepresentanteModal({
           </button>
         </header>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} autoComplete="off">
           <div className="representante-modal-body">
             <div className="representante-modal-grid">
               {requiereEmpresaIntegrante && (
@@ -271,6 +271,7 @@ export default function RepresentanteModal({
                   className="representante-modal-input"
                   type="text"
                   name="apellido"
+                  autoComplete="off"
                   value={datos.apellido}
                   placeholder="Apellido"
                   required
@@ -290,6 +291,7 @@ export default function RepresentanteModal({
                   className="representante-modal-input"
                   type="text"
                   name="nombre"
+                  autoComplete="off"
                   value={datos.nombre}
                   placeholder="Nombre"
                   required
@@ -357,6 +359,7 @@ export default function RepresentanteModal({
                   className="representante-modal-input"
                   type="email"
                   name="email"
+                  autoComplete="off"
                   value={datos.email}
                   placeholder="Correo electrónico"
                   required
@@ -376,6 +379,7 @@ export default function RepresentanteModal({
                   className="representante-modal-input"
                   type="tel"
                   name="telefono"
+                  autoComplete="off"
                   value={datos.telefono}
                   placeholder="Teléfono"
                   required

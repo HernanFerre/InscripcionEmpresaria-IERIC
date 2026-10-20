@@ -6,10 +6,6 @@ import { USAR_TOKEN_BACKEND_DESARROLLO } from "../config/featureFlags.js";
 
 const INSCRIPCION_API_URL = (import.meta.env.VITE_INSCRIPCION_API_URL || "").replace(/\/+$/, "");
 
-const EMPRESAS_ESTADO_SERVIDOR = (import.meta.env.VITE_EMPRESAS_ESTADO_SERVIDOR || "").replace(/\/+$/, "");
-
-const EMPRESAS_ESTADO_PUERTO = import.meta.env.VITE_EMPRESAS_ESTADO_PUERTO || "";
-
 const ESTADOS_HABILITADOS = new Set([5, 8, 9]);
 
 function crearHeadersAutorizados(token) {
@@ -64,24 +60,21 @@ export async function validarCuit(cuit, token) {
     };
   }
 
-  if (!EMPRESAS_ESTADO_SERVIDOR) {
-    throw new Error("No se configuró VITE_EMPRESAS_ESTADO_SERVIDOR.");
+  if (!INSCRIPCION_API_URL) {
+    throw new Error("No se configuró VITE_INSCRIPCION_API_URL.");
   }
 
-  if (!EMPRESAS_ESTADO_PUERTO) {
-    throw new Error("No se configuró VITE_EMPRESAS_ESTADO_PUERTO.");
-  }
+  const rutaConsultarEstado = USAR_TOKEN_BACKEND_DESARROLLO ? "/v1/desarrollo/empresas/estado" : "/v1/empresas/estado";
 
-  const estadoApiUrl = `${EMPRESAS_ESTADO_SERVIDOR}:` + `${EMPRESAS_ESTADO_PUERTO}`;
-
-  const response = await fetch(`${estadoApiUrl}/empresas/estado/${cuitNormalizado}`, {
+  const response = await fetch(`${INSCRIPCION_API_URL}${rutaConsultarEstado}/${cuitNormalizado}`, {
     method: "GET",
     headers: crearHeadersAutorizados(token),
+    cache: "no-store",
   });
 
   const data = await procesarRespuestaApi(response);
 
-  const codigoEstado = Number(data.codigoEstado ?? data.codigoestado);
+  const codigoEstado = Number(data?.codigoEstado ?? data?.codigoestado);
 
   if (!Number.isInteger(codigoEstado)) {
     throw new Error("El servicio devolvió un código de estado inválido.");
@@ -305,7 +298,9 @@ function obtenerUrlNominaSolicitud(solicitudId) {
 
 function normalizarRespuestaNomina(resultado, solicitudId) {
   const trabajadores = resultado?.trabajadores ?? resultado?.Trabajadores;
+
   const requiereDeclaracionJurada = resultado?.requiereDeclaracionJurada ?? resultado?.RequiereDeclaracionJurada;
+
   const id = Number(resultado?.solicitudId ?? resultado?.SolicitudId);
 
   if (!Array.isArray(trabajadores) || typeof requiereDeclaracionJurada !== "boolean" || id !== Number(solicitudId)) {
@@ -314,12 +309,18 @@ function normalizarRespuestaNomina(resultado, solicitudId) {
 
   return {
     solicitudId: id,
+
     fechaInicioActividades: String(resultado.fechaInicioActividades ?? resultado.FechaInicioActividades ?? "").slice(0, 10),
+
     diasDesdeInicioActividades: resultado.diasDesdeInicioActividades ?? resultado.DiasDesdeInicioActividades ?? null,
+
     requiereDeclaracionJurada,
+
     trabajadores: trabajadores.map((trabajador) => {
       const trabajadorId = Number(trabajador?.trabajadorId ?? trabajador?.TrabajadorId);
+
       const esManual = trabajador?.esManual ?? trabajador?.EsManual;
+
       const perteneceConstruccion = trabajador?.perteneceAConstruccion ?? trabajador?.PerteneceAConstruccion;
 
       if (
@@ -334,11 +335,17 @@ function normalizarRespuestaNomina(resultado, solicitudId) {
       return {
         id: `trabajador-${trabajadorId}`,
         trabajadorId,
+
         apellidoNombre: String(trabajador.apellidoYNombre ?? trabajador.ApellidoYNombre ?? "").trim(),
+
         cuil: String(trabajador.cuil ?? trabajador.Cuil ?? ""),
+
         ingreso: String(trabajador.ingreso ?? trabajador.Ingreso ?? "").slice(0, 10),
+
         egreso: String(trabajador.egreso ?? trabajador.Egreso ?? "").slice(0, 10),
+
         perteneceConstruccion,
+
         origen: esManual ? "manual" : "servicio",
       };
     }),

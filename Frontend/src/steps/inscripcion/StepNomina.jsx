@@ -12,22 +12,28 @@ const TAMANO_PAGINA = 10;
 
 function formatearFecha(fecha) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha ?? "")) return "—";
+
   const [anio, mes, dia] = fecha.split("-");
+
   return `${dia}/${mes}/${anio}`;
 }
 
 function formatearCuil(value) {
   const cuil = normalizarCuit(value);
+
   return cuil.length > 11 ? cuil : formatCuit(cuil).replace(/-/g, " ");
 }
 
 export default function StepNomina({ token, solicitudId = null, nomina = null, onChange, onBack, onNext }) {
   const id = Number(solicitudId);
   const solicitudValida = Number.isSafeInteger(id) && id > 0;
+
   const tieneNomina = solicitudValida && Number(nomina?.solicitudId) === id && Array.isArray(nomina?.trabajadores);
+
   const trabajadores = tieneNomina ? nomina.trabajadores : [];
 
   const [cargando, setCargando] = useState(!tieneNomina && Boolean(token) && solicitudValida);
+
   const [guardando, setGuardando] = useState(false);
   const [errorProceso, setErrorProceso] = useState("");
   const [intentoCarga, setIntentoCarga] = useState(0);
@@ -47,6 +53,7 @@ export default function StepNomina({ token, solicitudId = null, nomina = null, o
 
       try {
         const resultado = await cargarNominaSolicitud(id, token, controller.signal);
+
         if (activo) onChange?.(resultado);
       } catch (error) {
         if (activo && !controller.signal.aborted) {
@@ -66,13 +73,17 @@ export default function StepNomina({ token, solicitudId = null, nomina = null, o
   }, [id, solicitudValida, token, tieneNomina, onChange, intentoCarga]);
 
   const puedeOperar = tieneNomina && Boolean(token) && !cargando && !guardando;
+
   const totalPaginas = Math.max(1, Math.ceil(trabajadores.length / TAMANO_PAGINA));
+
   const paginaActual = Math.min(pagina, totalPaginas - 1);
   const inicioPagina = paginaActual * TAMANO_PAGINA;
+
   const trabajadoresVisibles = trabajadores.slice(inicioPagina, inicioPagina + TAMANO_PAGINA);
 
   const trabajadorMasAntiguo = trabajadores.reduce((anterior, trabajador) => {
     if (!trabajador.ingreso) return anterior;
+
     return !anterior || trabajador.ingreso < anterior.ingreso ? trabajador : anterior;
   }, null);
 
@@ -90,12 +101,14 @@ export default function StepNomina({ token, solicitudId = null, nomina = null, o
   };
 
   const actualizarPertenencia = (trabajador, value) => {
-    if (!puedeOperar) return;
+    if (!puedeOperar || trabajador.origen === "manual") return;
+
     actualizarTrabajadores(trabajadores.map((item) => (item.id === trabajador.id ? { ...item, perteneceConstruccion: value } : item)));
   };
 
   const abrirNuevoTrabajador = () => {
     if (!puedeOperar) return;
+
     setErrorProceso("");
     setTrabajadorSeleccionado(null);
     setModalTrabajadorAbierto(true);
@@ -103,6 +116,7 @@ export default function StepNomina({ token, solicitudId = null, nomina = null, o
 
   const abrirEdicionTrabajador = (trabajador) => {
     if (!puedeOperar || trabajador.origen !== "manual") return;
+
     setErrorProceso("");
     setTrabajadorSeleccionado(trabajador);
     setModalTrabajadorAbierto(true);
@@ -118,12 +132,14 @@ export default function StepNomina({ token, solicitudId = null, nomina = null, o
 
     const guardado = {
       ...datosTrabajador,
+
       id: trabajadorSeleccionado?.id ?? `manual-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+
       trabajadorId: trabajadorSeleccionado?.trabajadorId ?? 0,
       apellidoNombre: String(datosTrabajador.apellidoNombre ?? "").trim(),
       cuil: normalizarCuit(datosTrabajador.cuil),
       egreso: datosTrabajador.egreso || "",
-      perteneceConstruccion: trabajadorSeleccionado?.perteneceConstruccion ?? datosTrabajador.perteneceConstruccion ?? true,
+      perteneceConstruccion: true,
       origen: "manual",
     };
 
@@ -132,21 +148,29 @@ export default function StepNomina({ token, solicitudId = null, nomina = null, o
     );
 
     if (!trabajadorSeleccionado) setPagina(0);
+
     cerrarModalTrabajador();
   };
 
   const eliminarTrabajador = (trabajador) => {
     if (!puedeOperar || trabajador.origen !== "manual") return;
+
     actualizarTrabajadores(trabajadores.filter((item) => item.id !== trabajador.id));
   };
 
   const continuar = async () => {
     if (!puedeOperar || modalTrabajadorAbierto) return;
+
     setGuardando(true);
     setErrorProceso("");
 
     try {
-      const resultado = await guardarNominaSolicitud(id, trabajadores, token);
+      const trabajadoresParaGuardar = trabajadores.map((trabajador) =>
+        trabajador.origen === "manual" ? { ...trabajador, perteneceConstruccion: true } : trabajador,
+      );
+
+      const resultado = await guardarNominaSolicitud(id, trabajadoresParaGuardar, token);
+
       onChange?.(resultado);
       onNext?.(resultado);
     } catch (error) {
@@ -205,7 +229,6 @@ export default function StepNomina({ token, solicitudId = null, nomina = null, o
               </th>
 
               <th>Egreso</th>
-
               <th>Pertenece a construcción</th>
               <th aria-label="Acciones" />
             </tr>
@@ -225,14 +248,15 @@ export default function StepNomina({ token, solicitudId = null, nomina = null, o
             )}
 
             {trabajadoresVisibles.map((trabajador) => {
-              const pertenece = trabajador.perteneceConstruccion;
-
               const esManual = trabajador.origen === "manual";
+              const pertenece = esManual || trabajador.perteneceConstruccion;
 
               return (
                 <tr key={trabajador.id}>
                   <td title={trabajador.apellidoNombre}>{trabajador.apellidoNombre}</td>
+
                   <td title={formatearCuil(trabajador.cuil)}>{formatearCuil(trabajador.cuil)}</td>
+
                   <td>{formatearFecha(trabajador.ingreso)}</td>
 
                   <td className={trabajador.egreso ? "nomina-egreso" : ""}>{formatearFecha(trabajador.egreso)}</td>
@@ -255,14 +279,25 @@ export default function StepNomina({ token, solicitudId = null, nomina = null, o
                         />
                       </label>
 
-                      <label>
+                      <label
+                        style={
+                          esManual
+                            ? {
+                                color: "var(--color-text-disabled)",
+                                cursor: "default",
+                              }
+                            : undefined
+                        }
+                        title={esManual ? "Los trabajadores incorporados manualmente pertenecen a la construcción." : undefined}
+                      >
                         <span>No</span>
 
                         <input
                           type="radio"
                           name={`construccion-${trabajador.id}`}
                           checked={pertenece === false}
-                          disabled={!puedeOperar}
+                          disabled={!puedeOperar || esManual}
+                          style={esManual ? { cursor: "default" } : undefined}
                           onChange={() => actualizarPertenencia(trabajador, false)}
                         />
                       </label>
@@ -342,6 +377,7 @@ export default function StepNomina({ token, solicitudId = null, nomina = null, o
       {mensajeError && (
         <div className="empresa-field-error" role="alert">
           <p>{mensajeError}</p>
+
           {errorProceso && !tieneNomina && solicitudValida && token && (
             <button type="button" className="nomina-back-button" disabled={cargando} onClick={() => setIntentoCarga((valor) => valor + 1)}>
               Reintentar carga

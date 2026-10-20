@@ -5,7 +5,9 @@ import "../styles/stepIdentidad.css";
 
 import { validarQuiz } from "../services/InscripcionService.js";
 
-import SkipValidationButton from "../components/common/SkipValidationButton.jsx"; // Luego sacar
+import { PERMITIR_SALTEAR_VALIDACIONES, SALTEAR_VALIDACION_CUIL } from "../config/featureFlags.js";
+
+import SkipValidationButton from "../components/common/SkipValidationButton.jsx";
 
 function formatearTitulo(titulo) {
   const texto = String(titulo ?? "").trim();
@@ -33,6 +35,8 @@ export default function StepIdentidad({ token, initialQuiz, onNext }) {
   const [limiteExcedido, setLimiteExcedido] = useState(false);
 
   const [error, setError] = useState("");
+
+  const saltearValidacionCuil = PERMITIR_SALTEAR_VALIDACIONES && SALTEAR_VALIDACION_CUIL;
 
   const toggleOpcion = (id) => {
     setError("");
@@ -101,6 +105,20 @@ export default function StepIdentidad({ token, initialQuiz, onNext }) {
       setValidando(false);
     }
   };
+
+  if (saltearValidacionCuil) {
+    return (
+      <>
+        <h1 className="section-title identity-title">Información de la empresa</h1>
+
+        <section className="identity-card">
+          <p className="identity-instruction">Para esta prueba puede continuar sin responder el desafío de CUIL.</p>
+
+          <SkipValidationButton onClick={onNext} />
+        </section>
+      </>
+    );
+  }
 
   if (!desafio) {
     return (
@@ -214,8 +232,6 @@ export default function StepIdentidad({ token, initialQuiz, onNext }) {
             {validando ? "Validando..." : "Confirmar información"}
           </button>
         )}
-
-        {!informacionValidada && <SkipValidationButton onClick={onNext} />}
       </section>
 
       {informacionValidada && (

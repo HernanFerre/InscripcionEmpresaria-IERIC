@@ -51,8 +51,11 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
             );
 
             SolicitudId = solicitudId;
-            PerteneceAConstruccion = perteneceAConstruccion;
             EsManual = esManual;
+
+            ActualizarPertenenciaConstruccion(
+                perteneceAConstruccion
+            );
         }
 
         public static TrabajadorNomina CrearDesdeServicio(
@@ -122,6 +125,14 @@ namespace IERIC.SumariosIERIC.Domain.Entities.Inscripcion
             bool perteneceAConstruccion
         )
         {
+            if (EsManual && !perteneceAConstruccion)
+            {
+                throw new SumariosDomainException(
+                    "Los trabajadores incorporados manualmente " +
+                    "deben pertenecer a la construcción."
+                );
+            }
+
             PerteneceAConstruccion = perteneceAConstruccion;
         }
 

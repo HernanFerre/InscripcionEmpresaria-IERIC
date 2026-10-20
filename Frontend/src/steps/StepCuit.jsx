@@ -7,7 +7,9 @@ import { crearQuiz, validarCuit } from "../services/InscripcionService.js";
 
 import { esCuitValido, formatCuit, normalizarCuit } from "../utils/formatters.js";
 
-import SkipValidationButton from "../components/common/SkipValidationButton.jsx"; // Luego sacar
+import { PERMITIR_SALTEAR_VALIDACIONES, PERMITIR_SALTEAR_VALIDACION_CUIT, SALTEAR_VALIDACION_CUIL } from "../config/featureFlags.js";
+
+import SkipValidationButton from "../components/common/SkipValidationButton.jsx";
 
 export default function StepCuit({ token, initialCuit = "", initialEmpresa = null, estaLogueado = false, onLoginRequired, onNext }) {
   const [cuit, setCuit] = useState(initialCuit);
@@ -26,19 +28,38 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
 
   const [requiereAutenticacion, setRequiereAutenticacion] = useState(false);
 
+  const cuitNormalizado = normalizarCuit(cuit);
+
+  const operacionEnCurso = cargando || preparandoQuiz;
+
+  const puedeSaltearCuit = PERMITIR_SALTEAR_VALIDACIONES && PERMITIR_SALTEAR_VALIDACION_CUIT;
+
+  const saltearValidacionCuil = PERMITIR_SALTEAR_VALIDACIONES && SALTEAR_VALIDACION_CUIL;
+
   const handleValidar = async () => {
-    if (!estaLogueado) {
+    if (operacionEnCurso) return;
+
+    if (!estaLogueado || !token) {
       setErrorProceso("");
       setRequiereAutenticacion(true);
       return;
     }
 
     setRequiereAutenticacion(false);
+
+    if (cuitNormalizado.startsWith("0") || !esCuitValido(cuitNormalizado)) {
+      setEmpresa(null);
+      setEstadoSolicitud("");
+      setValidado(false);
+      setErrorProceso("El CUIT ingresado no es válido. Revise los números y el dígito verificador.");
+      return;
+    }
+
     setCargando(true);
     setErrorProceso("");
 
     try {
-      const resultado = await validarCuit(cuit, token);
+      const resultado = await validarCuit(cuitNormalizado, token);
 
       if (resultado.ok) {
         setEmpresa(resultado.empresa);
@@ -72,20 +93,26 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
   };
 
   const handleNext = async () => {
-    if (!estaLogueado) {
+    if (operacionEnCurso) return;
+
+    if (!estaLogueado || !token) {
       setErrorProceso("");
       setRequiereAutenticacion(true);
       return;
     }
 
     setRequiereAutenticacion(false);
+
+    if (!validado || estadoSolicitud !== "HABILITADA" || cuitNormalizado.startsWith("0") || !esCuitValido(cuitNormalizado)) {
+      setErrorProceso("Debe validar un CUIT habilitado para continuar.");
+      return;
+    }
+
     setPreparandoQuiz(true);
     setErrorProceso("");
 
     try {
-      const cuitNormalizado = String(cuit).replace(/\D/g, "");
-
-      const quiz = await crearQuiz(cuitNormalizado, token);
+      const quiz = saltearValidacionCuil ? null : await crearQuiz(cuitNormalizado, token);
 
       onNext({
         cuit: cuitNormalizado,
@@ -107,6 +134,8 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
   };
 
   const handleSaltearValidacion = () => {
+    if (!puedeSaltearCuit || operacionEnCurso) return;
+
     const cuitIngresado = normalizarCuit(cuit);
 
     const cuitDemo = esCuitValido(cuitIngresado) ? cuitIngresado : "30123456781";
@@ -162,7 +191,7 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
 
   const tieneRazonSocial = Boolean(empresa?.razonSocial?.trim());
 
-  const cuitTieneOnceNumeros = String(cuit).replace(/\D/g, "").length === 11;
+  const cuitTieneOnceNumeros = cuitNormalizado.length === 11;
 
   return (
     <>
@@ -184,6 +213,7 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
               placeholder="Ingrese su CUIT"
               inputMode="numeric"
               autoComplete="off"
+              disabled={operacionEnCurso}
               required
             />
 
@@ -195,12 +225,12 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
           </p>
         </div>
 
-        <button type="button" onClick={handleValidar} disabled={cargando || !cuitTieneOnceNumeros}>
+        <button type="button" onClick={handleValidar} disabled={operacionEnCurso || !cuitTieneOnceNumeros}>
           {cargando ? "Validando..." : "Validar CUIT"}
         </button>
       </div>
 
-      <SkipValidationButton onClick={handleSaltearValidacion} />
+      {puedeSaltearCuit && !operacionEnCurso && <SkipValidationButton onClick={handleSaltearValidacion} />}
 
       {requiereAutenticacion && !estaLogueado && (
         <div className="cuit-result-card warning">
@@ -278,7 +308,7 @@ export default function StepCuit({ token, initialCuit = "", initialEmpresa = nul
 
           {esHabilitada && (
             <div className="next-step-container">
-              <button type="button" className="next-step-button" onClick={handleNext} disabled={preparandoQuiz}>
+              <button type="button" className="next-step-button" onClick={handleNext} disabled={operacionEnCurso}>
                 {preparandoQuiz ? "Preparando..." : "Continuar"}
               </button>
             </div>

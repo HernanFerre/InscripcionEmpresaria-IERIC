@@ -37,7 +37,7 @@ export default function StepDeclaracionJurada({ initialData = null, onBack, onNe
   };
 
   return (
-    <form className="declaracion-step" onSubmit={handleSubmit}>
+    <form className="declaracion-step" onSubmit={handleSubmit} autoComplete="off">
       <div className="declaracion-heading">
         <h2 className="section-title">Manifiesta con carácter de declaración jurada:</h2>
 
@@ -90,6 +90,7 @@ export default function StepDeclaracionJurada({ initialData = null, onBack, onNe
               <input
                 className="declaracion-inline-input declaracion-date-input"
                 type="date"
+                autoComplete="off"
                 value={datos.fechaNotificacion}
                 aria-label="Fecha de notificación"
                 required
@@ -102,6 +103,7 @@ export default function StepDeclaracionJurada({ initialData = null, onBack, onNe
                 className="declaracion-inline-input declaracion-number-input"
                 type="text"
                 inputMode="numeric"
+                autoComplete="off"
                 value={datos.numeroRequerimiento}
                 placeholder="Número"
                 aria-label="Número de requerimiento"
@@ -134,6 +136,7 @@ export default function StepDeclaracionJurada({ initialData = null, onBack, onNe
               <input
                 className="declaracion-inline-input declaracion-date-input"
                 type="date"
+                autoComplete="off"
                 value={datos.fechaNotificacion}
                 aria-label="Fecha de notificación"
                 required
@@ -146,6 +149,7 @@ export default function StepDeclaracionJurada({ initialData = null, onBack, onNe
                 className="declaracion-inline-input declaracion-number-input"
                 type="text"
                 inputMode="numeric"
+                autoComplete="off"
                 value={datos.numeroRequerimiento}
                 placeholder="Número"
                 aria-label="Número de requerimiento"
@@ -179,6 +183,7 @@ export default function StepDeclaracionJurada({ initialData = null, onBack, onNe
               <input
                 className="declaracion-inline-input declaracion-date-input"
                 type="date"
+                autoComplete="off"
                 value={datos.fechaActa}
                 aria-label="Fecha del acta"
                 required
@@ -190,6 +195,7 @@ export default function StepDeclaracionJurada({ initialData = null, onBack, onNe
                 className="declaracion-inline-input declaracion-number-input"
                 type="text"
                 inputMode="numeric"
+                autoComplete="off"
                 value={datos.numeroActa}
                 placeholder="Número"
                 aria-label="Número de acta"
@@ -216,6 +222,7 @@ export default function StepDeclaracionJurada({ initialData = null, onBack, onNe
           </div>
 
           <textarea
+            autoComplete="off"
             value={datos.motivoCargaManual}
             placeholder="Ingrese el motivo"
             aria-label="Motivo de la carga manual"
