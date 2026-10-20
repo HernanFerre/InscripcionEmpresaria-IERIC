@@ -841,11 +841,9 @@ export default function StepEmpresa({ token, cuit, initialData = null, onNext })
             Volver
           </button>
 
-          {formularioValido && (
-            <button type="submit" className="next-step-button" disabled={guardando}>
-              {guardando ? "Guardando..." : "Continuar"}
-            </button>
-          )}
+          <button type="submit" className="next-step-button" disabled={!formularioValido || guardando}>
+            {guardando ? "Guardando..." : "Continuar"}
+          </button>
         </div>
       </form>
 

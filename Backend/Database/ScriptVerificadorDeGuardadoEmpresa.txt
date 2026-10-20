@@ -224,3 +224,78 @@ FROM dbo.QuizRespuesta
 UNION ALL
 SELECT 'QuizRespuestaOpcion', COUNT(*)
 FROM dbo.QuizRespuestaOpcion;
+
+
+
+
+======================================================
+USAR ESTE SCRIPT VERIFICADOR:
+
+USE [SolicitudInscripcionEmpresariaDigital];
+GO
+
+SELECT 'Empresa' AS Tabla, *
+FROM dbo.Empresa
+ORDER BY Id;
+
+SELECT 'SolicitudInscripcionDigitalEmpresaria' AS Tabla, *
+FROM dbo.SolicitudInscripcionDigitalEmpresaria
+ORDER BY Id;
+
+SELECT 'EmpresasCuit' AS Tabla, *
+FROM dbo.EmpresasCuit
+ORDER BY IdEmpresa, IdEmpresaIntegrante;
+
+SELECT 'Representante' AS Tabla, *
+FROM dbo.Representante
+ORDER BY IdEmpresa, Id;
+
+SELECT 'SolicitudRepresentante' AS Tabla, *
+FROM dbo.SolicitudRepresentante
+ORDER BY IdSolicitud, IdRepresentante;
+
+SELECT 'TrabajadorNomina' AS Tabla, *
+FROM dbo.TrabajadorNomina
+ORDER BY IdSolicitud, Id;
+
+
+==============================================
+
+USAR ESTE PARA LIMPIAR:
+
+USE [SolicitudInscripcionEmpresariaDigital];
+GO
+
+SET NOCOUNT ON;
+SET XACT_ABORT ON;
+
+BEGIN TRY
+    BEGIN TRANSACTION;
+
+    -- Inscripción
+    DELETE FROM dbo.TrabajadorNomina;
+    DELETE FROM dbo.SolicitudRepresentante;
+    DELETE FROM dbo.Representante;
+    DELETE FROM dbo.SolicitudInscripcionDigitalEmpresaria;
+    DELETE FROM dbo.EmpresasCuit;
+    DELETE FROM dbo.Empresa;
+
+    -- Quiz
+    DELETE FROM dbo.QuizRespuestaOpcion;
+    DELETE FROM dbo.QuizRespuesta;
+    DELETE FROM dbo.QuizOpcion;
+    DELETE FROM dbo.QuizDesafio;
+    DELETE FROM dbo.QuizCuilVinculado;
+    DELETE FROM dbo.QuizSesion;
+
+    COMMIT TRANSACTION;
+
+    PRINT 'Limpieza completada correctamente.';
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0
+        ROLLBACK TRANSACTION;
+
+    THROW;
+END CATCH;
+GO

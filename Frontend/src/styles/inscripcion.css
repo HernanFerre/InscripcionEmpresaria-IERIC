@@ -308,6 +308,16 @@
     0 0 0 3px rgba(244, 67, 54, 0.14);
 }
 
+.next-step-button:disabled,
+.next-step-button:disabled:hover,
+.next-step-button:disabled:active {
+  background: var(--color-background-disabled);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 @media (max-width: 700px) {
   .topbar {
     height: auto;
