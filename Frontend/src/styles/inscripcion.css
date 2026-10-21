@@ -318,6 +318,44 @@
   box-shadow: none;
 }
 
+.inscripcion-contact-note {
+  margin: 0;
+  padding: 0 24px 24px;
+  color: var(--color-text-subtle);
+  font-family: var(--font-family-base);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 20px;
+}
+
+.inscripcion-contact-note span {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 700px) {
+  .inscripcion-contact-note {
+    padding: 0 16px 20px;
+    gap: 4px 10px;
+  }
+
+  .inscripcion-contact-note span:first-child {
+    flex-basis: 100%;
+  }
+
+  .inscripcion-contact-note span:last-child {
+    flex-basis: 100%;
+  }
+
+  .inscripcion-contact-note span[aria-hidden="true"] {
+    display: none;
+  }
+}
+
 @media (max-width: 700px) {
   .topbar {
     height: auto;

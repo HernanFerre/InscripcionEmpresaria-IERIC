@@ -14,8 +14,9 @@ import StepRepresentantes from "../steps/inscripcion/StepRepresentantes.jsx";
 import StepNomina from "../steps/inscripcion/StepNomina.jsx";
 import StepDocumentacion from "../steps/inscripcion/StepDocumentacion.jsx";
 import StepDeclaracionJurada from "../steps/inscripcion/StepDeclaracionJurada.jsx";
+import StepRevision from "../steps/inscripcion/StepRevision.jsx";
 
-import { INICIAR_EN_INSCRIPCION, MOSTRAR_VALIDACION_TELEFONO } from "../config/featureFlags.js";
+import { INICIAR_EN_INSCRIPCION, INICIAR_EN_REVISION, MOSTRAR_VALIDACION_TELEFONO } from "../config/featureFlags.js";
 
 import "../styles/inscripcion.css";
 
@@ -47,9 +48,9 @@ function obtenerEmpresasRepresentadas(datosEmpresa) {
 export default function InscripcionPage() {
   const [currentStep, setCurrentStep] = useState(1);
 
-  const [inscripcionStep, setInscripcionStep] = useState("empresa");
+  const [inscripcionStep, setInscripcionStep] = useState(INICIAR_EN_REVISION ? "revision" : "empresa");
 
-  const [faseActual, setFaseActual] = useState(INICIAR_EN_INSCRIPCION ? "inscripcion" : "validacion");
+  const [faseActual, setFaseActual] = useState(INICIAR_EN_REVISION || INICIAR_EN_INSCRIPCION ? "inscripcion" : "validacion");
 
   const [formData, setFormData] = useState({
     cuit: "",
@@ -256,6 +257,14 @@ export default function InscripcionPage() {
     setInscripcionStep(formData.datosInscripcion.nomina?.requiereDeclaracionJurada ? "declaracion-jurada" : "nomina");
   };
 
+  const handleContinuarARevision = () => {
+    setInscripcionStep("revision");
+  };
+
+  const handleVolverADocumentacion = () => {
+    setInscripcionStep("documentacion");
+  };
+
   const handleAuthenticated = () => {
     // La autenticación se vinculará al flujo de inscripción
     // después de construir las nuevas pantallas.
@@ -365,13 +374,22 @@ export default function InscripcionPage() {
                         onNext={handleDeclaracionJuradaCompletada}
                       />
                     )}
+                    {inscripcionStep === "documentacion" && (
+                      <StepDocumentacion onBack={handleVolverDesdeDocumentacion} onNext={handleContinuarARevision} />
+                    )}
 
-                    {inscripcionStep === "documentacion" && <StepDocumentacion onBack={handleVolverDesdeDocumentacion} />}
+                    {inscripcionStep === "revision" && <StepRevision onBack={handleVolverADocumentacion} />}
                   </>
                 )}
               </div>
             </section>
           </main>
+          <p className="inscripcion-contact-note">
+            <span>En caso de duda podrá contactarse a:</span>
+            <span>011 4363 3800</span>
+            <span aria-hidden="true">-</span>
+            <span>tramites.empleadores@ieric.org.ar</span>
+          </p>
         </div>
       )}
     </IericAuth>
