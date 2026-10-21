@@ -17,4 +17,4 @@ export const SALTEAR_VALIDACION_CUIL = true;
 export const USAR_TOKEN_BACKEND_DESARROLLO = true;
 
 // Abre directamente el paso Revisión para probar su interfaz.
-export const INICIAR_EN_REVISION = true;
+export const INICIAR_EN_REVISION = false;
