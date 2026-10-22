@@ -1,0 +1,77 @@
+CAMBIOS RESPECTO DEL MODELO ORIGINAL DE BASE DE DATOS
+Fecha de referencia: 22/10/2026
+
+
+1. EMPRESA: IDENTIFICACIÓN
+
+    - La clave primaria pasó de Cuit a Id.
+    - Id ahora es autoincremental.
+    - Cuit conserva una restricción de unicidad para evitar
+      empresas duplicadas.
+
+
+2. RELACIONES ENTRE EMPRESAS Y SOLICITUDES
+
+    - Las relaciones ahora utilizan Empresa.Id como referencia.
+
+    - En EmpresasCuit se definieron las relaciones:
+        - IdEmpresa: referencia a la empresa principal.
+        - IdEmpresaIntegrante: referencia a la empresa integrante.
+
+    - La solicitud de inscripción también referencia Empresa.Id.
+
+
+3. PROVINCIA Y LOCALIDAD
+
+    - Se reemplazaron los campos de texto:
+        - Provincia por IdProvincia.
+        - Localidad por IdLocalidad.
+
+    - Se guardan los identificadores proporcionados por
+      el servicio de Datos Maestros.
+
+
+4. USUARIO DE ALTA
+
+    Empresa:
+        - Se eliminó ua.
+        - Se agregó IdUsuarioAlta, de tipo GUID.
+
+    SolicitudInscripcionDigitalEmpresaria:
+        - Se renombró UsuarioId a IdUsuarioAlta.
+        - Se eliminó el campo ua redundante.
+
+
+5. USUARIO DE MODIFICACIÓN
+
+    - En Empresa y SolicitudInscripcionDigitalEmpresaria,
+      se amplió el campo um:
+        - Antes: varchar(23).
+        - Ahora: varchar(254).
+
+    - Permite almacenar nombres de usuario o correos electrónicos.
+
+
+6. REPRESENTANTES
+
+    - Se reemplazó IdCargo por IdTipoRepresentante.
+    - IdTipoRepresentante quedó como obligatorio.
+    - Cuil pasó de varchar(11) a bigint.
+    - Correo y Telefono quedaron como obligatorios.
+    - Se agregó la relación entre IdEmpresa y Empresa.Id.
+    - Se agregó una restricción de unicidad sobre IdEmpresa y Cuil
+      para evitar repetir el mismo representante dentro de una empresa.
+
+
+7. NÓMINA
+
+    - La tabla TrabajadorNomina ya estaba prevista en el modelo original.
+
+    - Se agregó el campo EsManual:
+        - Tipo: bit.
+        - Valor predeterminado: 0.
+        - 0: trabajador obtenido del servicio.
+        - 1: trabajador incorporado manualmente.
+
+    - Se agregó un índice sobre IdSolicitud para facilitar
+      la consulta de trabajadores de una solicitud.
